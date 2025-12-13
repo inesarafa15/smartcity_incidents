@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Citoyen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">SmartCity Incidents</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" th:href="@{/citoyen/incidents}">Mes incidents</a>
+                <a class="nav-link" th:href="@{/citoyen/incidents/nouveau}">Signaler un incident</a>
+                <a class="nav-link" th:href="@{/deconnexion}">Déconnexion</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Tableau de bord</h2>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Mes incidents récents</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${incidents.isEmpty()}" class="alert alert-info">
+                            Aucun incident signalé pour le moment.
+                        </div>
+                        <ul th:unless="${incidents.isEmpty()}" class="list-group">
+                            <li th:each="incident : ${incidents}" class="list-group-item">
+                                <a th:href="@{/citoyen/incidents/{id}(id=${incident.id})}" th:text="${incident.titre}"></a>
+                                <span class="badge bg-secondary ms-2" th:text="${incident.statut}"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Notifications</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${notifications.isEmpty()}" class="alert alert-info">
+                            Aucune notification.
+                        </div>
+                        <ul th:unless="${notifications.isEmpty()}" class="list-group">
+                            <li th:each="notification : ${notifications}" class="list-group-item">
+                                <span th:text="${notification.message}"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
