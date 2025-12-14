@@ -5,22 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord - Administrateur</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/admin/dashboard">SmartCity Incidents - Administrateur</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link active" th:href="@{/admin/dashboard}">Dashboard</a>
-                <a class="nav-link" th:href="@{/admin/incidents}">Incidents</a>
-                <a class="nav-link" th:href="@{/admin/rapports}">Rapports</a>
-                <a class="nav-link" th:href="@{/deconnexion}">Déconnexion</a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        <h2>Tableau de bord Administrateur</h2>
+    <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
+    
+    <div class="main-content">
+        <div class="container-fluid">
+            <h2>Tableau de bord Administrateur</h2>
         
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
             <span th:text="${success}"></span>
@@ -58,40 +51,26 @@
                 </div>
             </div>
 
-            <!-- Incidents par statut -->
+            <!-- Graphique Incidents par statut -->
             <div class="col-md-6 mb-4">
                 <div class="card">
                     <div class="card-header bg-info text-white">
                         <h5>Incidents par statut</h5>
                     </div>
                     <div class="card-body">
-                        <div th:if="${stats != null && stats.incidentsParStatut != null}">
-                            <ul class="list-group">
-                                <li th:each="entry : ${stats.incidentsParStatut}" class="list-group-item d-flex justify-content-between">
-                                    <span th:text="${entry.key}"></span>
-                                    <span class="badge bg-info" th:text="${entry.value}"></span>
-                                </li>
-                            </ul>
-                        </div>
+                        <canvas id="incidentsByStatusChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Incidents par priorité -->
+            <!-- Graphique Incidents par priorité -->
             <div class="col-md-6 mb-4">
                 <div class="card">
                     <div class="card-header bg-danger text-white">
                         <h5>Incidents par priorité</h5>
                     </div>
                     <div class="card-body">
-                        <div th:if="${stats != null && stats.incidentsParPriorite != null}">
-                            <ul class="list-group">
-                                <li th:each="entry : ${stats.incidentsParPriorite}" class="list-group-item d-flex justify-content-between">
-                                    <span th:text="${entry.key}"></span>
-                                    <span class="badge bg-danger" th:text="${entry.value}"></span>
-                                </li>
-                            </ul>
-                        </div>
+                        <canvas id="incidentsByPriorityChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -121,9 +100,65 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const stats = /*[[${stats}]]*/ {};
+        
+        // Graphique Incidents par statut
+        if (stats && stats.incidentsParStatut) {
+            const statusCtx = document.getElementById('incidentsByStatusChart').getContext('2d');
+            const statusLabels = Object.keys(stats.incidentsParStatut);
+            const statusData = Object.values(stats.incidentsParStatut);
+            
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusData,
+                        backgroundColor: ['#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        }
+        
+        // Graphique Incidents par priorité
+        if (stats && stats.incidentsParPriorite) {
+            const priorityCtx = document.getElementById('incidentsByPriorityChart').getContext('2d');
+            const priorityLabels = Object.keys(stats.incidentsParPriorite);
+            const priorityData = Object.values(stats.incidentsParPriorite);
+            
+            new Chart(priorityCtx, {
+                type: 'bar',
+                data: {
+                    labels: priorityLabels,
+                    datasets: [{
+                        label: 'Nombre d\'incidents',
+                        data: priorityData,
+                        backgroundColor: '#dc3545'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        /*]]>*/
+    </script>
 </body>
 </html>
 

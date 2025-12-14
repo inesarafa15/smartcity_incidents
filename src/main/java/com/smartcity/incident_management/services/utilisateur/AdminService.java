@@ -10,6 +10,8 @@ import com.smartcity.incident_management.exceptions.ResourceNotFoundException;
 import com.smartcity.incident_management.exceptions.UnauthorizedException;
 import com.smartcity.incident_management.repository.IncidentRepository;
 import com.smartcity.incident_management.repository.UtilisateurRepository;
+import com.smartcity.incident_management.services.email.EmailService;
+import com.smartcity.incident_management.services.utilisateur.RapportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +36,9 @@ public class AdminService {
     
     @Autowired
     private RapportService rapportService;
+    
+    @Autowired
+    private EmailService emailService;
     
     // ========== VÉRIFICATION DÉPARTEMENT ==========
     
@@ -97,7 +102,17 @@ public class AdminService {
         incident.setAgentAssigne(agent);
         incident.setStatut(StatutIncident.PRIS_EN_CHARGE);
         
-        return incidentRepository.save(incident);
+        Incident saved = incidentRepository.save(incident);
+        
+        // Envoyer un email au citoyen
+        try {
+            emailService.envoyerEmailAssignationAgent(incident.getAuteur(), saved, agent);
+            emailService.envoyerEmailChangementStatut(incident.getAuteur(), saved, StatutIncident.SIGNALE, StatutIncident.PRIS_EN_CHARGE);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'envoi de l'email: " + e.getMessage());
+        }
+        
+        return saved;
     }
     
     // ========== AGENTS DISPONIBLES DU DÉPARTEMENT ==========

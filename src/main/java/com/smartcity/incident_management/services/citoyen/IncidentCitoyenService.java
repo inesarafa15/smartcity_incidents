@@ -57,8 +57,15 @@ public class IncidentCitoyenService {
         incident.setDescription(dto.getDescription());
         incident.setPriorite(dto.getPriorite());
         incident.setAdresseTextuelle(dto.getAdresseTextuelle());
-        incident.setLatitude(dto.getLatitude());
-        incident.setLongitude(dto.getLongitude());
+        
+        // Position GPS obtenue depuis la carte (obligatoire)
+        if (dto.getLatitude() != null && dto.getLongitude() != null) {
+            incident.setLatitude(java.math.BigDecimal.valueOf(dto.getLatitude()));
+            incident.setLongitude(java.math.BigDecimal.valueOf(dto.getLongitude()));
+        } else {
+            throw new com.smartcity.incident_management.exceptions.BadRequestException("La position GPS est obligatoire. Veuillez sélectionner un point sur la carte.");
+        }
+        
         incident.setAuteur(citoyen);
         incident.setDepartement(departement);
         incident.setQuartier(quartier);
@@ -110,6 +117,20 @@ public class IncidentCitoyenService {
         
         if (!incident.getAuteur().getId().equals(citoyen.getId())) {
             throw new UnauthorizedException("Vous n'êtes pas autorisé à consulter cet incident");
+        }
+        
+        // Charger les relations nécessaires
+        if (incident.getQuartier() != null) {
+            incident.getQuartier().getNom(); // Force le chargement
+        }
+        if (incident.getDepartement() != null) {
+            incident.getDepartement().getNom(); // Force le chargement
+        }
+        if (incident.getAgentAssigne() != null) {
+            incident.getAgentAssigne().getNom(); // Force le chargement
+        }
+        if (incident.getPhotos() != null) {
+            incident.getPhotos().size(); // Force le chargement
         }
         
         return incident;

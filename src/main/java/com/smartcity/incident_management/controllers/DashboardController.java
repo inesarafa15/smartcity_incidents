@@ -34,31 +34,21 @@ public class DashboardController {
     
     @GetMapping("/dashboard")
     @PreAuthorize("isAuthenticated()")
-    public String dashboard(Model model) {
+    public String dashboard() {
         Utilisateur utilisateur = SecurityUtils.getCurrentUser();
         
-        if (utilisateur.getRole() == RoleType.CITOYEN) {
-            model.addAttribute("incidents", incidentCitoyenService.mesIncidentsList(utilisateur));
-            model.addAttribute("notifications", notificationService.mesNotificationsNonLues(utilisateur));
-            return "dashboard/citoyen";
-        } else if (utilisateur.getRole() == RoleType.AGENT_MUNICIPAL) {
-            model.addAttribute("incidents", incidentMunicipaliteService.mesIncidentsAssignes(utilisateur));
-            model.addAttribute("notifications", notificationService.mesNotificationsNonLues(utilisateur));
-            return "dashboard/agent";
-        } else if (utilisateur.getRole() == RoleType.SUPER_ADMIN) {
-            model.addAttribute("stats", superAdminService.getStatistiquesGlobales());
-            model.addAttribute("notifications", notificationService.mesNotificationsNonLues(utilisateur));
+        // Redirection automatique selon le rôle (sans exposer le rôle dans l'URL principale)
+        if (utilisateur.getRole() == RoleType.SUPER_ADMIN) {
             return "redirect:/super-admin/dashboard";
         } else if (utilisateur.getRole() == RoleType.ADMINISTRATEUR) {
-            model.addAttribute("stats", adminService.getStatistiquesDepartement(utilisateur));
-            model.addAttribute("incidentsEnAttente", adminService.incidentsEnAttente(utilisateur));
-            model.addAttribute("agentsDisponibles", adminService.agentsDisponibles(utilisateur));
-            model.addAttribute("notifications", notificationService.mesNotificationsNonLues(utilisateur));
             return "redirect:/admin/dashboard";
-        } else {
-            model.addAttribute("notifications", notificationService.mesNotificationsNonLues(utilisateur));
-            return "dashboard/admin";
+        } else if (utilisateur.getRole() == RoleType.AGENT_MUNICIPAL) {
+            return "redirect:/agent/dashboard";
+        } else if (utilisateur.getRole() == RoleType.CITOYEN) {
+            return "redirect:/citoyen/dashboard";
         }
+        
+        return "redirect:/";
     }
 }
 

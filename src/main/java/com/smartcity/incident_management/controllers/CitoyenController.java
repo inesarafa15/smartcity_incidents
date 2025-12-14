@@ -31,8 +31,49 @@ public class CitoyenController {
     @Autowired
     private QuartierService quartierService;
     
+    @Autowired
+    private com.smartcity.incident_management.services.utilisateur.NotificationService notificationService;
+    
+    @GetMapping("/dashboard")
+    public String dashboard(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            Model model) {
+        Utilisateur citoyen = SecurityUtils.getCurrentUser();
+        
+        // Récupérer les incidents récents
+        Page<Incident> incidentsRecents = incidentCitoyenService.mesIncidents(citoyen, page, size, "dateCreation", "DESC");
+        
+        // Récupérer les notifications non lues
+        var notifications = notificationService.mesNotificationsNonLues(citoyen);
+        long nbNotificationsNonLues = notificationService.nombreNotificationsNonLues(citoyen);
+        
+        // Statistiques
+        Page<Incident> tousIncidents = incidentCitoyenService.mesIncidents(citoyen, 0, 1000, "dateCreation", "DESC");
+        long totalIncidents = tousIncidents.getTotalElements();
+        long incidentsEnCours = tousIncidents.getContent().stream()
+                .filter(i -> i.getStatut().name().equals("SIGNALE") || 
+                            i.getStatut().name().equals("PRIS_EN_CHARGE") || 
+                            i.getStatut().name().equals("EN_RESOLUTION"))
+                .count();
+        long incidentsResolus = tousIncidents.getContent().stream()
+                .filter(i -> i.getStatut().name().equals("RESOLU"))
+                .count();
+        
+        model.addAttribute("incidents", incidentsRecents);
+        model.addAttribute("notifications", notifications);
+        model.addAttribute("nbNotificationsNonLues", nbNotificationsNonLues);
+        model.addAttribute("totalIncidents", totalIncidents);
+        model.addAttribute("incidentsEnCours", incidentsEnCours);
+        model.addAttribute("incidentsResolus", incidentsResolus);
+        
+        return "citoyen/dashboard";
+    }
+    
     @GetMapping("/incidents")
     public String mesIncidents(
+            @RequestParam(required = false) String statut,
+            @RequestParam(required = false) String priorite,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "dateCreation") String sortBy,
@@ -42,9 +83,30 @@ public class CitoyenController {
         Utilisateur citoyen = SecurityUtils.getCurrentUser();
         Page<Incident> incidents = incidentCitoyenService.mesIncidents(citoyen, page, size, sortBy, sortDir);
         
+        // Filtrer côté serveur si nécessaire (pour simplifier, on filtre après récupération)
+        if (statut != null && !statut.isEmpty()) {
+            incidents = incidents.map(incident -> {
+                if (incident.getStatut().name().equals(statut)) {
+                    return incident;
+                }
+                return null;
+            }).filter(incident -> incident != null);
+        }
+        
+        if (priorite != null && !priorite.isEmpty()) {
+            incidents = incidents.map(incident -> {
+                if (incident != null && incident.getPriorite().name().equals(priorite)) {
+                    return incident;
+                }
+                return null;
+            }).filter(incident -> incident != null);
+        }
+        
         model.addAttribute("incidents", incidents);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", incidents.getTotalPages());
+        model.addAttribute("statut", statut);
+        model.addAttribute("priorite", priorite);
         
         return "citoyen/incidents";
     }

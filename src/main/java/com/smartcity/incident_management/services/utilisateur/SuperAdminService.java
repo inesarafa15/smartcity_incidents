@@ -12,6 +12,7 @@ import com.smartcity.incident_management.exceptions.ResourceNotFoundException;
 import com.smartcity.incident_management.repository.DepartementRepository;
 import com.smartcity.incident_management.repository.IncidentRepository;
 import com.smartcity.incident_management.repository.UtilisateurRepository;
+import com.smartcity.incident_management.services.email.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,9 @@ public class SuperAdminService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private EmailService emailService;
     
     // ========== GESTION DES DÉPARTEMENTS ==========
     
@@ -87,7 +91,7 @@ public class SuperAdminService {
     
     // ========== GESTION DES ADMINISTRATEURS ==========
     
-    public Utilisateur creerAdministrateur(InscriptionDTO dto) {
+    public Utilisateur creerAdministrateur(Long departementId, InscriptionDTO dto) {
         if (!dto.getMotDePasse().equals(dto.getConfirmationMotDePasse())) {
             throw new BadRequestException("Les mots de passe ne correspondent pas");
         }
@@ -96,6 +100,13 @@ public class SuperAdminService {
             throw new BadRequestException("Un utilisateur avec cet email existe déjà");
         }
         
+        if (departementId == null) {
+            throw new BadRequestException("Le département est obligatoire");
+        }
+        
+        Departement departement = departementRepository.findById(departementId)
+                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé"));
+        
         Utilisateur utilisateur = new Utilisateur();
         utilisateur.setNom(dto.getNom());
         utilisateur.setPrenom(dto.getPrenom());
@@ -103,9 +114,43 @@ public class SuperAdminService {
         utilisateur.setMotDePasseHash(passwordEncoder.encode(dto.getMotDePasse()));
         utilisateur.setTelephone(dto.getTelephone());
         utilisateur.setRole(RoleType.ADMINISTRATEUR);
+        utilisateur.setDepartement(departement);
         utilisateur.setActif(true);
         
-        return utilisateurRepository.save(utilisateur);
+        Utilisateur saved = utilisateurRepository.save(utilisateur);
+        
+        // Envoyer un email de bienvenue
+        try {
+            emailService.envoyerEmailBienvenue(saved, dto.getMotDePasse());
+        } catch (Exception e) {
+            // Log l'erreur mais ne bloque pas la création
+            System.err.println("Erreur lors de l'envoi de l'email de bienvenue: " + e.getMessage());
+        }
+        
+        return saved;
+    }
+    
+    public Departement creerDepartementAvecNom(String nomDepartement, String description) {
+        // Vérifier si un département avec ce nom existe déjà
+        CategorieDepartement categorie = null;
+        try {
+            categorie = CategorieDepartement.valueOf(nomDepartement.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // Si ce n'est pas une catégorie existante, utiliser AUTRE
+            categorie = CategorieDepartement.AUTRE;
+        }
+        
+        // Vérifier si un département avec cette catégorie existe déjà
+        if (departementRepository.existsByNom(categorie) && categorie != CategorieDepartement.AUTRE) {
+            throw new BadRequestException("Un département avec ce nom existe déjà");
+        }
+        
+        Departement departement = new Departement();
+        departement.setNom(categorie);
+        departement.setDescription(description != null ? description : "Département créé automatiquement");
+        departement.setActif(true);
+        
+        return departementRepository.save(departement);
     }
     
     public Utilisateur modifierAdministrateur(Long id, String nom, String prenom, String telephone) {
@@ -186,7 +231,17 @@ public class SuperAdminService {
         utilisateur.setDepartement(departement);
         utilisateur.setActif(true);
         
-        return utilisateurRepository.save(utilisateur);
+        Utilisateur saved = utilisateurRepository.save(utilisateur);
+        
+        // Envoyer un email de bienvenue
+        try {
+            emailService.envoyerEmailBienvenue(saved, dto.getMotDePasse());
+        } catch (Exception e) {
+            // Log l'erreur mais ne bloque pas la création
+            System.err.println("Erreur lors de l'envoi de l'email de bienvenue: " + e.getMessage());
+        }
+        
+        return saved;
     }
     
     public Utilisateur modifierAgentMunicipal(Long id, String nom, String prenom, String telephone, Long departementId) {
@@ -251,6 +306,8 @@ public class SuperAdminService {
         // Tous les départements
         stats.put("totalDepartements", departementRepository.count());
         stats.put("departementsActifs", departementRepository.findByActifTrue().size());
+        stats.put("adminsParDepartement", getAdminsParDepartement());
+        stats.put("agentsParDepartement", getAgentsParDepartement());
         
         return stats;
     }
@@ -276,6 +333,32 @@ public class SuperAdminService {
         List<Departement> departements = departementRepository.findAll();
         for (Departement dep : departements) {
             long count = incidentRepository.findByDepartementId(dep.getId()).size();
+            parDepartement.put(dep.getNom().name(), count);
+        }
+        return parDepartement;
+    }
+    
+    private Map<String, Long> getAdminsParDepartement() {
+        Map<String, Long> parDepartement = new HashMap<>();
+        List<Departement> departements = departementRepository.findAll();
+        for (Departement dep : departements) {
+            long count = utilisateurRepository.findByDepartementId(dep.getId())
+                    .stream()
+                    .filter(u -> u.getRole() == RoleType.ADMINISTRATEUR)
+                    .count();
+            parDepartement.put(dep.getNom().name(), count);
+        }
+        return parDepartement;
+    }
+    
+    private Map<String, Long> getAgentsParDepartement() {
+        Map<String, Long> parDepartement = new HashMap<>();
+        List<Departement> departements = departementRepository.findAll();
+        for (Departement dep : departements) {
+            long count = utilisateurRepository.findByDepartementId(dep.getId())
+                    .stream()
+                    .filter(u -> u.getRole() == RoleType.AGENT_MUNICIPAL)
+                    .count();
             parDepartement.put(dep.getNom().name(), count);
         }
         return parDepartement;

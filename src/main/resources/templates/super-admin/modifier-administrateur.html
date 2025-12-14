@@ -5,18 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier Administrateur - Super Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-        <div class="container">
-            <a class="navbar-brand" href="/super-admin/dashboard">SmartCity Incidents - Super Admin</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" th:href="@{/super-admin/administrateurs}">Retour</a>
-            </div>
-        </div>
-    </nav>
+        <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
+    
+    <div class="main-content">
+        
 
-    <div class="container mt-4">
+    
         <h2>Modifier Administrateur</h2>
 
         <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -49,10 +46,15 @@
                         <input type="text" class="form-control" id="telephone" name="telephone" th:value="${administrateur.telephone}">
                     </div>
 
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Pour modifier le département, utilisez le bouton "Réaffecter" dans la liste des administrateurs.
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Modifier</button>
                     <a th:href="@{/super-admin/administrateurs}" class="btn btn-secondary">Annuler</a>
                 </form>
             </div>
+        </div>
         </div>
     </div>
 

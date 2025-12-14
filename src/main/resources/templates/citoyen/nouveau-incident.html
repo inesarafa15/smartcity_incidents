@@ -5,19 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signaler un incident</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/dashboard">SmartCity Incidents</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" th:href="@{/citoyen/incidents}">Mes incidents</a>
-                <a class="nav-link" th:href="@{/deconnexion}">Déconnexion</a>
-            </div>
-        </div>
-    </nav>
+        <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
+    
+    <div class="main-content">
+        
 
-    <div class="container mt-4">
+    
         <h2>Signaler un incident</h2>
         <div th:if="${error}" class="alert alert-danger" role="alert">
             <span th:text="${error}"></span>
@@ -47,17 +43,15 @@
             <div class="mb-3">
                 <label for="adresseTextuelle" class="form-label">Adresse *</label>
                 <input type="text" class="form-control" id="adresseTextuelle" th:field="*{adresseTextuelle}" required>
+                <small class="form-text text-muted">Saisissez l'adresse ou utilisez la carte ci-dessous pour sélectionner la position</small>
                 <div th:if="${#fields.hasErrors('adresseTextuelle')}" th:errors="*{adresseTextuelle}" class="text-danger"></div>
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="latitude" class="form-label">Latitude (optionnel)</label>
-                    <input type="number" step="any" class="form-control" id="latitude" th:field="*{latitude}">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="longitude" class="form-label">Longitude (optionnel)</label>
-                    <input type="number" step="any" class="form-control" id="longitude" th:field="*{longitude}">
-                </div>
+            <div class="mb-3">
+                <label class="form-label">Position GPS (sélectionnez sur la carte) *</label>
+                <div id="map" style="height: 400px; width: 100%; border: 1px solid #ddd; border-radius: 4px;"></div>
+                <small class="form-text text-muted">Cliquez sur la carte pour définir la position de l'incident</small>
+                <input type="hidden" id="latitude" name="latitude" th:field="*{latitude}">
+                <input type="hidden" id="longitude" name="longitude" th:field="*{longitude}">
             </div>
             <div class="mb-3">
                 <label for="departementId" class="form-label">Département *</label>
@@ -85,7 +79,72 @@
         </form>
     </div>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialiser la carte Leaflet
+        let map = L.map('map').setView([48.8566, 2.3522], 13); // Paris par défaut
+        let marker = null;
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Géolocalisation de l'utilisateur
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                map.setView([lat, lon], 15);
+                if (!marker) {
+                    marker = L.marker([lat, lon]).addTo(map);
+                    document.getElementById('latitude').value = lat;
+                    document.getElementById('longitude').value = lon;
+                }
+            });
+        }
+        
+        // Gestion du clic sur la carte
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            
+            if (marker) {
+                marker.setLatLng([lat, lon]);
+            } else {
+                marker = L.marker([lat, lon]).addTo(map);
+            }
+            
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+        });
+        
+        // Recherche d'adresse (géocodage simple)
+        document.getElementById('adresseTextuelle').addEventListener('blur', function() {
+            const address = this.value;
+            if (address && address.length > 5) {
+                // Utiliser Nominatim pour le géocodage
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            const lat = parseFloat(data[0].lat);
+                            const lon = parseFloat(data[0].lon);
+                            map.setView([lat, lon], 15);
+                            if (marker) {
+                                marker.setLatLng([lat, lon]);
+                            } else {
+                                marker = L.marker([lat, lon]).addTo(map);
+                            }
+                            document.getElementById('latitude').value = lat;
+                            document.getElementById('longitude').value = lon;
+                        }
+                    })
+                    .catch(err => console.error('Erreur de géocodage:', err));
+            }
+        });
+    </script>
 </body>
 </html>
 

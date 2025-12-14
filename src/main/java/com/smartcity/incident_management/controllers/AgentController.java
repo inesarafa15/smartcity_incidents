@@ -12,6 +12,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/agent")
 @PreAuthorize("hasRole('AGENT_MUNICIPAL')")
@@ -19,6 +23,32 @@ public class AgentController {
     
     @Autowired
     private IncidentMunicipaliteService incidentMunicipaliteService;
+    
+    @GetMapping("/dashboard")
+    public String dashboard(Model model) {
+        Utilisateur agent = SecurityUtils.getCurrentUser();
+        List<Incident> incidents = incidentMunicipaliteService.mesIncidentsAssignes(agent);
+        model.addAttribute("incidentsAssignes", incidents);
+        
+        // Calculer les statistiques pour les graphiques
+        Map<String, Long> parStatut = new HashMap<>();
+        Map<String, Long> parPriorite = new HashMap<>();
+        
+        for (Incident incident : incidents) {
+            // Par statut
+            String statut = incident.getStatut().name();
+            parStatut.put(statut, parStatut.getOrDefault(statut, 0L) + 1);
+            
+            // Par priorité
+            String priorite = incident.getPriorite().name();
+            parPriorite.put(priorite, parPriorite.getOrDefault(priorite, 0L) + 1);
+        }
+        
+        model.addAttribute("incidentsParStatut", parStatut);
+        model.addAttribute("incidentsParPriorite", parPriorite);
+        
+        return "agent/dashboard";
+    }
     
     @GetMapping("/incidents")
     public String incidentsDepartement(

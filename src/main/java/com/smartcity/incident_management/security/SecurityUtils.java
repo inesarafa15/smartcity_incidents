@@ -9,10 +9,14 @@ public class SecurityUtils {
     
     public static Utilisateur getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetailsImpl) {
-            return ((UserDetailsImpl) authentication.getPrincipal()).getUtilisateur();
+        if (authentication != null) {
+            if (authentication.getPrincipal() instanceof UserDetailsImpl) {
+                return ((UserDetailsImpl) authentication.getPrincipal()).getUtilisateur();
+            } else if (authentication.getPrincipal() instanceof OAuth2UserPrincipal) {
+                return ((OAuth2UserPrincipal) authentication.getPrincipal()).getUtilisateur();
+            }
         }
-        return null;
+        throw new RuntimeException("Utilisateur non authentifié");
     }
     
     public static boolean hasRole(RoleType role) {

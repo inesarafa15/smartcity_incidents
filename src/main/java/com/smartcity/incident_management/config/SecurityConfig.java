@@ -1,6 +1,7 @@
 package com.smartcity.incident_management.config;
 
 import com.smartcity.incident_management.security.UserDetailsServiceImpl;
+import com.smartcity.incident_management.services.oauth2.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,12 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
     
+    @Autowired
+    private CustomOAuth2UserService oauth2UserService;
+    
+    @Autowired
+    private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
+    
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -35,7 +42,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/inscription", "/connexion", "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
+                .requestMatchers("/", "/inscription", "/connexion", "/oauth2/**", "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                 .requestMatchers("/super-admin/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMINISTRATEUR")
                 .requestMatchers("/agent/**").hasRole("AGENT_MUNICIPAL")
@@ -47,12 +54,24 @@ public class SecurityConfig {
                 .loginProcessingUrl("/connexion")
                 .defaultSuccessUrl("/dashboard", true)
                 .failureUrl("/connexion?error=true")
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .permitAll()
+            )
+            .userDetailsService(userDetailsService)
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/connexion")
+                .defaultSuccessUrl("/dashboard", true)
+                .failureUrl("/connexion?error=oauth2")
+                .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService))
+                .successHandler(oauth2SuccessHandler)
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/deconnexion")
-                .logoutSuccessUrl("/")
+                .logoutSuccessUrl("/connexion?logout")
                 .invalidateHttpSession(true)
+                .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             );
