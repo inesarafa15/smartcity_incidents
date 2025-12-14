@@ -123,6 +123,24 @@ public class UtilisateurService {
         utilisateur.setActif(true);
         return utilisateurRepository.save(utilisateur);
     }
+    public void seedSuperAdmin() {
+        // Vérifie si un SUPER_ADMIN existe déjà
+        if (utilisateurRepository.findByRole(RoleType.SUPER_ADMIN).isEmpty()) {
+            Utilisateur superAdmin = new Utilisateur();
+            superAdmin.setNom("Super");
+            superAdmin.setPrenom("Admin");
+            superAdmin.setEmail("superadmin@yopmail.com");
+            superAdmin.setMotDePasseHash(passwordEncoder.encode("StrongPassword123!"));
+            superAdmin.setRole(RoleType.SUPER_ADMIN);
+            superAdmin.setActif(true);
+
+            utilisateurRepository.save(superAdmin);
+            System.out.println("SUPER_ADMIN créé: superadmin@yopmail.com / StrongPassword123!");
+        } else {
+            System.out.println("SUPER_ADMIN déjà présent");
+        }
+    }
+
 }
 
 
