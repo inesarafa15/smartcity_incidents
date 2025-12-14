@@ -33,6 +33,9 @@ public class Departement {
     @Column(columnDefinition = "TEXT")
     private String description;
     
+    @Column(nullable = false)
+    private boolean actif = true;
+    
     // Relation avec les agents municipaux
     @OneToMany(mappedBy = "departement", cascade = CascadeType.ALL)
     private List<Utilisateur> agents = new ArrayList<>();
