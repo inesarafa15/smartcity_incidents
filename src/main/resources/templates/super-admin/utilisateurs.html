@@ -41,7 +41,7 @@
                             <label for="departementId" class="form-label">Département</label>
                             <select class="form-select" id="departementId" name="departementId">
                                 <option value="">Tous</option>
-                                <option th:each="dep : ${departements}" th:value="${dep.id}" th:text="${dep.nom}"></option>
+                                <option th:each="dep : ${departements}" th:value="${dep.id}" th:text="${dep.libelle != null ? dep.libelle : dep.nom}"></option>
                             </select>
                         </div>
                         <div class="col-md-2">

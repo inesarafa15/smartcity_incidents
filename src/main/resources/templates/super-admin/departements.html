@@ -41,7 +41,7 @@
                     <tbody>
                         <tr th:each="departement : ${departements}">
                             <td th:text="${departement.id}"></td>
-                            <td th:text="${departement.nom}"></td>
+                            <td th:text="${departement.libelle != null ? departement.libelle : departement.nom}"></td>
                             <td th:text="${departement.description}"></td>
                             <td>
                                 <span th:if="${departement.actif}" class="badge bg-success">Actif</span>

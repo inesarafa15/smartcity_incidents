@@ -49,7 +49,7 @@
                             <td th:text="${admin.prenom}"></td>
                             <td th:text="${admin.email}"></td>
                             <td>
-                                <span th:if="${admin.departement != null}" th:text="${admin.departement.nom}"></span>
+                                <span th:if="${admin.departement != null}" th:text="${admin.departement.libelle != null ? admin.departement.libelle : admin.departement.nom}"></span>
                                 <span th:unless="${admin.departement != null}" class="text-muted">Non affecté</span>
                             </td>
                             <td>
@@ -98,7 +98,7 @@
                                 <option value="">Sélectionner un département</option>
                                 <option th:each="dep : ${departements}" 
                                         th:value="${dep.id}" 
-                                        th:text="${dep.nom}"
+                                        th:text="${dep.libelle != null ? dep.libelle : dep.nom}"
                                         th:selected="${admin.departement != null && admin.departement.id == dep.id}"></option>
                             </select>
                         </div>

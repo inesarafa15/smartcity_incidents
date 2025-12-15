@@ -26,15 +26,18 @@ public class Departement {
     
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private CategorieDepartement nom;
     
     @NotBlank(message = "La description est obligatoire")
     @Column(columnDefinition = "TEXT")
     private String description;
-    
+
     @Column(nullable = false)
     private boolean actif = true;
+
+    @Column
+    private String libelle;
     
     // Relation avec les agents municipaux
     @OneToMany(mappedBy = "departement", cascade = CascadeType.ALL)

@@ -52,6 +52,7 @@ public class SuperAdminService {
         departement.setNom(nom);
         departement.setDescription(description);
         departement.setActif(true);
+        departement.setLibelle(nom.name());
         
         return departementRepository.save(departement);
     }
@@ -149,6 +150,7 @@ public class SuperAdminService {
         departement.setNom(categorie);
         departement.setDescription(description != null ? description : "Département créé automatiquement");
         departement.setActif(true);
+        departement.setLibelle(nomDepartement.toUpperCase());
         
         return departementRepository.save(departement);
     }
@@ -333,7 +335,7 @@ public class SuperAdminService {
         List<Departement> departements = departementRepository.findAll();
         for (Departement dep : departements) {
             long count = incidentRepository.findByDepartementId(dep.getId()).size();
-            parDepartement.put(dep.getNom().name(), count);
+            parDepartement.put(dep.getLibelle() != null ? dep.getLibelle() : dep.getNom().name(), count);
         }
         return parDepartement;
     }
@@ -346,7 +348,7 @@ public class SuperAdminService {
                     .stream()
                     .filter(u -> u.getRole() == RoleType.ADMINISTRATEUR)
                     .count();
-            parDepartement.put(dep.getNom().name(), count);
+            parDepartement.put(dep.getLibelle() != null ? dep.getLibelle() : dep.getNom().name(), count);
         }
         return parDepartement;
     }
@@ -359,7 +361,7 @@ public class SuperAdminService {
                     .stream()
                     .filter(u -> u.getRole() == RoleType.AGENT_MUNICIPAL)
                     .count();
-            parDepartement.put(dep.getNom().name(), count);
+            parDepartement.put(dep.getLibelle() != null ? dep.getLibelle() : dep.getNom().name(), count);
         }
         return parDepartement;
     }

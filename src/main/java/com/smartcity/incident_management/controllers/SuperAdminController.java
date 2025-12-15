@@ -52,11 +52,21 @@ public class SuperAdminController {
     }
     
     @PostMapping("/departements/nouveau")
-    public String creerDepartement(@RequestParam CategorieDepartement nom,
+    public String creerDepartement(@RequestParam String nom,
                                    @RequestParam String description,
+                                   @RequestParam(required = false) String nouveauDepartementNom,
                                    RedirectAttributes redirectAttributes) {
         try {
-            superAdminService.creerDepartement(nom, description);
+            if ("AUTRE".equals(nom)) {
+                if (nouveauDepartementNom == null || nouveauDepartementNom.trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "Veuillez saisir le nom du nouveau département");
+                    return "redirect:/super-admin/departements/nouveau";
+                }
+                superAdminService.creerDepartementAvecNom(nouveauDepartementNom, description);
+            } else {
+                CategorieDepartement categorie = CategorieDepartement.valueOf(nom);
+                superAdminService.creerDepartement(categorie, description);
+            }
             redirectAttributes.addFlashAttribute("success", "Département créé avec succès");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -130,9 +140,7 @@ public class SuperAdminController {
     
     @PostMapping("/administrateurs/nouveau")
     public String creerAdministrateur(@Valid @ModelAttribute InscriptionDTO dto,
-                                     @RequestParam(required = false) String departementId,
-                                     @RequestParam(required = false) String nouveauDepartementNom,
-                                     @RequestParam(required = false) String nouveauDepartementDescription,
+                                     @RequestParam String departementId,
                                      BindingResult result,
                                      Model model,
                                      RedirectAttributes redirectAttributes) {
@@ -143,30 +151,14 @@ public class SuperAdminController {
         }
         
         try {
-            Long finalDepartementId = null;
-            
-            // Si "AUTRE" est sélectionné et un nouveau nom est fourni
-            if ("AUTRE".equals(departementId) && nouveauDepartementNom != null && !nouveauDepartementNom.trim().isEmpty()) {
-                Departement nouveauDepartement = superAdminService.creerDepartementAvecNom(
-                    nouveauDepartementNom, 
-                    nouveauDepartementDescription != null ? nouveauDepartementDescription : ""
-                );
-                finalDepartementId = nouveauDepartement.getId();
-            } else if (departementId != null && !departementId.isEmpty() && !"AUTRE".equals(departementId)) {
-                // Département existant sélectionné
-                try {
-                    finalDepartementId = Long.parseLong(departementId);
-                } catch (NumberFormatException e) {
-                    redirectAttributes.addFlashAttribute("error", "Département invalide");
-                    return "redirect:/super-admin/administrateurs/nouveau";
-                }
-            }
-            
-            if (finalDepartementId == null) {
-                redirectAttributes.addFlashAttribute("error", "Le département est obligatoire");
+            Long finalDepartementId;
+            try {
+                finalDepartementId = Long.parseLong(departementId);
+            } catch (NumberFormatException e) {
+                redirectAttributes.addFlashAttribute("error", "Département invalide");
                 return "redirect:/super-admin/administrateurs/nouveau";
             }
-            
+
             superAdminService.creerAdministrateur(finalDepartementId, dto);
             redirectAttributes.addFlashAttribute("success", "Administrateur créé avec succès");
         } catch (Exception e) {

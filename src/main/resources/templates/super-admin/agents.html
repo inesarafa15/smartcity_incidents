@@ -87,7 +87,7 @@
                         <p class="text-muted mb-3">
                             <strong>Agent:</strong> <span th:text="${agent.prenom + ' ' + agent.nom}"></span><br>
                             <strong>Département actuel:</strong> 
-                            <span th:if="${agent.departement != null}" th:text="${agent.departement.nom}"></span>
+                            <span th:if="${agent.departement != null}" th:text="${agent.departement.libelle != null ? agent.departement.libelle : agent.departement.nom}"></span>
                             <span th:unless="${agent.departement != null}" class="text-muted">Non affecté</span>
                         </p>
                         <div class="mb-3">
@@ -96,7 +96,7 @@
                                 <option value="">Sélectionner un département</option>
                                 <option th:each="dep : ${departements}" 
                                         th:value="${dep.id}" 
-                                        th:text="${dep.nom}"
+                                        th:text="${dep.libelle != null ? dep.libelle : dep.nom}"
                                         th:selected="${agent.departement != null && agent.departement.id == dep.id}"></option>
                             </select>
                         </div>
