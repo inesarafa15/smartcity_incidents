@@ -31,6 +31,27 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
            "(:priorite IS NULL OR i.priorite = :priorite) AND " +
            "(:quartierId IS NULL OR i.quartier.id = :quartierId) AND " +
            "(:departementId IS NULL OR i.departement.id = :departementId) AND " +
+           "(:agentId IS NULL OR i.agentAssigne.id = :agentId) AND " +
+           "(:dateDebut IS NULL OR i.dateCreation >= :dateDebut) AND " +
+           "(:dateFin IS NULL OR i.dateCreation <= :dateFin) AND " +
+           "(:keyword IS NULL OR LOWER(i.titre) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(i.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(i.adresseTextuelle) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Incident> findWithFiltersAndKeyword(
+        @Param("statut") StatutIncident statut,
+        @Param("priorite") PrioriteIncident priorite,
+        @Param("quartierId") Long quartierId,
+        @Param("departementId") Long departementId,
+        @Param("agentId") Long agentId,
+        @Param("dateDebut") LocalDateTime dateDebut,
+        @Param("dateFin") LocalDateTime dateFin,
+        @Param("keyword") String keyword,
+        Pageable pageable
+    );
+
+    @Query("SELECT i FROM Incident i WHERE " +
+           "(:statut IS NULL OR i.statut = :statut) AND " +
+           "(:priorite IS NULL OR i.priorite = :priorite) AND " +
+           "(:quartierId IS NULL OR i.quartier.id = :quartierId) AND " +
+           "(:departementId IS NULL OR i.departement.id = :departementId) AND " +
            "(:dateDebut IS NULL OR i.dateCreation >= :dateDebut) AND " +
            "(:dateFin IS NULL OR i.dateCreation <= :dateFin)")
     Page<Incident> findWithFilters(
@@ -40,6 +61,19 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
         @Param("departementId") Long departementId,
         @Param("dateDebut") LocalDateTime dateDebut,
         @Param("dateFin") LocalDateTime dateFin,
+        Pageable pageable
+    );
+
+    @Query("SELECT i FROM Incident i WHERE " +
+           "i.agentAssigne.id = :agentId AND " +
+           "(:statut IS NULL OR i.statut = :statut) AND " +
+           "(:priorite IS NULL OR i.priorite = :priorite) AND " +
+           "(:departementId IS NULL OR i.departement.id = :departementId)")
+    Page<Incident> findAssignedToAgentWithFilters(
+        @Param("agentId") Long agentId,
+        @Param("statut") StatutIncident statut,
+        @Param("priorite") PrioriteIncident priorite,
+        @Param("departementId") Long departementId,
         Pageable pageable
     );
 }

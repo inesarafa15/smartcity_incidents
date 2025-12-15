@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails Incident - Agent Municipal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+    <style>
+        .incident-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .detail-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .detail-card .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+        }
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        .photo-thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .photo-thumbnail:hover {
+            transform: scale(1.05);
+        }
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007bff;
+        }
+        .action-buttons .btn {
+            min-width: 150px;
+            margin: 5px;
+        }
+        .map-container {
+            height: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+        .comment-box {
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        .agent-info {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
+    
+    <div class="main-content">
+        <div class="container-fluid p-4">
+            <!-- Messages Flash -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- En-tête avec informations principales -->
+            <div class="incident-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb bg-transparent p-0 mb-2">
+                                <li class="breadcrumb-item"><a th:href="@{/agent/dashboard}" class="text-white">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/agent/incidents}" class="text-white">Incidents Département</a></li>
+                                <li class="breadcrumb-item active text-white" aria-current="page">Détails</li>
+                            </ol>
+                        </nav>
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span th:text="${incident.titre}">Titre de l'incident</span>
+                        </h1>
+                        <p class="mb-0">ID: #<span th:text="${incident.id}">000</span></p>
+                    </div>
+                    <div class="text-end">
+                        <span class="status-badge d-inline-block mb-2"
+                              th:classappend="${incident.statut.name() == 'SIGNALE'} ? 'bg-secondary' : 
+                                            ${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info' :
+                                            ${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning text-dark' :
+                                            ${incident.statut.name() == 'RESOLU'} ? 'bg-success' : 'bg-dark'"
+                              th:text="${incident.statut.name()}">
+                            STATUT
+                        </span>
+                        <br>
+                        <span class="status-badge d-inline-block"
+                              th:classappend="${incident.priorite.name() == 'BASSE'} ? 'bg-secondary' :
+                                            ${incident.priorite.name() == 'MOYENNE'} ? 'bg-primary' :
+                                            ${incident.priorite.name() == 'HAUTE'} ? 'bg-warning text-dark' :
+                                            ${incident.priorite.name() == 'URGENTE'} ? 'bg-danger' : 'bg-dark'"
+                              th:text="${incident.priorite.name()}">
+                            PRIORITE
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Colonne gauche - Informations et Actions -->
+                <div class="col-lg-8">
+                    <!-- Actions selon le statut -->
+                    <div class="card detail-card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-cogs"></i> Actions Disponibles
+                        </div>
+                        <div class="card-body">
+                            <div class="row action-buttons text-center">
+                                <!-- Si l'incident est SIGNALE et (non assigné OU assigné à cet agent) -->
+                                <div th:if="${incident.statut != null && incident.statut.name() == 'SIGNALE' && (incident.agentAssigne == null || incident.agentAssigne.id == agent.id)}" 
+                                     class="col-md-4 mb-2">
+                                    <form th:action="@{/agent/incidents/{id}/prendre-en-charge(id=${incident.id})}" 
+                                          method="post"
+                                          onsubmit="return confirm('Voulez-vous prendre en charge cet incident ?');">
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="fas fa-hand-paper"></i><br>
+                                            Prendre en charge
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Si l'incident est PRIS_EN_CHARGE et assigné à cet agent -->
+                                <div th:if="${incident.statut != null && incident.statut.name() == 'PRIS_EN_CHARGE' && incident.agentAssigne != null && incident.agentAssigne.id == agent.id}" 
+                                     class="col-md-4 mb-2">
+                                    <form th:action="@{/agent/incidents/{id}/en-resolution(id=${incident.id})}" 
+                                          method="post"
+                                          onsubmit="return confirm('Voulez-vous mettre cet incident en résolution ?');">
+                                        <button type="submit" class="btn btn-warning btn-lg w-100">
+                                            <i class="fas fa-tools"></i><br>
+                                            Mettre en résolution
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Si l'incident est EN_RESOLUTION et assigné à cet agent -->
+                                <div th:if="${incident.statut != null && incident.statut.name() == 'EN_RESOLUTION' && incident.agentAssigne != null && incident.agentAssigne.id == agent.id}" 
+                                     class="col-md-4 mb-2">
+                                    <form th:action="@{/agent/incidents/{id}/resolu(id=${incident.id})}" 
+                                          method="post"
+                                          onsubmit="return confirm('Confirmez-vous que cet incident est résolu ?');">
+                                        <button type="submit" class="btn btn-success btn-lg w-100">
+                                            <i class="fas fa-check-circle"></i><br>
+                                            Marquer résolu
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Bouton pour envoyer une mise à jour au citoyen -->
+                                <div th:if="${incident.agentAssigne != null && incident.agentAssigne.id == agent.id}" 
+                                     class="col-md-4 mb-2">
+                                    <button type="button" class="btn btn-info btn-lg w-100" data-bs-toggle="modal" data-bs-target="#updateModal">
+                                        <i class="fas fa-envelope"></i><br>
+                                        Envoyer mise à jour
+                                    </button>
+                                </div>
+                                
+                                <!-- Bouton pour ajouter un commentaire -->
+                                <div class="col-md-4 mb-2">
+                                    <button type="button" class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#commentModal">
+                                        <i class="fas fa-comment"></i><br>
+                                        Ajouter un commentaire
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description et détails -->
+                    <div class="card detail-card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-info-circle"></i> Description détaillée
+                        </div>
+                        <div class="card-body">
+                            <p th:text="${incident.description}">Description de l'incident...</p>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-map-marker-alt text-primary"></i> Localisation</h6>
+                                    <p th:text="${incident.adresseTextuelle}">Adresse...</p>
+                                    
+                                    <div th:if="${incident.latitude != null && incident.longitude != null}" 
+                                         class="map-container mt-2">
+                                        <!-- Vous pouvez intégrer une carte ici (Google Maps, Leaflet, etc.) -->
+                                        <div class="d-flex align-items-center justify-content-center h-100">
+                                            <i class="fas fa-map-marked-alt fa-3x text-muted"></i>
+                                            <div class="ms-3">
+                                                <p class="mb-0">Coordonnées GPS:</p>
+                                                <small th:text="${incident.latitude} + ', ' + ${incident.longitude}"></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-building text-primary"></i> Répartition administrative</h6>
+                                    <div class="mb-2">
+                                        <strong>Département:</strong>
+                                        <span th:text="${incident.departement.nom}">Département</span>
+                                    </div>
+                                    <div>
+                                        <strong>Quartier:</strong>
+                                        <span th:text="${incident.quartier.nom}">Quartier</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Photos -->
+                    <div th:if="${incident.photos != null && !incident.photos.isEmpty()}" class="card detail-card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-images text-primary"></i> Photos de l'incident
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div th:each="photo : ${incident.photos}" class="col-md-4 mb-3">
+                                    <img th:src="@{'/' + ${photo.cheminFichier}}" 
+                                         class="photo-thumbnail"
+                                         alt="Photo incident"
+                                         data-bs-toggle="modal" 
+                                         data-bs-target="#imageModal"
+                                         th:data-bs-src="@{'/' + ${photo.cheminFichier}}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historique des statuts -->
+                    <div class="card detail-card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-history text-primary"></i> Historique des statuts
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <h6>Signalé</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy à HH:mm')}">Date</span>
+                                    </small>
+                                </div>
+                                
+                                <div th:if="${incident.agentAssigne != null}" class="timeline-item">
+                                    <h6>Assigné à un agent</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-user-check"></i>
+                                        <span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span>
+                                    </small>
+                                </div>
+                                
+                                <div th:if="${incident.statut != null && incident.statut.name() == 'PRIS_EN_CHARGE'}" class="timeline-item">
+                                    <h6>Pris en charge</h6>
+                                    <small class="text-muted">
+                                        Statut actuel
+                                    </small>
+                                </div>
+                                
+                                <div th:if="${incident.statut != null && incident.statut.name() == 'EN_RESOLUTION'}" class="timeline-item">
+                                    <h6>En résolution</h6>
+                                    <small class="text-muted">
+                                        Statut actuel
+                                    </small>
+                                </div>
+                                
+                                <div th:if="${incident.statut != null && incident.statut.name() == 'RESOLU'}" class="timeline-item">
+                                    <h6>Résolu</h6>
+                                    <small class="text-muted">
+                                        Statut actuel
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonne droite - Informations contextuelles -->
+                <div class="col-lg-4">
+                    <!-- Informations du citoyen -->
+                    <div class="card detail-card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-user text-primary"></i> Informations du citoyen
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-user-circle fa-4x text-primary mb-3"></i>
+                                <h5 th:text="${incident.auteur.prenom + ' ' + incident.auteur.nom}">Citoyen</h5>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-envelope"></i>
+                                    <span th:text="${incident.auteur.email}">email@example.com</span>
+                                </p>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#contactModal">
+                                <i class="fas fa-comment-medical"></i> Contacter le citoyen
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Informations temporelles -->
+                    <div class="card detail-card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-clock text-primary"></i> Informations temporelles
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong><i class="fas fa-calendar-plus"></i> Date de création:</strong><br>
+                                <span th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm')}">Date</span>
+                            </div>
+                            <div th:if="${incident.dateDerniereMiseAJour != null}">
+                                <strong><i class="fas fa-calendar-check"></i> Dernière mise à jour:</strong><br>
+                                <span th:text="${#temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm')}">Date</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations agent assigné -->
+                    <div th:if="${incident.agentAssigne != null}" class="agent-info mb-4">
+                        <h5><i class="fas fa-user-shield"></i> Agent assigné</h5>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-circle fa-3x me-3"></i>
+                            <div>
+                                <h6 th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</h6>
+                                <p class="mb-0">
+                                    <i class="fas fa-id-badge"></i>
+                                    <span th:text="${incident.agentAssigne.matricule ?: 'N/A'}">Matricule</span>
+                                </p>
+                                <p class="mb-0">
+                                    <i class="fas fa-phone"></i>
+                                    <span th:text="${incident.agentAssigne.telephone ?: 'Non renseigné'}">Téléphone</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Commentaires récents -->
+                    <div class="card detail-card">
+                        <div class="card-header">
+                            <i class="fas fa-comments text-primary"></i> Derniers commentaires
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${incident.notificationsIncident != null && !incident.notificationsIncident.isEmpty()}">
+                                <div th:each="notification : ${incident.notificationsIncident}" 
+                                     th:if="${#lists.size(incident.notificationsIncident) <= 3}">
+                                    <div class="comment-box mb-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user"></i>
+                                            <span th:if="${notification.expediteur != null}"
+                                                  th:text="${notification.expediteur.prenom + ' ' + notification.expediteur.nom}">
+                                                Utilisateur
+                                            </span>
+                                            <span th:if="${notification.expediteur == null}">Système</span>
+                                            - 
+                                            <i class="fas fa-clock"></i>
+                                            <span th:text="${#temporals.format(notification.dateEnvoi, 'dd/MM HH:mm')}">Date</span>
+                                        </small>
+                                        <p class="mb-0 mt-2" th:text="${notification.contenu}">Contenu du commentaire...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${incident.notificationsIncident == null || incident.notificationsIncident.isEmpty()}" 
+                                 class="text-center text-muted">
+                                <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                                <p>Aucun commentaire pour le moment</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour l'image en grand -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Photo de l'incident</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" class="img-fluid" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter un commentaire -->
+    <div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/agent/incidents/{id}/commenter(id=${incident.id})}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-comment-medical"></i> Ajouter un commentaire</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="commentaire" class="form-label">Commentaire (interne)</label>
+                            <textarea class="form-control" id="commentaire" name="commentaire" 
+                                      rows="4" placeholder="Ajoutez des détails sur votre intervention..." required></textarea>
+                            <small class="text-muted">Ce commentaire sera visible par les autres agents du département.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour envoyer une mise à jour au citoyen -->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/agent/incidents/{id}/envoyer-mise-a-jour(id=${incident.id})}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-envelope"></i> Envoyer une mise à jour au citoyen</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Destinataire</label>
+                            <input type="text" class="form-control" 
+                                   th:value="${incident.auteur.prenom + ' ' + incident.auteur.nom}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" id="message" name="message" 
+                                      rows="5" placeholder="Renseignez le citoyen sur l'avancement de la résolution de son incident..." required>
+Bonjour,
+
+Concernant votre incident "#[[${incident.id}]] - [[${incident.titre}]]", nous vous informons que :
+
+[Insérez ici les informations sur l'avancement]
+
+Cordialement,
+Le service municipal
+                            </textarea>
+                            <small class="text-muted">Ce message sera envoyé par email et notification à l'application.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Envoyer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour contacter le citoyen -->
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-comment-medical"></i> Contacter le citoyen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-circle fa-5x text-primary mb-3"></i>
+                        <h5 th:text="${incident.auteur.prenom + ' ' + incident.auteur.nom}">Citoyen</h5>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="text" class="form-control" th:value="${incident.auteur.email}" readonly>
+                        <small class="text-muted">Utilisez l'email pour une communication formelle</small>
+                    </div>
+                    
+                    <div th:if="${incident.auteur.telephone != null}" class="mb-3">
+                        <label class="form-label"><i class="fas fa-phone"></i> Téléphone</label>
+                        <input type="text" class="form-control" th:value="${incident.auteur.telephone}" readonly>
+                        <small class="text-muted">Pour un contact direct si nécessaire</small>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Conseil :</strong> Privilégiez les communications via le système de notifications pour garder une trace écrite des échanges.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <a th:href="'mailto:' + ${incident.auteur.email}" class="btn btn-primary">
+                        <i class="fas fa-envelope"></i> Envoyer un email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Gestion du modal d'image
+        const imageModal = document.getElementById('imageModal');
+        if (imageModal) {
+            imageModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const imageSrc = button.getAttribute('data-bs-src');
+                const modalImage = imageModal.querySelector('#modalImage');
+                modalImage.src = imageSrc;
+            });
+        }
+
+        // Auto-sélection du texte dans le modal de mise à jour
+        const updateModal = document.getElementById('updateModal');
+        if (updateModal) {
+            updateModal.addEventListener('shown.bs.modal', function () {
+                const textarea = this.querySelector('textarea');
+                if (textarea) {
+                    textarea.focus();
+                    textarea.select();
+                }
+            });
+        }
+
+        // Confirmation avant certaines actions
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusUpdateForms = document.querySelectorAll('form[action*="/prendre-en-charge"], form[action*="/en-resolution"], form[action*="/resolu"]');
+            statusUpdateForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    if (!confirm('Êtes-vous sûr de vouloir effectuer cette action ?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

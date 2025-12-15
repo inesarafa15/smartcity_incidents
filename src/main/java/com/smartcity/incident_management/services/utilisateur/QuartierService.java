@@ -19,7 +19,7 @@ public class QuartierService {
     public Quartier creer(String nom, String description, String codePostal) {
         Quartier quartier = new Quartier();
         quartier.setNom(nom);
-        quartier.setDescription(description);
+        //quartier.setDescription(description);
         quartier.setCodePostal(codePostal);
         
         return quartierRepository.save(quartier);

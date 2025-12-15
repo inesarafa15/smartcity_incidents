@@ -154,5 +154,16 @@ public class EmailService {
         message.setText(text);
         mailSender.send(message);
     }
+
+	public void envoyerEmailMiseAJour(Utilisateur auteur, Incident incident, Utilisateur agent, String message) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void sendNotificationEmail(String email, String string, String message) {
+		// TODO Auto-generated method stub
+		
+	}
+    
 }
 
