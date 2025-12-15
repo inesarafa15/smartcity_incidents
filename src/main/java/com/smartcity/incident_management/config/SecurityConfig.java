@@ -1,5 +1,6 @@
 package com.smartcity.incident_management.config;
 
+import com.smartcity.incident_management.security.OAuth2AuthenticationSuccessHandler;
 import com.smartcity.incident_management.security.UserDetailsServiceImpl;
 import com.smartcity.incident_management.services.oauth2.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;

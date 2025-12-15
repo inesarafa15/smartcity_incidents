@@ -28,8 +28,8 @@ public class Quartier {
     @Column(nullable = false)
     private String nom;
     
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    //@Column(columnDefinition = "TEXT")
+    //private String description;
     
     @NotBlank(message = "Le code postal est obligatoire")
     @Size(min = 5, max = 10)

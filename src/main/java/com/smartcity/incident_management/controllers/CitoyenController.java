@@ -85,7 +85,7 @@ public class CitoyenController {
         
         // Filtrer côté serveur si nécessaire (pour simplifier, on filtre après récupération)
         if (statut != null && !statut.isEmpty()) {
-            incidents = incidents.map(incident -> {
+            incidents = (Page<Incident>) incidents.map(incident -> {
                 if (incident.getStatut().name().equals(statut)) {
                     return incident;
                 }
@@ -94,7 +94,7 @@ public class CitoyenController {
         }
         
         if (priorite != null && !priorite.isEmpty()) {
-            incidents = incidents.map(incident -> {
+            incidents = (Page<Incident>) incidents.map(incident -> {
                 if (incident != null && incident.getPriorite().name().equals(priorite)) {
                     return incident;
                 }
