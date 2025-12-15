@@ -21,6 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Service
 @Transactional
@@ -52,6 +56,7 @@ public class SuperAdminService {
         departement.setNom(nom);
         departement.setDescription(description);
         departement.setActif(true);
+        departement.setLibelle(nom.name());
         
         return departementRepository.save(departement);
     }
@@ -82,6 +87,14 @@ public class SuperAdminService {
     
     public List<Departement> tousLesDepartements() {
         return departementRepository.findAll();
+    }
+
+    public Page<Departement> tousLesDepartements(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir != null && sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return departementRepository.findAll(pageable);
     }
     
     public Departement trouverDepartementParId(Long id) {
@@ -149,6 +162,7 @@ public class SuperAdminService {
         departement.setNom(categorie);
         departement.setDescription(description != null ? description : "Département créé automatiquement");
         departement.setActif(true);
+        departement.setLibelle(nomDepartement.toUpperCase());
         
         return departementRepository.save(departement);
     }
@@ -333,7 +347,7 @@ public class SuperAdminService {
         List<Departement> departements = departementRepository.findAll();
         for (Departement dep : departements) {
             long count = incidentRepository.findByDepartementId(dep.getId()).size();
-            parDepartement.put(dep.getNom().name(), count);
+            parDepartement.put(dep.getLibelle() != null ? dep.getLibelle() : dep.getNom().name(), count);
         }
         return parDepartement;
     }
@@ -346,7 +360,7 @@ public class SuperAdminService {
                     .stream()
                     .filter(u -> u.getRole() == RoleType.ADMINISTRATEUR)
                     .count();
-            parDepartement.put(dep.getNom().name(), count);
+            parDepartement.put(dep.getLibelle() != null ? dep.getLibelle() : dep.getNom().name(), count);
         }
         return parDepartement;
     }
@@ -359,7 +373,7 @@ public class SuperAdminService {
                     .stream()
                     .filter(u -> u.getRole() == RoleType.AGENT_MUNICIPAL)
                     .count();
-            parDepartement.put(dep.getNom().name(), count);
+            parDepartement.put(dep.getLibelle() != null ? dep.getLibelle() : dep.getNom().name(), count);
         }
         return parDepartement;
     }
@@ -373,9 +387,25 @@ public class SuperAdminService {
     public List<Utilisateur> tousLesAdministrateurs() {
         return utilisateurRepository.findByRole(RoleType.ADMINISTRATEUR);
     }
+
+    public Page<Utilisateur> tousLesAdministrateurs(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir != null && sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return utilisateurRepository.findByRole(RoleType.ADMINISTRATEUR, pageable);
+    }
     
     public List<Utilisateur> tousLesAgentsMunicipaux() {
         return utilisateurRepository.findByRole(RoleType.AGENT_MUNICIPAL);
+    }
+
+    public Page<Utilisateur> tousLesAgentsMunicipaux(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir != null && sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return utilisateurRepository.findByRole(RoleType.AGENT_MUNICIPAL, pageable);
     }
     
     public Utilisateur trouverUtilisateurParId(Long id) {

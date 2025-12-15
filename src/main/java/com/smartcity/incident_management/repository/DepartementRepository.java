@@ -15,5 +15,3 @@ public interface DepartementRepository extends JpaRepository<Departement, Long> 
     List<Departement> findByActifTrue();
     List<Departement> findByActif(boolean actif);
 }
-
-

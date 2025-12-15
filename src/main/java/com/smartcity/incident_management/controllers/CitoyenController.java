@@ -147,5 +147,3 @@ public class CitoyenController {
         return "citoyen/incident-details";
     }
 }
-
-

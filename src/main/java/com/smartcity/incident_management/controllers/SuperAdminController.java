@@ -40,8 +40,12 @@ public class SuperAdminController {
     // ========== GESTION DES DÉPARTEMENTS ==========
     
     @GetMapping("/departements")
-    public String gestionDepartements(Model model) {
-        model.addAttribute("departements", superAdminService.tousLesDepartements());
+    public String gestionDepartements(@RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "10") int size,
+                                      Model model) {
+        org.springframework.data.domain.Page<com.smartcity.incident_management.entities.Departement> departements =
+                superAdminService.tousLesDepartements(page, size, "nom", "ASC");
+        model.addAttribute("departements", departements);
         return "super-admin/departements";
     }
     
@@ -52,11 +56,21 @@ public class SuperAdminController {
     }
     
     @PostMapping("/departements/nouveau")
-    public String creerDepartement(@RequestParam CategorieDepartement nom,
+    public String creerDepartement(@RequestParam String nom,
                                    @RequestParam String description,
+                                   @RequestParam(required = false) String nouveauDepartementNom,
                                    RedirectAttributes redirectAttributes) {
         try {
-            superAdminService.creerDepartement(nom, description);
+            if ("AUTRE".equals(nom)) {
+                if (nouveauDepartementNom == null || nouveauDepartementNom.trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "Veuillez saisir le nom du nouveau département");
+                    return "redirect:/super-admin/departements/nouveau";
+                }
+                superAdminService.creerDepartementAvecNom(nouveauDepartementNom, description);
+            } else {
+                CategorieDepartement categorie = CategorieDepartement.valueOf(nom);
+                superAdminService.creerDepartement(categorie, description);
+            }
             redirectAttributes.addFlashAttribute("success", "Département créé avec succès");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -114,8 +128,12 @@ public class SuperAdminController {
     // ========== GESTION DES ADMINISTRATEURS ==========
     
     @GetMapping("/administrateurs")
-    public String gestionAdministrateurs(Model model) {
-        model.addAttribute("administrateurs", superAdminService.tousLesAdministrateurs());
+    public String gestionAdministrateurs(@RequestParam(defaultValue = "0") int page,
+                                         @RequestParam(defaultValue = "10") int size,
+                                         Model model) {
+        org.springframework.data.domain.Page<com.smartcity.incident_management.entities.Utilisateur> administrateurs =
+                superAdminService.tousLesAdministrateurs(page, size, "nom", "ASC");
+        model.addAttribute("administrateurs", administrateurs);
         model.addAttribute("departements", superAdminService.tousLesDepartements());
         return "super-admin/administrateurs";
     }
@@ -130,9 +148,7 @@ public class SuperAdminController {
     
     @PostMapping("/administrateurs/nouveau")
     public String creerAdministrateur(@Valid @ModelAttribute InscriptionDTO dto,
-                                     @RequestParam(required = false) String departementId,
-                                     @RequestParam(required = false) String nouveauDepartementNom,
-                                     @RequestParam(required = false) String nouveauDepartementDescription,
+                                     @RequestParam String departementId,
                                      BindingResult result,
                                      Model model,
                                      RedirectAttributes redirectAttributes) {
@@ -143,30 +159,14 @@ public class SuperAdminController {
         }
         
         try {
-            Long finalDepartementId = null;
-            
-            // Si "AUTRE" est sélectionné et un nouveau nom est fourni
-            if ("AUTRE".equals(departementId) && nouveauDepartementNom != null && !nouveauDepartementNom.trim().isEmpty()) {
-                Departement nouveauDepartement = superAdminService.creerDepartementAvecNom(
-                    nouveauDepartementNom, 
-                    nouveauDepartementDescription != null ? nouveauDepartementDescription : ""
-                );
-                finalDepartementId = nouveauDepartement.getId();
-            } else if (departementId != null && !departementId.isEmpty() && !"AUTRE".equals(departementId)) {
-                // Département existant sélectionné
-                try {
-                    finalDepartementId = Long.parseLong(departementId);
-                } catch (NumberFormatException e) {
-                    redirectAttributes.addFlashAttribute("error", "Département invalide");
-                    return "redirect:/super-admin/administrateurs/nouveau";
-                }
-            }
-            
-            if (finalDepartementId == null) {
-                redirectAttributes.addFlashAttribute("error", "Le département est obligatoire");
+            Long finalDepartementId;
+            try {
+                finalDepartementId = Long.parseLong(departementId);
+            } catch (NumberFormatException e) {
+                redirectAttributes.addFlashAttribute("error", "Département invalide");
                 return "redirect:/super-admin/administrateurs/nouveau";
             }
-            
+
             superAdminService.creerAdministrateur(finalDepartementId, dto);
             redirectAttributes.addFlashAttribute("success", "Administrateur créé avec succès");
         } catch (Exception e) {
@@ -245,8 +245,12 @@ public class SuperAdminController {
     // ========== GESTION DES AGENTS MUNICIPAUX ==========
     
     @GetMapping("/agents")
-    public String gestionAgents(Model model) {
-        model.addAttribute("agents", superAdminService.tousLesAgentsMunicipaux());
+    public String gestionAgents(@RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "10") int size,
+                                Model model) {
+        org.springframework.data.domain.Page<com.smartcity.incident_management.entities.Utilisateur> agents =
+                superAdminService.tousLesAgentsMunicipaux(page, size, "nom", "ASC");
+        model.addAttribute("agents", agents);
         model.addAttribute("departements", superAdminService.tousLesDepartements());
         return "super-admin/agents";
     }

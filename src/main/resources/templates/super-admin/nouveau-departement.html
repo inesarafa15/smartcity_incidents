@@ -28,10 +28,16 @@
                     
                     <div class="mb-3">
                         <label for="nom" class="form-label">Nom du département</label>
-                        <select class="form-select" id="nom" name="nom" required>
+                        <select class="form-select" id="nom" name="nom" onchange="toggleAutreNomDepartement()" required>
                             <option value="">Sélectionner un département</option>
                             <option th:each="categorie : ${categories}" th:value="${categorie}" th:text="${categorie}"></option>
                         </select>
+                    </div>
+
+                    <div class="mb-3" id="nouveauNomSection" style="display: none;">
+                        <label for="nouveauDepartementNom" class="form-label">Nom personnalisé du département</label>
+                        <input type="text" class="form-control" id="nouveauDepartementNom" name="nouveauDepartementNom" placeholder="Ex: TRANSPORT, ENVIRONNEMENT">
+                        <small class="form-text text-muted">Le nom sera converti en majuscules automatiquement</small>
                     </div>
 
                     <div class="mb-3">
@@ -48,6 +54,21 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleAutreNomDepartement() {
+            const select = document.getElementById('nom');
+            const section = document.getElementById('nouveauNomSection');
+            const input = document.getElementById('nouveauDepartementNom');
+            if (select.value === 'AUTRE') {
+                section.style.display = 'block';
+                input.required = true;
+            } else {
+                section.style.display = 'none';
+                input.required = false;
+                input.value = '';
+            }
+        }
+    </script>
 </body>
 </html>
 

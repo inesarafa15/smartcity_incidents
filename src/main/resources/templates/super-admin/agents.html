@@ -19,6 +19,21 @@
             <a th:href="@{/super-admin/agents/nouveau}" class="btn btn-primary">Nouvel Agent</a>
         </div>
 
+        <form method="get" action="/super-admin/agents" class="row g-3 mb-3">
+            <div class="col-md-2">
+                <label for="size" class="form-label">Par page</label>
+                <select class="form-select" id="size" name="size">
+                    <option th:value="10" th:selected="${agents != null && agents.size == 10}">10</option>
+                    <option th:value="20" th:selected="${agents != null && agents.size == 20}">20</option>
+                    <option th:value="50" th:selected="${agents != null && agents.size == 50}">50</option>
+                </select>
+            </div>
+            <input type="hidden" name="page" value="0"/>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary">Appliquer</button>
+            </div>
+        </form>
+
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
             <span th:text="${success}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -43,7 +58,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="agent : ${agents}">
+                        <tr th:each="agent : ${agents.content}">
                             <td th:text="${agent.id}"></td>
                             <td th:text="${agent.nom}"></td>
                             <td th:text="${agent.prenom}"></td>
@@ -68,13 +83,26 @@
                         </tr>
                     </tbody>
                 </table>
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${agents.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/super-admin/agents(page=${agents.number - 1}, size=${agents.size})}">Précédent</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, agents.totalPages - 1)}" th:classappend="${i == agents.number} ? 'active'">
+                            <a class="page-link" th:href="@{/super-admin/agents(page=${i}, size=${agents.size})}" th:text="${i + 1}"></a>
+                        </li>
+                        <li class="page-item" th:classappend="${agents.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/super-admin/agents(page=${agents.number + 1}, size=${agents.size})}">Suivant</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
         </div>
     </div>
 
     <!-- Modal pour réaffecter un département -->
-    <div th:each="agent : ${agents}" class="modal fade" th:id="'reaffecterModal' + ${agent.id}" tabindex="-1">
+    <div th:each="agent : ${agents.content}" class="modal fade" th:id="'reaffecterModal' + ${agent.id}" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form th:action="@{/super-admin/agents/{id}/reaffecter-departement(id=${agent.id})}" method="post">
@@ -87,7 +115,7 @@
                         <p class="text-muted mb-3">
                             <strong>Agent:</strong> <span th:text="${agent.prenom + ' ' + agent.nom}"></span><br>
                             <strong>Département actuel:</strong> 
-                            <span th:if="${agent.departement != null}" th:text="${agent.departement.nom}"></span>
+                            <span th:if="${agent.departement != null}" th:text="${agent.departement.libelle != null ? agent.departement.libelle : agent.departement.nom}"></span>
                             <span th:unless="${agent.departement != null}" class="text-muted">Non affecté</span>
                         </p>
                         <div class="mb-3">
@@ -96,7 +124,7 @@
                                 <option value="">Sélectionner un département</option>
                                 <option th:each="dep : ${departements}" 
                                         th:value="${dep.id}" 
-                                        th:text="${dep.nom}"
+                                        th:text="${dep.libelle != null ? dep.libelle : dep.nom}"
                                         th:selected="${agent.departement != null && agent.departement.id == dep.id}"></option>
                             </select>
                         </div>
