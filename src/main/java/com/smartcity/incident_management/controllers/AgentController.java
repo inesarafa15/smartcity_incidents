@@ -8,20 +8,15 @@ import com.smartcity.incident_management.security.SecurityUtils;
 import com.smartcity.incident_management.services.municipalite.IncidentMunicipaliteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/agent")
@@ -36,7 +31,6 @@ public class AgentController {
         try {
             Utilisateur agent = SecurityUtils.getCurrentUser();
             
-            // Vérifier que l'agent existe et a un département
             if (agent == null) {
                 model.addAttribute("error", "Utilisateur non trouvé");
                 return "redirect:/login";
@@ -50,36 +44,26 @@ public class AgentController {
                 return "agent/dashboard";
             }
 
-            // Récupérer les incidents assignés
+            // Récupérer les incidents assignés à l'agent
             List<Incident> incidents = incidentMunicipaliteService.mesIncidentsAssignes(agent);
             
-            // Initialiser les maps pour éviter les valeurs null
             Map<String, Long> parStatut = new HashMap<>();
             Map<String, Long> parPriorite = new HashMap<>();
 
-            // Calculer les statistiques pour les graphiques
             if (incidents != null && !incidents.isEmpty()) {
                 for (Incident incident : incidents) {
-                    // Par statut
                     String statut = incident.getStatut().name();
                     parStatut.put(statut, parStatut.getOrDefault(statut, 0L) + 1);
 
-                    // Par priorité
                     String priorite = incident.getPriorite().name();
                     parPriorite.put(priorite, parPriorite.getOrDefault(priorite, 0L) + 1);
                 }
             }
 
-            // Ajouter tous les attributs au modèle
             model.addAttribute("incidentsAssignes", incidents != null ? incidents : List.of());
             model.addAttribute("incidentsParStatut", parStatut);
             model.addAttribute("incidentsParPriorite", parPriorite);
-            
-            // Log pour debug
-            System.out.println("Dashboard chargé pour l'agent: " + agent.getNom());
-            System.out.println("Nombre d'incidents: " + (incidents != null ? incidents.size() : 0));
-            System.out.println("Statuts: " + parStatut);
-            System.out.println("Priorités: " + parPriorite);
+            model.addAttribute("agent", agent);
             
             return "agent/dashboard";
             
@@ -94,6 +78,74 @@ public class AgentController {
         }
     }
 
+    @GetMapping("/mes-assignations")
+    public String mesAssignations(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String statut,
+            @RequestParam(required = false) String priorite,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "dateCreation") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
+            Model model) {
+        
+        try {
+            Utilisateur agent = SecurityUtils.getCurrentUser();
+            
+            if (agent == null || agent.getDepartement() == null) {
+                model.addAttribute("error", "Vous n'êtes pas assigné à un département");
+                model.addAttribute("incidents", Page.empty());
+                return "agent/mes-assignations";
+            }
+
+            // Calculer les statistiques globales pour l'agent
+            List<Incident> allAssigned = incidentMunicipaliteService.mesIncidentsAssignes(agent);
+            long statTotal = allAssigned.size();
+            long statPrisEnCharge = allAssigned.stream().filter(i -> i.getStatut() == StatutIncident.PRIS_EN_CHARGE).count();
+            long statEnResolution = allAssigned.stream().filter(i -> i.getStatut() == StatutIncident.EN_RESOLUTION).count();
+            long statResolu = allAssigned.stream().filter(i -> i.getStatut() == StatutIncident.RESOLU).count();
+            
+            model.addAttribute("statTotal", statTotal);
+            model.addAttribute("statPrisEnCharge", statPrisEnCharge);
+            model.addAttribute("statEnResolution", statEnResolution);
+            model.addAttribute("statResolu", statResolu);
+
+            // Filtrer uniquement les incidents assignés à cet agent
+            Page<Incident> incidents = incidentMunicipaliteService.filtrerIncidentsDepartement(
+                agent, true, statut, priorite, null, null, keyword, page, size, sortBy, sortDir
+            );
+            
+            model.addAttribute("incidents", incidents);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", incidents.getTotalPages());
+            model.addAttribute("agent", agent);
+            
+            // Paramètres de filtre
+            model.addAttribute("statut", statut);
+            model.addAttribute("priorite", priorite);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("sortBy", sortBy);
+            model.addAttribute("sortDir", sortDir);
+            model.addAttribute("size", size);
+            
+            // Statistiques
+            long enCours = incidents.getContent().stream()
+                .filter(i -> i.getStatut() == StatutIncident.PRIS_EN_CHARGE || 
+                            i.getStatut() == StatutIncident.EN_RESOLUTION)
+                .count();
+            model.addAttribute("incidentsEnCours", enCours);
+            
+            return "agent/mes-assignations";
+            
+        } catch (Exception e) {
+            System.err.println("Erreur dans mes assignations: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Erreur lors du chargement: " + e.getMessage());
+            model.addAttribute("incidents", Page.empty());
+            return "agent/mes-assignations";
+        }
+    }
+
     @GetMapping("/incidents")
     public String incidentsDepartement(
             @RequestParam(defaultValue = "0") int page,
@@ -105,7 +157,7 @@ public class AgentController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "dateCreation") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir,
-            @RequestParam(defaultValue = "mine") String filter,
+            @RequestParam(defaultValue = "all") String filter,
             Model model) {
         
         try {
@@ -114,8 +166,6 @@ public class AgentController {
             if (agent == null || agent.getDepartement() == null) {
                 model.addAttribute("error", "Vous n'êtes pas assigné à un département");
                 model.addAttribute("incidents", Page.empty());
-                model.addAttribute("currentPage", 0);
-                model.addAttribute("totalPages", 0);
                 return "agent/incidents";
             }
 
@@ -128,9 +178,7 @@ public class AgentController {
             model.addAttribute("incidents", incidents);
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", incidents.getTotalPages());
-            model.addAttribute("agent", agent); // Ajouter l'agent au modèle pour les vues
-            
-            // Paramètres de filtre pour la vue
+            model.addAttribute("agent", agent);
             model.addAttribute("statut", statut);
             model.addAttribute("priorite", priorite);
             model.addAttribute("dateDebut", dateDebut);
@@ -146,17 +194,51 @@ public class AgentController {
         } catch (Exception e) {
             System.err.println("Erreur dans incidents département: " + e.getMessage());
             e.printStackTrace();
-            model.addAttribute("error", "Erreur lors du chargement des incidents: " + e.getMessage());
+            model.addAttribute("error", "Erreur: " + e.getMessage());
             model.addAttribute("incidents", Page.empty());
-            model.addAttribute("currentPage", 0);
-            model.addAttribute("totalPages", 0);
             return "agent/incidents";
         }
     }
 
-    @GetMapping("/mes-assignations")
-    public String mesAssignations() {
-        return "redirect:/agent/incidents?filter=mine";
+    @GetMapping("/incidents/{id}")
+    public String detailsIncident(@PathVariable Long id, Model model) {
+        try {
+            Utilisateur agent = SecurityUtils.getCurrentUser();
+            
+            if (agent == null) {
+                model.addAttribute("error", "Utilisateur non trouvé");
+                return "redirect:/login";
+            }
+            
+            Incident incident = incidentMunicipaliteService.getIncidentById(id);
+            
+            if (incident == null) {
+                model.addAttribute("error", "Incident non trouvé");
+                return "redirect:/agent/incidents";
+            }
+            
+            if (agent.getDepartement() == null || 
+                !agent.getDepartement().getId().equals(incident.getDepartement().getId())) {
+                model.addAttribute("error", "Vous n'avez pas accès à cet incident");
+                return "redirect:/agent/incidents";
+            }
+            
+            model.addAttribute("incident", incident);
+            model.addAttribute("agent", agent);
+            
+            // Vérifier si l'agent est assigné à cet incident
+            boolean isAssigned = incident.getAgentAssigne() != null && 
+                                incident.getAgentAssigne().getId().equals(agent.getId());
+            model.addAttribute("isAssigned", isAssigned);
+            
+            return "agent/incident-details";
+            
+        } catch (Exception e) {
+            System.err.println("Erreur détails incident: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Erreur: " + e.getMessage());
+            return "redirect:/agent/incidents";
+        }
     }
 
     @PostMapping("/incidents/{id}/prendre-en-charge")
@@ -218,44 +300,6 @@ public class AgentController {
         }
         return "redirect:/agent/incidents/" + id;
     }
-    
-    @GetMapping("/incidents/{id}")
-    public String detailsIncident(@PathVariable Long id, Model model) {
-        try {
-            Utilisateur agent = SecurityUtils.getCurrentUser();
-            
-            if (agent == null) {
-                model.addAttribute("error", "Utilisateur non trouvé");
-                return "redirect:/login";
-            }
-            
-            Incident incident = incidentMunicipaliteService.getIncidentById(id);
-            
-            // Vérifier si l'agent a accès à cet incident
-            if (incident == null) {
-                model.addAttribute("error", "Incident non trouvé");
-                return "redirect:/agent/incidents";
-            }
-            
-            // Vérifier si l'agent fait partie du département de l'incident
-            if (agent.getDepartement() == null || 
-                !agent.getDepartement().getId().equals(incident.getDepartement().getId())) {
-                model.addAttribute("error", "Vous n'avez pas accès à cet incident");
-                return "redirect:/agent/incidents";
-            }
-            
-            model.addAttribute("incident", incident);
-            model.addAttribute("agent", agent);
-            
-            return "agent/incident";
-            
-        } catch (Exception e) {
-            System.err.println("Erreur dans détails incident: " + e.getMessage());
-            e.printStackTrace();
-            model.addAttribute("error", "Erreur lors du chargement des détails: " + e.getMessage());
-            return "redirect:/agent/incidents";
-        }
-    }
 
     @PostMapping("/incidents/{id}/commenter")
     public String ajouterCommentaire(@PathVariable Long id, @RequestParam String commentaire, RedirectAttributes redirectAttributes) {
@@ -274,11 +318,7 @@ public class AgentController {
     }
 
     @PostMapping("/incidents/{id}/envoyer-mise-a-jour")
-    public String envoyerMiseAJour(@PathVariable Long id, @RequestParam String message, RedirectAttributes redirectAttributes) { // Note: param name in modal form was 'message' ? Let's check modal.
-        // Modal input name was not visible in previous `read` output, wait.
-        // <textarea class="form-control" id="commentaire" name="commentaire" ...> for commentModal
-        // UpdateModal: <form th:action="@{/agent/incidents/{id}/envoyer-mise-a-jour(id=${incident.id})}" method="post">
-        // I need to check the input name in updateModal.
+    public String envoyerMiseAJour(@PathVariable Long id, @RequestParam String message, RedirectAttributes redirectAttributes) {
         try {
             Utilisateur agent = SecurityUtils.getCurrentUser();
             if (agent == null) {
@@ -292,6 +332,4 @@ public class AgentController {
         }
         return "redirect:/agent/incidents/" + id;
     }
-
-
 }
