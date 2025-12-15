@@ -17,6 +17,22 @@
             <a th:href="@{/super-admin/departements/nouveau}" class="btn btn-primary">Nouveau Département</a>
         </div>
 
+        <form method="get" action="/super-admin/departements" class="row g-3 mb-3">
+            <div class="col-md-2">
+                <label for="size" class="form-label">Par page</label>
+                <select class="form-select" id="size" name="size">
+                 <option th:value="2" th:selected="${departements != null && departements.size == 2}">2</option>
+                    <option th:value="10" th:selected="${departements != null && departements.size == 10}">10</option>
+                    <option th:value="20" th:selected="${departements != null && departements.size == 20}">20</option>
+                    <option th:value="50" th:selected="${departements != null && departements.size == 50}">50</option>
+                </select>
+            </div>
+            <input type="hidden" name="page" value="0"/>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary">Appliquer</button>
+            </div>
+        </form>
+
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
             <span th:text="${success}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -39,7 +55,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="departement : ${departements}">
+                        <tr th:each="departement : ${departements.content}">
                             <td th:text="${departement.id}"></td>
                             <td th:text="${departement.libelle != null ? departement.libelle : departement.nom}"></td>
                             <td th:text="${departement.description}"></td>
@@ -61,6 +77,19 @@
                         </tr>
                     </tbody>
                 </table>
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${departements.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/super-admin/departements(page=${departements.number - 1}, size=${departements.size})}">Précédent</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, departements.totalPages - 1)}" th:classappend="${i == departements.number} ? 'active'">
+                            <a class="page-link" th:href="@{/super-admin/departements(page=${i}, size=${departements.size})}" th:text="${i + 1}"></a>
+                        </li>
+                        <li class="page-item" th:classappend="${departements.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/super-admin/departements(page=${departements.number + 1}, size=${departements.size})}">Suivant</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
         </div>

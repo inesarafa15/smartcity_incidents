@@ -40,8 +40,12 @@ public class SuperAdminController {
     // ========== GESTION DES DÉPARTEMENTS ==========
     
     @GetMapping("/departements")
-    public String gestionDepartements(Model model) {
-        model.addAttribute("departements", superAdminService.tousLesDepartements());
+    public String gestionDepartements(@RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "10") int size,
+                                      Model model) {
+        org.springframework.data.domain.Page<com.smartcity.incident_management.entities.Departement> departements =
+                superAdminService.tousLesDepartements(page, size, "nom", "ASC");
+        model.addAttribute("departements", departements);
         return "super-admin/departements";
     }
     
@@ -124,8 +128,12 @@ public class SuperAdminController {
     // ========== GESTION DES ADMINISTRATEURS ==========
     
     @GetMapping("/administrateurs")
-    public String gestionAdministrateurs(Model model) {
-        model.addAttribute("administrateurs", superAdminService.tousLesAdministrateurs());
+    public String gestionAdministrateurs(@RequestParam(defaultValue = "0") int page,
+                                         @RequestParam(defaultValue = "10") int size,
+                                         Model model) {
+        org.springframework.data.domain.Page<com.smartcity.incident_management.entities.Utilisateur> administrateurs =
+                superAdminService.tousLesAdministrateurs(page, size, "nom", "ASC");
+        model.addAttribute("administrateurs", administrateurs);
         model.addAttribute("departements", superAdminService.tousLesDepartements());
         return "super-admin/administrateurs";
     }
@@ -237,8 +245,12 @@ public class SuperAdminController {
     // ========== GESTION DES AGENTS MUNICIPAUX ==========
     
     @GetMapping("/agents")
-    public String gestionAgents(Model model) {
-        model.addAttribute("agents", superAdminService.tousLesAgentsMunicipaux());
+    public String gestionAgents(@RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "10") int size,
+                                Model model) {
+        org.springframework.data.domain.Page<com.smartcity.incident_management.entities.Utilisateur> agents =
+                superAdminService.tousLesAgentsMunicipaux(page, size, "nom", "ASC");
+        model.addAttribute("agents", agents);
         model.addAttribute("departements", superAdminService.tousLesDepartements());
         return "super-admin/agents";
     }

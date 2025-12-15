@@ -68,14 +68,14 @@
                 <nav th:if="${incidents.totalPages > 1}">
                     <ul class="pagination justify-content-center">
                         <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
-                            <a class="page-link" th:href="@{/admin/incidents(page=${incidents.number - 1})}">Précédent</a>
+                            <a class="page-link" th:href="@{/admin/incidents(page=${incidents.number - 1}, size=${incidents.size})}">Précédent</a>
                         </li>
                         <li class="page-item" th:each="i : ${#numbers.sequence(0, incidents.totalPages - 1)}" 
                             th:classappend="${i == incidents.number} ? 'active'">
-                            <a class="page-link" th:href="@{/admin/incidents(page=${i})}" th:text="${i + 1}"></a>
+                            <a class="page-link" th:href="@{/admin/incidents(page=${i}, size=${incidents.size})}" th:text="${i + 1}"></a>
                         </li>
                         <li class="page-item" th:classappend="${incidents.last} ? 'disabled'">
-                            <a class="page-link" th:href="@{/admin/incidents(page=${incidents.number + 1})}">Suivant</a>
+                            <a class="page-link" th:href="@{/admin/incidents(page=${incidents.number + 1}, size=${incidents.size})}">Suivant</a>
                         </li>
                     </ul>
                 </nav>

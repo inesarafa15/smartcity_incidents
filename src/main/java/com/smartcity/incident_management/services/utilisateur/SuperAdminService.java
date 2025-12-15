@@ -21,6 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Service
 @Transactional
@@ -83,6 +87,14 @@ public class SuperAdminService {
     
     public List<Departement> tousLesDepartements() {
         return departementRepository.findAll();
+    }
+
+    public Page<Departement> tousLesDepartements(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir != null && sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return departementRepository.findAll(pageable);
     }
     
     public Departement trouverDepartementParId(Long id) {
@@ -375,9 +387,25 @@ public class SuperAdminService {
     public List<Utilisateur> tousLesAdministrateurs() {
         return utilisateurRepository.findByRole(RoleType.ADMINISTRATEUR);
     }
+
+    public Page<Utilisateur> tousLesAdministrateurs(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir != null && sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return utilisateurRepository.findByRole(RoleType.ADMINISTRATEUR, pageable);
+    }
     
     public List<Utilisateur> tousLesAgentsMunicipaux() {
         return utilisateurRepository.findByRole(RoleType.AGENT_MUNICIPAL);
+    }
+
+    public Page<Utilisateur> tousLesAgentsMunicipaux(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir != null && sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return utilisateurRepository.findByRole(RoleType.AGENT_MUNICIPAL, pageable);
     }
     
     public Utilisateur trouverUtilisateurParId(Long id) {

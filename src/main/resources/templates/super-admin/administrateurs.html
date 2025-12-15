@@ -19,6 +19,21 @@
             <a th:href="@{/super-admin/administrateurs/nouveau}" class="btn btn-primary">Nouvel Administrateur</a>
         </div>
 
+        <form method="get" action="/super-admin/administrateurs" class="row g-3 mb-3">
+            <div class="col-md-2">
+                <label for="size" class="form-label">Par page</label>
+                <select class="form-select" id="size" name="size">
+                    <option th:value="10" th:selected="${administrateurs != null && administrateurs.size == 10}">10</option>
+                    <option th:value="20" th:selected="${administrateurs != null && administrateurs.size == 20}">20</option>
+                    <option th:value="50" th:selected="${administrateurs != null && administrateurs.size == 50}">50</option>
+                </select>
+            </div>
+            <input type="hidden" name="page" value="0"/>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary">Appliquer</button>
+            </div>
+        </form>
+
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
             <span th:text="${success}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -43,7 +58,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="admin : ${administrateurs}">
+                        <tr th:each="admin : ${administrateurs.content}">
                             <td th:text="${admin.id}"></td>
                             <td th:text="${admin.nom}"></td>
                             <td th:text="${admin.prenom}"></td>
@@ -71,12 +86,25 @@
                         </tr>
                     </tbody>
                 </table>
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${administrateurs.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/super-admin/administrateurs(page=${administrateurs.number - 1}, size=${administrateurs.size})}">Précédent</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, administrateurs.totalPages - 1)}" th:classappend="${i == administrateurs.number} ? 'active'">
+                            <a class="page-link" th:href="@{/super-admin/administrateurs(page=${i}, size=${administrateurs.size})}" th:text="${i + 1}"></a>
+                        </li>
+                        <li class="page-item" th:classappend="${administrateurs.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/super-admin/administrateurs(page=${administrateurs.number + 1}, size=${administrateurs.size})}">Suivant</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
 
     <!-- Modal pour réaffecter un département -->
-    <div th:each="admin : ${administrateurs}" class="modal fade" th:id="'reaffecterModal' + ${admin.id}" tabindex="-1">
+    <div th:each="admin : ${administrateurs.content}" class="modal fade" th:id="'reaffecterModal' + ${admin.id}" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form th:action="@{/super-admin/administrateurs/{id}/affecter-departement(id=${admin.id})}" method="post">

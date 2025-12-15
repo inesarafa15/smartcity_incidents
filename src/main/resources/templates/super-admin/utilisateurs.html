@@ -56,6 +56,15 @@
                             <label for="recherche" class="form-label">Recherche</label>
                             <input type="text" class="form-control" id="recherche" name="recherche" placeholder="Nom, prénom, email">
                         </div>
+                        <div class="col-md-2">
+                            <label for="size" class="form-label">Par page</label>
+                            <select class="form-select" id="size" name="size">
+                           <option th:value="2" th:selected="${filtres != null && filtres.size == 2}">2</option>
+                                <option th:value="10" th:selected="${filtres != null && filtres.size == 10}">10</option>
+                                <option th:value="20" th:selected="${filtres != null && filtres.size == 20}">20</option>
+                                <option th:value="50" th:selected="${filtres != null && filtres.size == 50}">50</option>
+                            </select>
+                        </div>
                         <div class="col-md-1 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary">Filtrer</button>
                         </div>
@@ -120,15 +129,15 @@
                         <nav th:if="${utilisateurs.totalPages > 1}">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item" th:classappend="${filtres.page == 0} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${filtres.page - 1}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}">Précédent</a>
+                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${filtres.page - 1}, size=${filtres.size}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}">Précédent</a>
                                 </li>
                                 <li th:each="i : ${#numbers.sequence(0, utilisateurs.totalPages - 1)}" 
                                     class="page-item" 
                                     th:classappend="${i == filtres.page} ? 'active'">
-                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${i}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}" th:text="${i + 1}"></a>
+                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${i}, size=${filtres.size}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}" th:text="${i + 1}"></a>
                                 </li>
                                 <li class="page-item" th:classappend="${filtres.page == utilisateurs.totalPages - 1} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${filtres.page + 1}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}">Suivant</a>
+                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${filtres.page + 1}, size=${filtres.size}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}">Suivant</a>
                                 </li>
                             </ul>
                         </nav>

@@ -38,6 +38,14 @@
                             </select>
                         </div>
                         <div class="col-md-2">
+                            <label for="size" class="form-label">Par page</label>
+                            <select class="form-select" id="size" name="size">
+                                <option th:value="10" th:selected="${filtres != null && filtres.size == 10}">10</option>
+                                <option th:value="20" th:selected="${filtres != null && filtres.size == 20}">20</option>
+                                <option th:value="50" th:selected="${filtres != null && filtres.size == 50}">50</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
                             <label for="priorite" class="form-label">Priorité</label>
                             <select class="form-select" id="priorite" name="priorite">
                                 <option value="">Toutes</option>
@@ -137,15 +145,15 @@
                         <nav th:if="${incidents.totalPages > 1}">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item" th:classappend="${filtres.page == 0} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${filtres.page - 1}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}">Précédent</a>
+                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${filtres.page - 1}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}">Précédent</a>
                                 </li>
                                 <li th:each="i : ${#numbers.sequence(0, incidents.totalPages - 1)}" 
                                     class="page-item" 
                                     th:classappend="${i == filtres.page} ? 'active'">
-                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${i}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}" th:text="${i + 1}"></a>
+                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${i}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}" th:text="${i + 1}"></a>
                                 </li>
                                 <li class="page-item" th:classappend="${filtres.page == incidents.totalPages - 1} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${filtres.page + 1}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}">Suivant</a>
+                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${filtres.page + 1}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}">Suivant</a>
                                 </li>
                             </ul>
                         </nav>
