@@ -2,6 +2,7 @@ package com.smartcity.incident_management.controllers;
 
 import com.smartcity.incident_management.dto.RapportDTO;
 import com.smartcity.incident_management.entities.Utilisateur;
+import com.smartcity.incident_management.entities.Incident;
 import com.smartcity.incident_management.security.SecurityUtils;
 import com.smartcity.incident_management.services.utilisateur.AdminService;
 import com.smartcity.incident_management.services.utilisateur.QuartierService;
@@ -57,6 +58,45 @@ public class AdminController {
         model.addAttribute("incidents", incidents);
         model.addAttribute("agentsDisponibles", adminService.agentsDisponibles(admin));
         return "admin/incidents";
+    }
+
+    @GetMapping("/incidents/{id}")
+    public String incidentDetails(@PathVariable Long id, Model model) {
+        try {
+            Utilisateur admin = SecurityUtils.getCurrentUser();
+            Incident incident = adminService.consulterDetailsIncident(id, admin);
+            model.addAttribute("incident", incident);
+            return "admin/incident-details";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "redirect:/admin/incidents";
+        }
+    }
+
+    @PostMapping("/incidents/{id}/valider")
+    public String validerResolution(@PathVariable Long id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        try {
+            Utilisateur admin = SecurityUtils.getCurrentUser();
+            adminService.validerResolution(id, admin);
+            redirectAttributes.addFlashAttribute("success", "Résolution validée et incident clôturé");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/incidents/" + id;
+    }
+
+    @PostMapping("/incidents/{id}/refuser")
+    public String refuserResolution(@PathVariable Long id,
+                                    @RequestParam(name = "motif", required = false) String motif,
+                                    org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        try {
+            Utilisateur admin = SecurityUtils.getCurrentUser();
+            adminService.refuserResolution(id, admin, motif);
+            redirectAttributes.addFlashAttribute("success", "Résolution refusée, incident réassigné à l'agent");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/incidents/" + id;
     }
     
     @PostMapping("/incidents/{incidentId}/affecter")

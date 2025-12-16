@@ -2,7 +2,9 @@ package com.smartcity.incident_management.services.municipalite;
 
 import com.smartcity.incident_management.entities.Incident;
 import com.smartcity.incident_management.entities.Notification;
+import com.smartcity.incident_management.entities.Photo;
 import com.smartcity.incident_management.entities.Utilisateur;
+import com.smartcity.incident_management.enums.TypePhoto;
 import com.smartcity.incident_management.enums.PrioriteIncident;
 import com.smartcity.incident_management.enums.StatutIncident;
 import com.smartcity.incident_management.enums.TypeNotification;
@@ -10,16 +12,24 @@ import com.smartcity.incident_management.exceptions.ResourceNotFoundException;
 import com.smartcity.incident_management.exceptions.UnauthorizedException;
 import com.smartcity.incident_management.repository.IncidentRepository;
 import com.smartcity.incident_management.repository.NotificationRepository;
+import com.smartcity.incident_management.repository.PhotoRepository;
 import com.smartcity.incident_management.services.email.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +45,12 @@ public class IncidentMunicipaliteService {
     
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private PhotoRepository photoRepository;
+    
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
     
     public Incident getIncidentById(Long id) {
         return incidentRepository.findById(id)
@@ -248,6 +264,78 @@ public class IncidentMunicipaliteService {
         }
         
         return saved;
+    }
+    
+    public Incident marquerResoluAvecUpload(Long incidentId, Utilisateur agent, List<MultipartFile> images, String commentaire) throws IOException {
+        Incident incident = getIncidentById(incidentId);
+        
+        if (incident.getAgentAssigne() == null || !incident.getAgentAssigne().getId().equals(agent.getId())) {
+            throw new UnauthorizedException("Vous n'êtes pas autorisé à modifier cet incident");
+        }
+        if (incident.getStatut() != StatutIncident.EN_RESOLUTION) {
+            throw new UnauthorizedException("L'incident doit être en statut EN_RESOLUTION");
+        }
+        if (agent.getDepartement() == null || !agent.getDepartement().getId().equals(incident.getDepartement().getId())) {
+            throw new UnauthorizedException("Vous n'appartenez pas au département de cet incident");
+        }
+        
+        if (images == null || images.isEmpty() || images.stream().allMatch(MultipartFile::isEmpty)) {
+            throw new UnauthorizedException("Au moins une image est requise pour marquer l'incident résolu");
+        }
+        
+        sauvegarderPhotos(incident, images);
+        
+        if (commentaire != null && !commentaire.isBlank()) {
+            Notification notification = new Notification();
+            notification.setUtilisateur(agent);
+            notification.setIncident(incident);
+            notification.setType(TypeNotification.PUSH);
+            notification.setMessage("Commentaire d'intervention: " + commentaire.trim());
+            notification.setLu(false);
+            notification.setDateEnvoi(LocalDateTime.now());
+            notificationRepository.save(notification);
+        }
+        
+        StatutIncident ancienStatut = incident.getStatut();
+        incident.setStatut(StatutIncident.RESOLU);
+        incident.setDateDerniereMiseAJour(LocalDateTime.now());
+        Incident saved = incidentRepository.save(incident);
+        
+        creerNotification(
+            incident.getAuteur(), 
+            saved, 
+            "Votre incident '" + saved.getTitre() + "' a été marqué comme résolu. Merci de confirmer la résolution."
+        );
+        
+        try {
+            emailService.envoyerEmailChangementStatut(incident.getAuteur(), saved, ancienStatut, StatutIncident.RESOLU);
+            emailService.envoyerEmailResolution(incident.getAuteur(), saved);
+        } catch (Exception e) {
+            System.err.println("Erreur envoi email: " + e.getMessage());
+        }
+        
+        return saved;
+    }
+    
+    private void sauvegarderPhotos(Incident incident, List<MultipartFile> fichiers) throws IOException {
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        for (MultipartFile fichier : fichiers) {
+            if (!fichier.isEmpty()) {
+                String fileName = System.currentTimeMillis() + "_" + fichier.getOriginalFilename();
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(fichier.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                Photo photo = new Photo();
+                photo.setTypePhoto(TypePhoto.RESOLUTION);
+                photo.setCheminFichier("uploads/" + fileName);
+                photo.setTypeMime(fichier.getContentType());
+                photo.setTailleKo(fichier.getSize() / 1024);
+                photo.setIncident(incident);
+                photoRepository.save(photo);
+            }
+        }
     }
     
     public void ajouterCommentaire(Long incidentId, Utilisateur agent, String commentaire) {

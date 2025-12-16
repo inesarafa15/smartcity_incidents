@@ -93,6 +93,18 @@ public class Incident {
     @ManyToMany(mappedBy = "incidentsAnalyses")
     private List<Rapport> rapports = new ArrayList<>();
 
+    @Column(name = "feedback_commentaire", columnDefinition = "TEXT")
+    private String feedbackCommentaire;
+
+    @Column(name = "feedback_note")
+    private Integer feedbackNote;
+
+    @Column(name = "feedback_satisfait")
+    private Boolean feedbackSatisfait;
+
+    @Column(name = "date_feedback")
+    private LocalDateTime dateFeedback;
+
     @PreUpdate
     public void preUpdate() {
         this.dateDerniereMiseAJour = LocalDateTime.now();

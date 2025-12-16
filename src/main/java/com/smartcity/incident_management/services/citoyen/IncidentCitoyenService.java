@@ -2,6 +2,7 @@ package com.smartcity.incident_management.services.citoyen;
 
 import com.smartcity.incident_management.dto.IncidentDTO;
 import com.smartcity.incident_management.entities.*;
+import com.smartcity.incident_management.enums.TypePhoto;
 import com.smartcity.incident_management.enums.StatutIncident;
 import com.smartcity.incident_management.exceptions.ResourceNotFoundException;
 import com.smartcity.incident_management.exceptions.UnauthorizedException;
@@ -94,6 +95,7 @@ public class IncidentCitoyenService {
                 Files.copy(fichier.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
                 
                 Photo photo = new Photo();
+                photo.setTypePhoto(TypePhoto.CREATION);
                 photo.setCheminFichier("uploads/" + fileName);
                 photo.setTypeMime(fichier.getContentType());
                 photo.setTailleKo(fichier.getSize() / 1024);
@@ -138,6 +140,23 @@ public class IncidentCitoyenService {
     
     public List<Incident> mesIncidentsList(Utilisateur citoyen) {
         return incidentRepository.findByAuteurId(citoyen.getId());
+    }
+
+    public Incident soumettreFeedback(Long incidentId, Utilisateur citoyen, Boolean satisfait, Integer note, String commentaire) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident non trouvé"));
+        if (!incident.getAuteur().getId().equals(citoyen.getId())) {
+            throw new UnauthorizedException("Non autorisé");
+        }
+        if (incident.getStatut() != StatutIncident.RESOLU) {
+            throw new UnauthorizedException("L'incident doit être en statut RESOLU pour donner un feedback");
+        }
+        incident.setFeedbackSatisfait(satisfait);
+        incident.setFeedbackNote(note);
+        incident.setFeedbackCommentaire(commentaire != null ? commentaire.trim() : null);
+        incident.setDateFeedback(java.time.LocalDateTime.now());
+        incident.setDateDerniereMiseAJour(java.time.LocalDateTime.now());
+        return incidentRepository.save(incident);
     }
 }
 
