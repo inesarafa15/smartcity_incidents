@@ -3,84 +3,461 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détails de l'incident</title>
+    <title>Détails de l'incident - Citoyen</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 0 0 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .incident-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            transition: transform 0.2s;
+            background: #fff;
+        }
+        .incident-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+        .card-body {
+            padding: 25px;
+        }
+        .status-badge {
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .photo-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .photo-item:hover {
+            transform: scale(1.05);
+        }
+        .photo-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .photo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .photo-item:hover .photo-overlay {
+            opacity: 1;
+        }
+        #map {
+            height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 18px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #2c3e50, #34495e);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 25px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #2c3e50;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #2c3e50;
+        }
+        .timeline-item.active::before {
+            background: #28a745;
+            box-shadow: 0 0 0 3px #28a745;
+        }
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .breadcrumb-item a {
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+        .info-card {
+            background: #f8f9fa;
+            border-left: 4px solid #2c3e50;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .description-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #495057;
+        }
+        .comment-box {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .comment-box:hover {
+            border-color: #2c3e50;
+            box-shadow: 0 2px 10px rgba(44, 62, 80, 0.1);
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Détails de l'incident</h2>
-                <a th:href="@{/citoyen/incidents}" class="btn btn-secondary">Retour à la liste</a>
+        <div class="container-fluid p-4">
+            <!-- Page Header with Navigation -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-2">
+                            <i class="fas fa-file-alt"></i> Détails de l'Incident #<span th:text="${incident.id}">ID</span>
+                        </h1>
+                        <nav aria-label="breadcrumb" class="mb-0">
+                            <ol class="breadcrumb mb-0" style="background: transparent;">
+                                <li class="breadcrumb-item">
+                                    <a th:href="@{/citoyen/dashboard}" style="color: rgba(255,255,255,0.8);">
+                                        <i class="fas fa-home"></i> Accueil
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a th:href="@{/citoyen/incidents}" style="color: rgba(255,255,255,0.8);">Mes Incidents</a>
+                                </li>
+                                <li class="breadcrumb-item active" style="color: white;">Détails</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <a th:href="@{/citoyen/incidents}" class="btn btn-light me-2">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                        <a th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE'}"
+                           th:href="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <div th:if="${incident}" class="card">
-                <div class="card-header">
-                    <h4 th:text="${incident.titre}"></h4>
+            <div class="row">
+                <!-- Colonne principale -->
+                <div class="col-lg-8">
+                    <!-- Statut et Priorité -->
+                    <div class="incident-card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Titre de l'incident</h6>
+                                    <h4 th:text="${incident.titre}">Titre</h4>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <div class="mb-2">
+                                        <strong class="text-muted me-2">Statut:</strong>
+                                        <th:block th:switch="${incident.statut?.name()}">
+                                            <span th:case="'SIGNALE'" class="status-badge bg-secondary text-white">
+                                                <i class="fas fa-flag"></i> SIGNALÉ
+                                            </span>
+                                            <span th:case="'PRIS_EN_CHARGE'" class="status-badge bg-info text-white">
+                                                <i class="fas fa-hand-paper"></i> PRIS EN CHARGE
+                                            </span>
+                                            <span th:case="'EN_RESOLUTION'" class="status-badge bg-warning text-dark">
+                                                <i class="fas fa-tools"></i> EN RÉSOLUTION
+                                            </span>
+                                            <span th:case="'RESOLU'" class="status-badge bg-success text-white">
+                                                <i class="fas fa-check-circle"></i> RÉSOLU
+                                            </span>
+                                            <span th:case="*" class="status-badge bg-light text-dark">
+                                                <span th:text="${incident.statut != null ? incident.statut.name() : 'N/A'}">N/A</span>
+                                            </span>
+                                        </th:block>
+                                    </div>
+                                    <div>
+                                        <strong class="text-muted me-2">Priorité:</strong>
+                                        <th:block th:switch="${incident.priorite?.name()}">
+                                            <span th:case="'URGENTE'" class="status-badge bg-danger text-white">
+                                                <i class="fas fa-exclamation-triangle"></i> URGENTE
+                                            </span>
+                                            <span th:case="'HAUTE'" class="status-badge bg-warning text-dark">
+                                                <i class="fas fa-exclamation-circle"></i> HAUTE
+                                            </span>
+                                            <span th:case="'MOYENNE'" class="status-badge bg-primary text-white">
+                                                <i class="fas fa-info-circle"></i> MOYENNE
+                                            </span>
+                                            <span th:case="'BASSE'" class="status-badge bg-secondary text-white">
+                                                <i class="fas fa-minus-circle"></i> BASSE
+                                            </span>
+                                            <span th:case="*" class="status-badge bg-light text-dark">
+                                                <span th:text="${incident.priorite != null ? incident.priorite.name() : 'N/A'}">N/A</span>
+                                            </span>
+                                        </th:block>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="incident-card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-align-left text-primary"></i> Description
+                            </h5>
+                            <p class="description-text" th:text="${incident.description}">Description de l'incident...</p>
+                        </div>
+                    </div>
+
+                    <!-- Localisation -->
+                    <div class="incident-card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-map-marker-alt text-danger"></i> Localisation
+                            </h5>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-location-dot"></i> Adresse</span>
+                                <span th:text="${incident.adresseTextuelle}">Adresse</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-building"></i> Département</span>
+                                <span th:text="${incident.departement != null ? incident.departement.nom : 'N/A'}">Département</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-map"></i> Quartier</span>
+                                <span th:text="${incident.quartier != null ? incident.quartier.nom : 'N/A'}">Quartier</span>
+                            </div>
+                            
+                            <!-- Carte -->
+                            <div th:if="${incident.latitude != null and incident.longitude != null}" class="mt-4">
+                                <h6 class="mb-3"><i class="fas fa-map-location-dot"></i> Carte interactive</h6>
+                                <div id="map"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Photos -->
+                    <div th:if="${incident.photos != null and !incident.photos.isEmpty()}" class="incident-card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-images text-success"></i> Photos (<span th:text="${incident.photos.size()}">0</span>)
+                            </h5>
+                            <div class="photo-gallery">
+                                <div th:each="photo : ${incident.photos}" class="photo-item" 
+                                     data-bs-toggle="modal" data-bs-target="#photoModal"
+                                     th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                    <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo incident" loading="lazy">
+                                    <div class="photo-overlay">
+                                        <i class="fas fa-search-plus fa-2x text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historique -->
+                    <div class="incident-card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">
+                                <i class="fas fa-history text-info"></i> Suivi et Progression
+                            </h5>
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <strong><i class="fas fa-flag"></i> Incident signalé</strong>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i>
+                                            <span th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                        </small>
+                                    </div>
+                                    <p class="mb-0 text-muted">Votre signalement a été enregistré avec succès</p>
+                                </div>
+                                
+                                <div th:if="${incident.agentAssigne != null}" class="timeline-item">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <strong><i class="fas fa-user-check"></i> Assigné à un agent</strong>
+                                    </div>
+                                    <p class="mb-0 text-muted">
+                                        Pris en charge par <strong><span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span></strong>
+                                    </p>
+                                </div>
+                                
+                                <div th:if="${incident.statut != null and incident.statut.name() == 'PRIS_EN_CHARGE'}" class="timeline-item active">
+                                    <strong><i class="fas fa-hand-paper"></i> En cours de traitement</strong>
+                                    <p class="mb-0 text-muted">Un agent travaille actuellement sur votre signalement</p>
+                                </div>
+                                
+                                <div th:if="${incident.statut != null and incident.statut.name() == 'EN_RESOLUTION'}" class="timeline-item active">
+                                    <strong><i class="fas fa-tools"></i> Intervention en cours</strong>
+                                    <p class="mb-0 text-muted">L'équipe est sur le terrain pour résoudre le problème</p>
+                                </div>
+                                
+                                <div th:if="${incident.statut != null and incident.statut.name() == 'RESOLU'}" class="timeline-item active">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <strong><i class="fas fa-check-circle"></i> Problème résolu</strong>
+                                        <small class="text-muted" th:if="${incident.dateDerniereMiseAJour != null}">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <span th:text="${#temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                        </small>
+                                    </div>
+                                    <p class="mb-0 text-success fw-bold">✓ Votre incident a été résolu avec succès</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Statut:</strong>
-                            <span class="badge ms-2" 
-                                  th:classappend="${incident.statut.name() == 'RESOLU'} ? 'bg-success' : 
-                                                 (${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning' : 
-                                                 (${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info' : 'bg-secondary'))"
-                                  th:text="${incident.statut}"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Priorité:</strong>
-                            <span class="badge ms-2" 
-                                  th:classappend="${incident.priorite.name() == 'CRITIQUE'} ? 'bg-danger' : 
-                                                 (${incident.priorite.name() == 'ELEVEE'} ? 'bg-warning' : 
-                                                 (${incident.priorite.name() == 'MOYENNE'} ? 'bg-info' : 'bg-secondary'))"
-                                  th:text="${incident.priorite}"></span>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Description:</strong>
-                        <p th:text="${incident.description}"></p>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Adresse:</strong>
-                            <p th:text="${incident.adresseTextuelle}"></p>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Quartier:</strong>
-                            <p th:text="${incident.quartier != null ? incident.quartier.nom : 'N/A'}"></p>
+
+                <!-- Colonne latérale -->
+                <div class="col-lg-4">
+                    <!-- Informations temporelles -->
+                    <div class="incident-card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-clock text-info"></i> Informations
+                            </h5>
+                            <div class="info-card">
+                                <div class="info-row">
+                                    <span class="info-label"><i class="fas fa-calendar-plus"></i> Créé le</span>
+                                    <span th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                </div>
+                                <div th:if="${incident.dateDerniereMiseAJour != null}" class="info-row">
+                                    <span class="info-label"><i class="fas fa-sync-alt"></i> Mis à jour</span>
+                                    <span th:text="${#temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                </div>
+                                <div th:if="${incident.agentAssigne != null}" class="info-row">
+                                    <span class="info-label"><i class="fas fa-user-shield"></i> Agent assigné</span>
+                                    <span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Département:</strong>
-                            <p th:text="${incident.departement != null ? incident.departement.nom : 'N/A'}"></p>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Date de création:</strong>
-                            <p th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm')}"></p>
+
+                    <!-- Commentaires et Notes -->
+                    <div class="incident-card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-comments text-success"></i> Mises à jour et Commentaires
+                            </h5>
+                            <div th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}">
+                                <div th:each="notif, iterStat : ${incident.notificationsIncident}" th:if="${iterStat.index < 5}">
+                                    <div class="comment-box">
+                                        <div class="d-flex align-items-start gap-2 mb-2">
+                                            <div class="user-avatar">
+                                                <span th:text="${notif.utilisateur != null and notif.utilisateur.prenom != null ? notif.utilisateur.prenom.substring(0, 1) : 'S'}">U</span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <strong th:text="${notif.utilisateur != null ? notif.utilisateur.prenom + ' ' + notif.utilisateur.nom : 'Système'}">Utilisateur</strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span th:text="${notif.dateEnvoi != null ? #temporals.format(notif.dateEnvoi, 'dd/MM HH:mm') : 'N/A'}">Date</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <p class="mb-0 text-muted" th:text="${notif.message}">Message...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${incident.notificationsIncident == null or incident.notificationsIncident.isEmpty()}" 
+                                 class="text-center text-muted py-3">
+                                <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                                <p>Aucune mise à jour pour le moment</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div th:if="${incident.agentAssigne != null}" class="mb-3">
-                        <strong>Agent assigné:</strong>
-                        <p th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}"></p>
-                    </div>
-                    
-                    <div th:if="${incident.photos != null && !incident.photos.isEmpty()}" class="mb-3">
-                        <strong>Photos:</strong>
-                        <div class="row mt-2">
-                            <div th:each="photo : ${incident.photos}" class="col-md-3 mb-2">
-                                <img th:src="@{'/' + ${photo.cheminFichier}}" 
-                                     class="img-thumbnail" 
-                                     style="max-width: 200px; max-height: 200px;"
-                                     alt="Photo incident">
+
+                    <!-- Aide -->
+                    <div class="incident-card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-question-circle text-info"></i> Besoin d'aide ?
+                            </h5>
+                            <p class="text-muted small mb-3">
+                                Vous pouvez suivre l'évolution de votre incident en temps réel. Vous serez notifié de chaque changement de statut.
+                            </p>
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Astuce :</strong> Vous recevrez une notification par email à chaque mise à jour de votre incident.
                             </div>
                         </div>
                     </div>
@@ -89,7 +466,66 @@
         </div>
     </div>
 
+    <!-- Modal Photo -->
+    <div class="modal fade" id="photoModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-image"></i> Photo de l'incident</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center" style="background: #000;">
+                    <img id="modalPhoto" src="" class="img-fluid" alt="Photo" style="max-height: 80vh;">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script th:inline="javascript">
+        // Photo modal
+        const photoModal = document.getElementById('photoModal');
+        if (photoModal) {
+            photoModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const photoUrl = button.getAttribute('data-photo-url');
+                document.getElementById('modalPhoto').src = photoUrl;
+            });
+        }
+
+        // Leaflet Map
+        /*<![CDATA[*/
+        const lat = /*[[${incident.latitude}]]*/ null;
+        const lng = /*[[${incident.longitude}]]*/ null;
+        const adresse = /*[[${incident.adresseTextuelle}]]*/ 'Localisation de l\'incident';
+        
+        if (lat && lng && document.getElementById('map')) {
+            const map = L.map('map').setView([lat, lng], 16);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            const customIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="background: #dc3545; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><i class="fas fa-exclamation" style="color: white; font-size: 16px;"></i></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+            
+            const marker = L.marker([lat, lng], {icon: customIcon}).addTo(map);
+            marker.bindPopup("<strong>📍 Localisation de l'incident</strong><br>" + adresse).openPopup();
+            
+            L.circle([lat, lng], {
+                color: '#dc3545',
+                fillColor: '#dc3545',
+                fillOpacity: 0.1,
+                radius: 50
+            }).addTo(map);
+        }
+        /*]]>*/
+    </script>
 </body>
 </html>
-
