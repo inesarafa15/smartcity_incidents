@@ -38,11 +38,16 @@ public class CitoyenController {
     public String dashboard(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String statut,
+            @RequestParam(required = false) Long departementId,
+            @RequestParam(required = false) String dateFilter,
+            @RequestParam(defaultValue = "dateCreation") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
             Model model) {
         Utilisateur citoyen = SecurityUtils.getCurrentUser();
         
-        // Récupérer les incidents récents
-        Page<Incident> incidentsRecents = incidentCitoyenService.mesIncidents(citoyen, page, size, "dateCreation", "DESC");
+        // Récupérer les incidents récents avec filtres
+        Page<Incident> incidentsRecents = incidentCitoyenService.mesIncidentsFiltres(citoyen, page, size, sortBy, sortDir, statut, departementId, dateFilter);
         
         // Récupérer les notifications non lues
         var notifications = notificationService.mesNotificationsNonLues(citoyen);
@@ -57,8 +62,10 @@ public class CitoyenController {
                             i.getStatut().name().equals("EN_RESOLUTION"))
                 .count();
         long incidentsResolus = tousIncidents.getContent().stream()
-                .filter(i -> i.getStatut().name().equals("RESOLU"))
+                .filter(i -> i.getStatut().name().equals("RESOLU") || i.getStatut().name().equals("CLOTURE"))
                 .count();
+        
+        int tauxResolution = totalIncidents > 0 ? (int) ((incidentsResolus * 100) / totalIncidents) : 0;
         
         model.addAttribute("incidents", incidentsRecents);
         model.addAttribute("notifications", notifications);
@@ -66,6 +73,15 @@ public class CitoyenController {
         model.addAttribute("totalIncidents", totalIncidents);
         model.addAttribute("incidentsEnCours", incidentsEnCours);
         model.addAttribute("incidentsResolus", incidentsResolus);
+        model.addAttribute("tauxResolution", tauxResolution);
+        
+        // Filtres
+        model.addAttribute("departements", departementService.findAll());
+        model.addAttribute("statutFilter", statut);
+        model.addAttribute("departementFilter", departementId);
+        model.addAttribute("dateFilter", dateFilter);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
         
         return "citoyen/dashboard";
     }

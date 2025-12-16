@@ -76,6 +76,20 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
         @Param("departementId") Long departementId,
         Pageable pageable
     );
+    @Query("SELECT i FROM Incident i WHERE " +
+           "i.auteur.id = :auteurId AND " +
+           "(:statut IS NULL OR i.statut = :statut) AND " +
+           "(:departementId IS NULL OR i.departement.id = :departementId) AND " +
+           "(:dateDebut IS NULL OR i.dateCreation >= :dateDebut) AND " +
+           "(:dateFin IS NULL OR i.dateCreation <= :dateFin)")
+    Page<Incident> findByAuteurIdAndFilters(
+        @Param("auteurId") Long auteurId,
+        @Param("statut") StatutIncident statut,
+        @Param("departementId") Long departementId,
+        @Param("dateDebut") LocalDateTime dateDebut,
+        @Param("dateFin") LocalDateTime dateFin,
+        Pageable pageable
+    );
 }
 
 

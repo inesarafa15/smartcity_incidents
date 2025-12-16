@@ -112,6 +112,35 @@ public class IncidentCitoyenService {
         Pageable pageable = PageRequest.of(page, size, sort);
         return incidentRepository.findByAuteurId(citoyen.getId(), pageable);
     }
+
+    public Page<Incident> mesIncidentsFiltres(Utilisateur citoyen, int page, int size, String sortBy, String sortDir, 
+                                             String statutStr, Long departementId, String dateFilter) {
+        Sort sort = sortDir.equalsIgnoreCase("DESC") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        StatutIncident statut = null;
+        if (statutStr != null && !statutStr.isEmpty()) {
+            try {
+                statut = StatutIncident.valueOf(statutStr);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid status
+            }
+        }
+        
+        java.time.LocalDateTime dateDebut = null;
+        java.time.LocalDateTime dateFin = null;
+        
+        if ("today".equals(dateFilter)) {
+            dateDebut = java.time.LocalDate.now().atStartOfDay();
+            dateFin = java.time.LocalDate.now().atTime(java.time.LocalTime.MAX);
+        } else if ("week".equals(dateFilter)) {
+            dateDebut = java.time.LocalDate.now().minusDays(7).atStartOfDay();
+            dateFin = java.time.LocalDate.now().atTime(java.time.LocalTime.MAX);
+        }
+        
+        return incidentRepository.findByAuteurIdAndFilters(citoyen.getId(), statut, departementId, dateDebut, dateFin, pageable);
+    }
     
     public Incident consulterIncident(Long incidentId, Utilisateur citoyen) {
         Incident incident = incidentRepository.findById(incidentId)

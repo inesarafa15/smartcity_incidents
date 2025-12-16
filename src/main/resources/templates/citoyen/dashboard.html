@@ -5,14 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord - Citoyen</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .filter-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .table-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table thead {
+            background: #f8f9fa;
+        }
+        .table thead th {
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #2c3e50;
+            padding: 15px;
+        }
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .btn-action {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            margin: 2px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        .empty-state i {
+            font-size: 5rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        .card-stats {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .card-stats:hover {
+            transform: translateY(-5px);
+        }
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            border: none;
+            color: #2c3e50;
+            padding: 8px 14px;
+        }
+        .pagination .page-item.active .page-link {
+            background: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .pagination .page-link:hover {
+            background: #34495e;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
-        <div class="container-fluid">
-            <h2>Tableau de bord</h2>
+        <div class="container-fluid p-4">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        </h1>
+                        <p class="mb-0 opacity-75">Vue d'ensemble de vos activités</p>
+                    </div>
+                    <div>
+                        <a th:href="@{/citoyen/incidents/nouveau}" class="btn btn-warning">
+                            <i class="fas fa-plus-circle"></i> Nouveau Signalement
+                        </a>
+                    </div>
+                </div>
+            </div>
             
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                 <span th:text="${success}"></span>
@@ -25,83 +134,211 @@
 
             <div class="row mt-4">
                 <!-- Statistiques rapides -->
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5>Total incidents</h5>
-                        </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card card-stats h-100">
                         <div class="card-body">
-                            <p class="h3" th:text="${totalIncidents}"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-warning text-dark">
-                            <h5>En cours</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="h3" th:text="${incidentsEnCours}"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <h5>Résolus</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="h3" th:text="${incidentsResolus}"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5>Notifications</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="h3" th:text="${nbNotificationsNonLues}"></p>
-                            <a th:href="@{/notifications}" class="btn btn-sm btn-info">Voir toutes</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Incidents récents -->
-                <div class="col-md-8 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Mes incidents récents</h5>
-                        </div>
-                        <div class="card-body">
-                            <div th:if="${incidents == null || incidents.isEmpty()}" class="alert alert-info">
-                                Aucun incident signalé pour le moment.
-                                <a th:href="@{/citoyen/incidents/nouveau}" class="btn btn-sm btn-primary ms-2">Signaler un incident</a>
-                            </div>
-                            <div th:unless="${incidents == null || incidents.isEmpty()}">
-                                <ul class="list-group">
-                                    <li th:each="incident : ${incidents.content}" class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <a th:href="@{/citoyen/incidents/{id}(id=${incident.id})}" th:text="${incident.titre}"></a>
-                                                <span class="badge ms-2" 
-                                                      th:classappend="${incident.statut.name() == 'RESOLU'} ? 'bg-success' : 
-                                                                     (${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning' : 
-                                                                     (${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info' : 'bg-secondary'))"
-                                                      th:text="${incident.statut}"></span>
-                                            </div>
-                                            <small class="text-muted" th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy')}"></small>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <div class="mt-3">
-                                    <a th:href="@{/citoyen/incidents}" class="btn btn-sm btn-primary">Voir tous mes incidents</a>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-clipboard-list text-primary fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="text-muted mb-1">Total incidents signalés</h6>
+                                    <h2 class="mb-0" th:text="${totalIncidents}">0</h2>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <div class="card card-stats h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-hourglass-half text-warning fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="text-muted mb-1">En cours de traitement</h6>
+                                    <h2 class="mb-0" th:text="${incidentsEnCours}">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <div class="card card-stats h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-check-circle text-success fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="text-muted mb-1">Résolus et clôturés</h6>
+                                    <h2 class="mb-0" th:text="${incidentsResolus}">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <div class="card card-stats h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 bg-info bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-bell text-info fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="text-muted mb-1">Notifications non lues</h6>
+                                    <h2 class="mb-0" th:text="${nbNotificationsNonLues}">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <div class="card card-stats h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded" style="background-color: rgba(111, 66, 193, 0.1) !important;">
+                                    <i class="fas fa-chart-line fa-2x" style="color: #6f42c1 !important;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="text-muted mb-1">Taux de résolution</h6>
+                                    <h2 class="mb-0" th:text="${tauxResolution} + '%'">0%</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section centrale du dashboard -->
+                <div class="col-12 mb-4">
+                    <!-- Filtres -->
+                    <div class="filter-card">
+                        <h5 class="mb-3"><i class="fas fa-list"></i> Mes incidents récents</h5>
+                        <form method="get" th:action="@{/citoyen/dashboard}">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Type (Catégorie)</label>
+                                    <select name="departementId" class="form-select form-select-sm">
+                                        <option value="">Tous les types</option>
+                                        <option th:each="dept : ${departements}" th:value="${dept.id}" th:text="${dept.nom}" th:selected="${dept.id == departementFilter}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Statut</label>
+                                    <select name="statut" class="form-select form-select-sm">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="SIGNALE" th:selected="${statutFilter == 'SIGNALE'}">Signalé</option>
+                                        <option value="PRIS_EN_CHARGE" th:selected="${statutFilter == 'PRIS_EN_CHARGE'}">Pris en charge</option>
+                                        <option value="EN_RESOLUTION" th:selected="${statutFilter == 'EN_RESOLUTION'}">En résolution</option>
+                                        <option value="RESOLU" th:selected="${statutFilter == 'RESOLU'}">Résolu</option>
+                                        <option value="CLOTURE" th:selected="${statutFilter == 'CLOTURE'}">Clôturé</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Date</label>
+                                    <select name="dateFilter" class="form-select form-select-sm">
+                                        <option value="" th:selected="${dateFilter == null || dateFilter == ''}">Tout</option>
+                                        <option value="today" th:selected="${dateFilter == 'today'}">Aujourd'hui</option>
+                                        <option value="week" th:selected="${dateFilter == 'week'}">7 derniers jours</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Trier par</label>
+                                    <div class="input-group input-group-sm">
+                                        <select name="sortDir" class="form-select">
+                                            <option value="DESC" th:selected="${sortDir == 'DESC'}">Plus récentes</option>
+                                            <option value="ASC" th:selected="${sortDir == 'ASC'}">Plus anciennes</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tableau -->
+                    <div class="table-card">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%;">Titre</th>
+                                        <th style="width: 15%;">Catégorie</th>
+                                        <th style="width: 15%;">Quartier</th>
+                                        <th style="width: 15%;">Date</th>
+                                        <th style="width: 15%;">Statut</th>
+                                        <th style="width: 15%;" class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${incidents == null || incidents.empty}">
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                            Aucun incident trouvé
+                                        </td>
+                                    </tr>
+                                    <tr th:each="incident : ${incidents.content}">
+                                        <td>
+                                            <div class="fw-bold" th:text="${incident.titre}">Titre</div>
+                                            <small class="text-muted" 
+                                                th:text="${incident.description != null and !#strings.isEmpty(incident.description) ? (#strings.length(incident.description) > 40 ? #strings.substring(incident.description, 0, 40) + '...' : incident.description) : ''}">
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border" th:text="${incident.departement.nom}"></span>
+                                        </td>
+                                        <td th:text="${incident.quartier.nom}"></td>
+                                        <td>
+                                            <small>
+                                                <i class="fas fa-calendar-alt text-muted"></i> <span th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy')}"></span>
+                                                <br>
+                                                <i class="fas fa-clock text-muted"></i> <span th:text="${#temporals.format(incident.dateCreation, 'HH:mm')}"></span>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge" 
+                                                  th:classappend="${incident.statut.name() == 'RESOLU' || incident.statut.name() == 'CLOTURE'} ? 'bg-success text-white' : 
+                                                                 (${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning text-dark' : 
+                                                                 (${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info text-white' : 'bg-secondary text-white'))"
+                                                  th:text="${incident.statut}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a th:href="@{/citoyen/incidents/{id}(id=${incident.id})}" class="btn btn-outline-primary btn-action">
+                                                <i class="fas fa-eye"></i> Détails
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination simplifiée -->
+                    <div th:if="${incidents.totalPages > 1}" class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/citoyen/dashboard(page=${incidents.number - 1}, statut=${statutFilter}, departementId=${departementFilter}, dateFilter=${dateFilter}, sortDir=${sortDir})}">Précédent</a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link" th:text="${'Page ' + (incidents.number + 1) + ' / ' + incidents.totalPages}"></span>
+                                </li>
+                                <li class="page-item" th:classappend="${incidents.last} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/citoyen/dashboard(page=${incidents.number + 1}, statut=${statutFilter}, departementId=${departementFilter}, dateFilter=${dateFilter}, sortDir=${sortDir})}">Suivant</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a th:href="@{/citoyen/incidents}" class="btn btn-primary">
+                            <i class="fas fa-list"></i> Voir tous mes incidents
+                        </a>
                     </div>
                 </div>
 
