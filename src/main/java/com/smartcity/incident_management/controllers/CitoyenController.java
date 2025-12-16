@@ -163,6 +163,54 @@ public class CitoyenController {
         return "citoyen/incident-details";
     }
 
+    @GetMapping("/incidents/{id}/modifier")
+    public String modifierIncidentForm(@PathVariable Long id, Model model) {
+        Utilisateur citoyen = SecurityUtils.getCurrentUser();
+        Incident incident = incidentCitoyenService.consulterIncident(id, citoyen);
+        
+        IncidentDTO dto = new IncidentDTO();
+        dto.setTitre(incident.getTitre());
+        dto.setDescription(incident.getDescription());
+        dto.setPriorite(incident.getPriorite());
+        dto.setAdresseTextuelle(incident.getAdresseTextuelle());
+        dto.setDepartementId(incident.getDepartement().getId());
+        dto.setQuartierId(incident.getQuartier().getId());
+        if (incident.getLatitude() != null) dto.setLatitude(incident.getLatitude().doubleValue());
+        if (incident.getLongitude() != null) dto.setLongitude(incident.getLongitude().doubleValue());
+
+        model.addAttribute("incident", incident);
+        model.addAttribute("incidentDTO", dto);
+        model.addAttribute("departements", departementService.findAll());
+        model.addAttribute("quartiers", quartierService.findAll());
+        return "citoyen/modifier-incident";
+    }
+
+    @PostMapping("/incidents/{id}/modifier")
+    public String modifierIncident(@PathVariable Long id,
+                                   @Valid @ModelAttribute IncidentDTO dto,
+                                   BindingResult result,
+                                   RedirectAttributes redirectAttributes,
+                                   Model model) {
+        if (result.hasErrors()) {
+            Utilisateur citoyen = SecurityUtils.getCurrentUser();
+            Incident incident = incidentCitoyenService.consulterIncident(id, citoyen);
+            model.addAttribute("incident", incident);
+            model.addAttribute("departements", departementService.findAll());
+            model.addAttribute("quartiers", quartierService.findAll());
+            return "citoyen/modifier-incident";
+        }
+        
+        try {
+            Utilisateur citoyen = SecurityUtils.getCurrentUser();
+            incidentCitoyenService.modifierIncident(id, citoyen, dto);
+            redirectAttributes.addFlashAttribute("success", "Incident modifié avec succès !");
+            return "redirect:/citoyen/incidents";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/citoyen/incidents/" + id + "/modifier";
+        }
+    }
+
     @PostMapping("/incidents/{id}/feedback")
     public String soumettreFeedback(@PathVariable Long id,
                                    @RequestParam(name = "satisfait", required = false) Boolean satisfait,

@@ -187,5 +187,48 @@ public class IncidentCitoyenService {
         incident.setDateDerniereMiseAJour(java.time.LocalDateTime.now());
         return incidentRepository.save(incident);
     }
+
+    public Incident modifierIncident(Long id, Utilisateur citoyen, IncidentDTO dto) throws IOException {
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident non trouvé"));
+
+        if (!incident.getAuteur().getId().equals(citoyen.getId())) {
+            throw new UnauthorizedException("Vous n'êtes pas autorisé à modifier cet incident");
+        }
+
+        if (incident.getStatut() == StatutIncident.RESOLU || incident.getStatut() == StatutIncident.CLOTURE) {
+            throw new com.smartcity.incident_management.exceptions.BadRequestException("Impossible de modifier un incident résolu ou clôturé");
+        }
+
+        Departement departement = departementRepository.findById(dto.getDepartementId())
+                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé"));
+
+        Quartier quartier = quartierRepository.findById(dto.getQuartierId())
+                .orElseThrow(() -> new ResourceNotFoundException("Quartier non trouvé"));
+
+        incident.setTitre(dto.getTitre());
+        incident.setDescription(dto.getDescription());
+        incident.setPriorite(dto.getPriorite());
+        incident.setAdresseTextuelle(dto.getAdresseTextuelle());
+        incident.setDepartement(departement);
+        incident.setQuartier(quartier);
+        
+        // Mise à jour de la position si fournie
+        if (dto.getLatitude() != null && dto.getLongitude() != null) {
+            incident.setLatitude(java.math.BigDecimal.valueOf(dto.getLatitude()));
+            incident.setLongitude(java.math.BigDecimal.valueOf(dto.getLongitude()));
+        }
+
+        incident.setDateDerniereMiseAJour(java.time.LocalDateTime.now());
+
+        Incident savedIncident = incidentRepository.save(incident);
+
+        // Gérer l'ajout de nouvelles photos
+        if (dto.getPhotos() != null && !dto.getPhotos().isEmpty()) {
+            sauvegarderPhotos(savedIncident, dto.getPhotos());
+        }
+
+        return savedIncident;
+    }
 }
 

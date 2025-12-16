@@ -348,8 +348,8 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     
-                                    <!-- Modifier (seulement si SIGNALE) -->
-                                    <a th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE'}"
+                                    <!-- Modifier (pour tout incident non résolu/clôturé) -->
+                                    <a th:if="${incident.statut != null and incident.statut.name() != 'RESOLU' and incident.statut.name() != 'CLOTURE'}"
                                        th:href="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" 
                                        class="btn btn-sm btn-outline-primary btn-action"
                                        title="Modifier">
