@@ -319,16 +319,44 @@
                     <!-- Photos -->
                     <div th:if="${incident.photos != null and !incident.photos.isEmpty()}" class="incident-card">
                         <div class="card-body">
-                            <h5 class="card-title mb-3">
-                                <i class="fas fa-images text-success"></i> Photos (<span th:text="${incident.photos.size()}">0</span>)
+                            <h5 class="card-title mb-4">
+                                <i class="fas fa-images text-success"></i> Galerie Photos
                             </h5>
-                            <div class="photo-gallery">
-                                <div th:each="photo : ${incident.photos}" class="photo-item" 
-                                     data-bs-toggle="modal" data-bs-target="#photoModal"
-                                     th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
-                                    <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo incident" loading="lazy">
-                                    <div class="photo-overlay">
-                                        <i class="fas fa-search-plus fa-2x text-white"></i>
+
+                            <!-- Photos de création -->
+                            <div th:with="creationPhotos=${incident.photos.?[typePhoto == null || typePhoto.name() == 'CREATION']}">
+                                <div th:if="${!creationPhotos.isEmpty()}">
+                                    <h6 class="border-bottom pb-2 mb-3 text-muted">
+                                        <i class="fas fa-camera text-secondary me-2"></i>Photos du signalement
+                                    </h6>
+                                    <div class="photo-gallery mb-4">
+                                        <div th:each="photo : ${creationPhotos}" class="photo-item" 
+                                             data-bs-toggle="modal" data-bs-target="#photoModal"
+                                             th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                            <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo incident" loading="lazy">
+                                            <div class="photo-overlay">
+                                                <i class="fas fa-search-plus fa-2x text-white"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Photos de résolution -->
+                            <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION']}">
+                                <div th:if="${!resolutionPhotos.isEmpty()}">
+                                    <h6 class="border-bottom pb-2 mb-3 text-success">
+                                        <i class="fas fa-check-double me-2"></i>Preuves de résolution
+                                    </h6>
+                                    <div class="photo-gallery">
+                                        <div th:each="photo : ${resolutionPhotos}" class="photo-item" 
+                                             data-bs-toggle="modal" data-bs-target="#photoModal"
+                                             th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                            <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Preuve résolution" loading="lazy">
+                                            <div class="photo-overlay">
+                                                <i class="fas fa-search-plus fa-2x text-white"></i>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -447,14 +475,6 @@
                     </div>
                     
                     <div th:if="${incident.photos != null && !incident.photos.isEmpty()}" class="mb-3">
-                        <strong>Photos de l'incident et de la résolution:</strong>
-                        <div class="row mt-2">
-                            <div th:each="photo : ${incident.photos}" class="col-md-3 mb-2">
-                                <img th:src="@{'/' + ${photo.cheminFichier}}" 
-                                     class="img-thumbnail" 
-                                     style="max-width: 200px; max-height: 200px;"
-                                     alt="Photo incident">
-
                     <!-- Aide -->
                     <div class="incident-card">
                         <div class="card-body">
