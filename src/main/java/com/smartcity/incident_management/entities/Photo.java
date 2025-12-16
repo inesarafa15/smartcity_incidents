@@ -1,5 +1,6 @@
 package com.smartcity.incident_management.entities;
 
+import com.smartcity.incident_management.enums.TypePhoto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,10 @@ public class Photo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_photo")
+    private TypePhoto typePhoto = TypePhoto.CREATION;
     
     @NotBlank(message = "Le chemin du fichier est obligatoire")
     @Column(name = "chemin_fichier", nullable = false)

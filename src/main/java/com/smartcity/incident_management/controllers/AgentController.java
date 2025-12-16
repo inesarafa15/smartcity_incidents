@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -281,8 +282,11 @@ public class AgentController {
         return "redirect:/agent/incidents/" + id;
     }
 
-    @PostMapping("/incidents/{id}/resolu")
-    public String marquerResolu(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    @PostMapping(value = "/incidents/{id}/resolu")
+    public String marquerResolu(@PathVariable Long id,
+                                @RequestParam("images") List<MultipartFile> images,
+                                @RequestParam(name = "commentaire", required = false) String commentaire,
+                                RedirectAttributes redirectAttributes) {
         try {
             Utilisateur agent = SecurityUtils.getCurrentUser();
             
@@ -291,7 +295,7 @@ public class AgentController {
                 return "redirect:/login";
             }
             
-            incidentMunicipaliteService.marquerResolu(id, agent);
+            incidentMunicipaliteService.marquerResoluAvecUpload(id, agent, images, commentaire);
             redirectAttributes.addFlashAttribute("success", "Incident marqué comme résolu");
             
         } catch (Exception e) {

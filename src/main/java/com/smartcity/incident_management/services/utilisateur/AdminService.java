@@ -189,5 +189,71 @@ public class AdminService {
         
         rapportService.genererRapport(admin, dto);
     }
+    
+    // ========== VALIDATION FINALE DES INCIDENTS ==========
+    
+    public Incident consulterDetailsIncident(Long incidentId, Utilisateur admin) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident non trouvé"));
+        verifierDepartement(admin, incident.getDepartement().getId());
+        if (incident.getPhotos() != null) {
+            incident.getPhotos().size();
+        }
+        if (incident.getNotificationsIncident() != null) {
+            incident.getNotificationsIncident().size();
+        }
+        return incident;
+    }
+    
+    public Incident validerResolution(Long incidentId, Utilisateur admin) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident non trouvé"));
+        verifierDepartement(admin, incident.getDepartement().getId());
+        if (incident.getStatut() != StatutIncident.RESOLU) {
+            throw new UnauthorizedException("L'incident doit être en statut RESOLU pour être validé");
+        }
+        StatutIncident ancien = incident.getStatut();
+        incident.setStatut(StatutIncident.CLOTURE);
+        incident.setDateDerniereMiseAJour(java.time.LocalDateTime.now());
+        Incident saved = incidentRepository.save(incident);
+        System.out.println("[ADMIN] Validation résolution incident #" + incidentId + " par " + admin.getEmail());
+        try {
+            emailService.envoyerEmailChangementStatut(incident.getAuteur(), saved, ancien, StatutIncident.CLOTURE);
+        } catch (Exception e) {
+            System.err.println("Erreur email validation: " + e.getMessage());
+        }
+        return saved;
+    }
+    
+    public Incident refuserResolution(Long incidentId, Utilisateur admin, String motif) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident non trouvé"));
+        verifierDepartement(admin, incident.getDepartement().getId());
+        if (incident.getStatut() != StatutIncident.RESOLU) {
+            throw new UnauthorizedException("L'incident doit être en statut RESOLU pour être refusé");
+        }
+        Utilisateur agent = incident.getAgentAssigne();
+        if (agent == null) {
+            throw new UnauthorizedException("Aucun agent assigné pour réassignation");
+        }
+        StatutIncident ancien = incident.getStatut();
+        incident.setStatut(StatutIncident.PRIS_EN_CHARGE);
+        incident.setAgentAssigne(agent);
+        incident.setDateDerniereMiseAJour(java.time.LocalDateTime.now());
+        Incident saved = incidentRepository.save(incident);
+        System.out.println("[ADMIN] Refus résolution incident #" + incidentId + " par " + admin.getEmail());
+        try {
+            emailService.envoyerEmailChangementStatut(incident.getAuteur(), saved, ancien, StatutIncident.PRIS_EN_CHARGE);
+            String subject = "Résolution non validée pour l'incident #" + saved.getId();
+            String text = "Bonjour " + agent.getPrenom() + ",\n\n" +
+                    "La résolution de l'incident '" + saved.getTitre() + "' n'a pas été validée par l'administrateur." +
+                    (motif != null && !motif.isBlank() ? ("\nMotif: " + motif.trim()) : "") +
+                    "\n\nL'incident vous est réassigné et repasse en statut PRIS_EN_CHARGE.";
+            emailService.envoyerEmailSimple(agent.getEmail(), subject, text);
+        } catch (Exception e) {
+            System.err.println("Erreur email refus: " + e.getMessage());
+        }
+        return saved;
+    }
 }
 

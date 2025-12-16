@@ -146,4 +146,20 @@ public class CitoyenController {
         model.addAttribute("incident", incident);
         return "citoyen/incident-details";
     }
+
+    @PostMapping("/incidents/{id}/feedback")
+    public String soumettreFeedback(@PathVariable Long id,
+                                   @RequestParam(name = "satisfait", required = false) Boolean satisfait,
+                                   @RequestParam(name = "note", required = false) Integer note,
+                                   @RequestParam(name = "commentaire", required = false) String commentaire,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            Utilisateur citoyen = SecurityUtils.getCurrentUser();
+            incidentCitoyenService.soumettreFeedback(id, citoyen, satisfait, note, commentaire);
+            redirectAttributes.addFlashAttribute("success", "Feedback enregistré, merci !");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/citoyen/incidents/" + id;
+    }
 }
