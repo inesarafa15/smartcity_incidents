@@ -90,6 +90,15 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
         @Param("dateFin") LocalDateTime dateFin,
         Pageable pageable
     );
+    @Query("SELECT DISTINCT i FROM Incident i " +
+    	       "LEFT JOIN FETCH i.departement d " +
+    	       "LEFT JOIN FETCH i.quartier q " +
+    	       "LEFT JOIN FETCH i.agentAssigne a " +
+    	       "LEFT JOIN FETCH i.auteur u " +
+    	       "WHERE d.id = :departementId " +
+    	       "ORDER BY i.dateCreation DESC")
+    	List<Incident> findIncidentsCompletsByDepartementId(@Param("departementId") Long departementId);
+    
 }
 
 

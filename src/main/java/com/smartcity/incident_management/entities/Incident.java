@@ -109,4 +109,12 @@ public class Incident {
     public void preUpdate() {
         this.dateDerniereMiseAJour = LocalDateTime.now();
     }
+    @Transient
+    public LocalDateTime getDateResolution() {
+        if (this.statut == StatutIncident.RESOLU || this.statut == StatutIncident.CLOTURE) {
+            return this.dateDerniereMiseAJour;
+        }
+        return null;
+    }
+
 }

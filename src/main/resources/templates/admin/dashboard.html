@@ -5,101 +5,394 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord - Administrateur</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .stat-card {
+            background: #fff;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            overflow: hidden;
+            height: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+        .stat-card-body {
+            padding: 25px;
+        }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .chart-card {
+            background: #fff;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .chart-card-header {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        .incident-list-card {
+            background: #fff;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            padding: 25px;
+        }
+        .incident-item {
+            padding: 15px;
+            border-left: 4px solid #e9ecef;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        .incident-item:hover {
+            border-left-color: #2c3e50;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .incident-item.priority-urgent {
+            border-left-color: #dc3545;
+        }
+        .incident-item.priority-high {
+            border-left-color: #ffc107;
+        }
+        .quick-stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .mini-stat-card {
+            background: #f8f9fa;
+            border-left: 4px solid #2c3e50;
+            padding: 20px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .mini-stat-card:hover {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .mini-stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .mini-stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
-        <div class="container-fluid">
-            <h2>Tableau de bord Administrateur</h2>
-        
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <span th:text="${success}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <div class="row mt-4">
-            <!-- Incidents en attente -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header bg-warning text-dark">
-                        <h5>Incidents en attente</h5>
+        <div class="container-fluid p-4">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de Bord Administrateur
+                        </h1>
+                        <p class="mb-0 opacity-75">Vue d'ensemble et gestion du département</p>
                     </div>
-                    <div class="card-body">
-                        <p class="h3" th:text="${stats != null ? stats.incidentsEnAttente : 0}"></p>
-                        <a th:href="@{/admin/incidents}" class="btn btn-sm btn-warning">Voir tous les incidents</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Agents disponibles -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header bg-success text-white">
-                        <h5>Agents disponibles</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="h3" th:text="${stats != null ? stats.agentsDisponibles : 0}"></p>
-                        <p class="text-muted">Total agents: <span th:text="${stats != null ? stats.totalAgents : 0}"></span></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Graphique Incidents par statut -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header bg-info text-white">
-                        <h5>Incidents par statut</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="incidentsByStatusChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Graphique Incidents par priorité -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header bg-danger text-white">
-                        <h5>Incidents par priorité</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="incidentsByPriorityChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Liste des incidents en attente -->
-            <div class="col-md-12 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Derniers incidents en attente</h5>
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${incidentsEnAttente != null && incidentsEnAttente.isEmpty()}" class="alert alert-info">
-                            Aucun incident en attente.
-                        </div>
-                        <ul th:unless="${incidentsEnAttente == null || incidentsEnAttente.isEmpty()}" class="list-group">
-                            <li th:each="incident : ${incidentsEnAttente}" class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong th:text="${incident.titre}"></strong>
-                                        <span class="badge bg-warning ms-2" th:text="${incident.priorite}"></span>
-                                    </div>
-                                    <a th:href="@{/admin/incidents}" class="btn btn-sm btn-primary">Affecter</a>
-                                </div>
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle btn-lg" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-file-download"></i> Générer Rapport
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <h6 class="dropdown-header">
+                                    <i class="fas fa-chart-bar"></i> Exporter les données
+                                </h6>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" th:href="@{/admin/rapports/export/pdf}">
+                                    <i class="fas fa-file-pdf text-danger"></i> Rapport PDF Complet
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" th:href="@{/admin/rapports/export/csv}">
+                                    <i class="fas fa-file-csv text-success"></i> Export CSV (Excel)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" th:href="@{/admin/rapports/export/excel}">
+                                    <i class="fas fa-file-excel text-success"></i> Export Excel (.xlsx)
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" th:href="@{/admin/rapports/export/statistiques}">
+                                    <i class="fas fa-chart-pie text-primary"></i> Statistiques Détaillées
+                                </a>
                             </li>
                         </ul>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Messages Flash -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Mini Stats Row -->
+            <div class="quick-stats-row">
+                <div class="mini-stat-card" style="border-left-color: #17a2b8;">
+                    <div class="mini-stat-number" th:text="${stats != null ? stats.totalIncidents : 0}">0</div>
+                    <div class="mini-stat-label">
+                        <i class="fas fa-clipboard-list"></i> Total Incidents
+                    </div>
+                </div>
+                <div class="mini-stat-card" style="border-left-color: #28a745;">
+                    <div class="mini-stat-number" th:text="${stats != null ? stats.incidentsResolus : 0}">0</div>
+                    <div class="mini-stat-label">
+                        <i class="fas fa-check-double"></i> Résolus
+                    </div>
+                </div>
+                <div class="mini-stat-card" style="border-left-color: #ffc107;">
+                    <div class="mini-stat-number" th:text="${stats != null ? stats.incidentsEnCours : 0}">0</div>
+                    <div class="mini-stat-label">
+                        <i class="fas fa-hourglass-half"></i> En Cours
+                    </div>
+                </div>
+                <div class="mini-stat-card" style="border-left-color: #dc3545;">
+                    <div class="mini-stat-number" th:text="${stats != null ? stats.incidentsEnAttente : 0}">0</div>
+                    <div class="mini-stat-label">
+                        <i class="fas fa-exclamation-circle"></i> En Attente
+                    </div>
+                </div>
+                <div class="mini-stat-card" style="border-left-color: #6f42c1;">
+                    <div class="mini-stat-number" th:text="${stats != null ? stats.totalAgents : 0}">0</div>
+                    <div class="mini-stat-label">
+                        <i class="fas fa-users"></i> Agents Total
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Statistics Cards -->
+            <div class="row mb-4">
+                <!-- Incidents en attente -->
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-card-body">
+                            <div class="stat-icon" style="background: rgba(255, 193, 7, 0.1); color: #ffc107;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-number text-warning" th:text="${stats != null ? stats.incidentsEnAttente : 0}">0</div>
+                            <div class="stat-label">Incidents en Attente</div>
+                            <div class="mt-3">
+                                <a th:href="@{/admin/incidents}" class="btn btn-sm btn-outline-warning w-100">
+                                    <i class="fas fa-arrow-right"></i> Affecter maintenant
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agents disponibles -->
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-card-body">
+                            <div class="stat-icon" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="stat-number text-success" th:text="${stats != null ? stats.agentsDisponibles : 0}">0</div>
+                            <div class="stat-label">Agents Disponibles</div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Sur <strong><span th:text="${stats != null ? stats.totalAgents : 0}">0</span></strong> agents
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Taux de résolution -->
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-card-body">
+                            <div class="stat-icon" style="background: rgba(23, 162, 184, 0.1); color: #17a2b8;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-number text-info">
+                                <span th:text="${stats != null and stats.totalIncidents > 0 ? 
+                                    (stats.incidentsResolus * 100 / stats.totalIncidents) + '%' : '0%'}">0%</span>
+                            </div>
+                            <div class="stat-label">Taux de Résolution</div>
+                            <div class="mt-2">
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                         th:style="'width: ' + ${stats != null and stats.totalIncidents > 0 ? 
+                                         (stats.incidentsResolus * 100 / stats.totalIncidents) : 0} + '%'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Temps moyen de résolution -->
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-card-body">
+                            <div class="stat-icon" style="background: rgba(111, 66, 193, 0.1); color: #6f42c1;">
+                                <i class="fas fa-stopwatch"></i>
+                            </div>
+                            <div class="stat-number" style="color: #6f42c1;">
+                                <span th:text="${stats != null ? stats.tempsResolutionMoyen : 0}">0</span>h
+                            </div>
+                            <div class="stat-label">Temps Moyen</div>
+                            <div class="mt-2">
+                                <small class="text-muted">de résolution</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques -->
+            <div class="row mb-4">
+                <!-- Incidents par statut -->
+                <div class="col-md-6 mb-4">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-pie text-info"></i> Répartition par Statut
+                            </h5>
+                        </div>
+                        <canvas id="incidentsByStatusChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Incidents par priorité -->
+                <div class="col-md-6 mb-4">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar text-danger"></i> Répartition par Priorité
+                            </h5>
+                        </div>
+                        <canvas id="incidentsByPriorityChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des incidents en attente -->
+            <div class="incident-list-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-list"></i> Incidents en Attente d'Assignation
+                    </h5>
+                    <div>
+                        <span class="badge bg-warning text-dark me-2">
+                            <span th:text="${incidentsEnAttente != null ? incidentsEnAttente.size() : 0}">0</span> incident(s)
+                        </span>
+                        <a th:href="@{/admin/incidents}" class="btn btn-sm btn-dark">
+                            <i class="fas fa-arrow-right"></i> Gérer tous
+                        </a>
+                    </div>
+                </div>
+
+                <div th:if="${incidentsEnAttente == null or incidentsEnAttente.isEmpty()}" 
+                     class="text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-muted">Excellent travail !</h5>
+                    <p class="text-muted">Tous les incidents ont été assignés à des agents</p>
+                </div>
+
+                <div th:unless="${incidentsEnAttente == null or incidentsEnAttente.isEmpty()}">
+                    <div th:each="incident, iterStat : ${incidentsEnAttente}" th:if="${iterStat.index < 10}"
+                         class="incident-item"
+                         th:classappend="${incident.priorite != null and incident.priorite.name() == 'URGENTE'} ? 'priority-urgent' : 
+                                        (${incident.priorite != null and incident.priorite.name() == 'HAUTE'} ? 'priority-high' : '')">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <strong th:text="'#' + ${incident.id}">ID</strong>
+                                    <span class="mx-2">•</span>
+                                    <strong th:text="${incident.titre}">Titre</strong>
+                                    <th:block th:switch="${incident.priorite?.name()}">
+                                        <span th:case="'URGENTE'" class="badge bg-danger ms-2">URGENTE</span>
+                                        <span th:case="'HAUTE'" class="badge bg-warning text-dark ms-2">HAUTE</span>
+                                        <span th:case="'MOYENNE'" class="badge bg-primary ms-2">MOYENNE</span>
+                                        <span th:case="*" class="badge bg-secondary ms-2">BASSE</span>
+                                    </th:block>
+                                </div>
+                                <p class="text-muted mb-2 small" 
+                                   th:text="${incident.description != null ? (#strings.length(incident.description) > 100 ? #strings.substring(incident.description, 0, 100) + '...' : incident.description) : ''}">
+                                    Description
+                                </p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i>
+                                    <span th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                    <span class="ms-3">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span th:text="${incident.quartier != null ? incident.quartier.nom : 'N/A'}">Quartier</span>
+                                    </span>
+                                    <span class="ms-3">
+                                        <i class="fas fa-user"></i>
+                                        <span th:text="${incident.auteur != null ? incident.auteur.prenom + ' ' + incident.auteur.nom : 'N/A'}">Citoyen</span>
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <a th:href="@{/admin/incidents}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-user-plus"></i> Affecter un agent
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -120,12 +413,37 @@
                     labels: statusLabels,
                     datasets: [{
                         data: statusData,
-                        backgroundColor: ['#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6c757d']
+                        backgroundColor: ['#6c757d', '#17a2b8', '#ffc107', '#28a745', '#dc3545'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    weight: 500
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.parsed || 0;
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -143,15 +461,52 @@
                     datasets: [{
                         label: 'Nombre d\'incidents',
                         data: priorityData,
-                        backgroundColor: '#dc3545'
+                        backgroundColor: [
+                            '#dc3545',
+                            '#ffc107',
+                            '#007bff',
+                            '#6c757d'
+                        ],
+                        borderRadius: 8,
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            cornerRadius: 8
+                        }
+                    },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: 500
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
@@ -161,4 +516,3 @@
     </script>
 </body>
 </html>
-
