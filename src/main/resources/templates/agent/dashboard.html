@@ -79,7 +79,7 @@
                             <div class="mb-2">
                                 <i class="fas fa-clipboard-list fa-3x opacity-75"></i>
                             </div>
-                            <h3 class="display-4 fw-bold" th:text="${incidentsAssignes != null ? #lists.size(incidentsAssignes) : 0}">0</h3>
+                            <h3 class="display-4 fw-bold" th:text="${incidentsAssignes != null ? incidentsAssignes.size() : 0}">0</h3>
                             <p class="mb-0 text-uppercase">Mes incidents assignés</p>
                         </div>
                     </div>
@@ -92,9 +92,7 @@
                             <div class="mb-2">
                                 <i class="fas fa-hourglass-half fa-3x opacity-75"></i>
                             </div>
-                            <th:block th:with="enCours=${(incidentsParStatut['PRIS_EN_CHARGE'] ?: 0) + (incidentsParStatut['EN_RESOLUTION'] ?: 0)}">
-                                <h3 class="display-4 fw-bold" th:text="${enCours}">0</h3>
-                            </th:block>
+                            <h3 class="display-4 fw-bold" th:text="${(incidentsParStatut['PRIS_EN_CHARGE'] ?: 0) + (incidentsParStatut['EN_RESOLUTION'] ?: 0)}">0</h3>
                             <p class="mb-0 text-uppercase">En cours</p>
                         </div>
                     </div>
@@ -163,14 +161,14 @@
                         </div>
                         <div class="card-body">
                             <!-- État vide -->
-                            <div th:if="${incidentsAssignes == null || #lists.isEmpty(incidentsAssignes)}" class="empty-state">
+                            <div th:if="${incidentsAssignes == null or incidentsAssignes.isEmpty()}" class="empty-state">
                                 <i class="fas fa-inbox"></i>
                                 <h4>Aucun incident assigné pour le moment.</h4>
                                 <p class="text-muted">Les incidents qui vous seront assignés apparaîtront ici.</p>
                             </div>
 
                             <!-- Tableau avec données -->
-                            <div th:unless="${incidentsAssignes == null || #lists.isEmpty(incidentsAssignes)}" class="table-responsive">
+                            <div th:unless="${incidentsAssignes == null or incidentsAssignes.isEmpty()}" class="table-responsive">
                                 <table class="table table-hover align-middle">
                                     <thead class="table-light">
                                         <tr>
@@ -185,40 +183,34 @@
                                         <tr th:each="incident, iterStat : ${incidentsAssignes}" th:if="${iterStat.index < 5}">
                                             <td>
                                                 <strong th:text="${incident.titre ?: 'Sans titre'}">Titre</strong><br/>
-                                                <small class="text-muted" th:text="${incident.description != null ? #strings.abbreviate(incident.description, 60) : '-'}">Description</small>
+                                                <small class="text-muted" th:text="${incident.description != null and !#strings.isEmpty(incident.description) ? (incident.description.length() > 60 ? incident.description.substring(0, 60) + '...' : incident.description) : '-'}">Description</small>
                                             </td>
                                             <td>
-                                                <span class="badge badge-status"
-                                                      th:if="${incident.statut != null}"
-                                                      th:classappend="${incident.statut.name() == 'SIGNALE'} ? 'bg-secondary' : 
-                                                                      ${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info' :
-                                                                      ${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning text-dark' :
-                                                                      ${incident.statut.name() == 'RESOLU'} ? 'bg-success' : 'bg-dark'"
-                                                      th:text="${incident.statut.name()}">
-                                                    STATUT
-                                                </span>
-                                                <span th:if="${incident.statut == null}" class="text-muted">-</span>
+                                                <th:block th:switch="${incident.statut?.name()}">
+                                                    <span th:case="'SIGNALE'" class="badge badge-status bg-secondary" th:text="${incident.statut.name()}">SIGNALE</span>
+                                                    <span th:case="'PRIS_EN_CHARGE'" class="badge badge-status bg-info" th:text="${incident.statut.name()}">PRIS_EN_CHARGE</span>
+                                                    <span th:case="'EN_RESOLUTION'" class="badge badge-status bg-warning text-dark" th:text="${incident.statut.name()}">EN_RESOLUTION</span>
+                                                    <span th:case="'RESOLU'" class="badge badge-status bg-success" th:text="${incident.statut.name()}">RESOLU</span>
+                                                    <span th:case="*" class="text-muted">-</span>
+                                                </th:block>
                                             </td>
                                             <td>
-                                                <span class="badge badge-status"
-                                                      th:if="${incident.priorite != null}"
-                                                      th:classappend="${incident.priorite.name() == 'BASSE'} ? 'bg-secondary' :
-                                                                      ${incident.priorite.name() == 'MOYENNE'} ? 'bg-primary' :
-                                                                      ${incident.priorite.name() == 'HAUTE'} ? 'bg-warning text-dark' :
-                                                                      ${incident.priorite.name() == 'URGENTE'} ? 'bg-danger' : 'bg-dark'"
-                                                      th:text="${incident.priorite.name()}">
-                                                    PRIORITE
-                                                </span>
-                                                <span th:if="${incident.priorite == null}" class="text-muted">-</span>
+                                                <th:block th:switch="${incident.priorite?.name()}">
+                                                    <span th:case="'BASSE'" class="badge badge-status bg-secondary" th:text="${incident.priorite.name()}">BASSE</span>
+                                                    <span th:case="'MOYENNE'" class="badge badge-status bg-primary" th:text="${incident.priorite.name()}">MOYENNE</span>
+                                                    <span th:case="'HAUTE'" class="badge badge-status bg-warning text-dark" th:text="${incident.priorite.name()}">HAUTE</span>
+                                                    <span th:case="'URGENTE'" class="badge badge-status bg-danger" th:text="${incident.priorite.name()}">URGENTE</span>
+                                                    <span th:case="*" class="text-muted">-</span>
+                                                </th:block>
                                             </td>
                                             <td>
                                                 <i class="fas fa-calendar-alt text-muted"></i>
                                                 <span th:if="${incident.dateCreation != null}" th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm')}">Date</span>
-                                                <span th:if="${incident.dateCreation == null}" class="text-muted">-</span>
+                                                <span th:unless="${incident.dateCreation != null}" class="text-muted">-</span>
                                             </td>
                                             <td class="text-end table-actions">
                                                 <!-- Bouton selon le statut -->
-                                                <form th:if="${incident.statut != null && incident.statut.name() == 'PRIS_EN_CHARGE'}"
+                                                <form th:if="${incident.statut != null and incident.statut.name() == 'PRIS_EN_CHARGE'}"
                                                       th:action="@{/agent/incidents/{id}/en-resolution(id=${incident.id})}" 
                                                       method="post"
                                                       style="display: inline;"
@@ -228,7 +220,7 @@
                                                     </button>
                                                 </form>
                                                 
-                                                <form th:if="${incident.statut != null && incident.statut.name() == 'EN_RESOLUTION'}"
+                                                <form th:if="${incident.statut != null and incident.statut.name() == 'EN_RESOLUTION'}"
                                                       th:action="@{/agent/incidents/{id}/resolu(id=${incident.id})}" 
                                                       method="post"
                                                       style="display: inline;"
@@ -238,9 +230,9 @@
                                                     </button>
                                                 </form>
                                                 
-                                                <a th:href="@{/agent/mes-assignations}" 
+                                                <a th:href="@{/agent/incidents/{id}(id=${incident.id})}" 
                                                    class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-cog"></i> Gérer
+                                                    <i class="fas fa-eye"></i> Voir
                                                 </a>
                                             </td>
                                         </tr>
