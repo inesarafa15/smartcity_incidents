@@ -130,6 +130,7 @@ public class AdminService {
     
     // ========== STATISTIQUES DU DÉPARTEMENT ==========
     
+ // In AdminService.java, update getStatistiquesDepartement method:
     public Map<String, Object> getStatistiquesDepartement(Utilisateur admin) {
         if (admin.getDepartement() == null) {
             throw new UnauthorizedException("Vous n'êtes pas affecté à un département");
@@ -138,16 +139,20 @@ public class AdminService {
         Map<String, Object> stats = new HashMap<>();
         Long departementId = admin.getDepartement().getId();
         
+        // Get all incidents for the department
+        List<Incident> incidents = incidentRepository.findByDepartementId(departementId);
+        
         // Incidents par statut
         Map<String, Long> parStatut = new HashMap<>();
         for (StatutIncident statut : StatutIncident.values()) {
-            long count = incidentRepository.findByStatutAndDepartementId(statut, departementId).size();
+            long count = incidents.stream()
+                    .filter(i -> i.getStatut() == statut)
+                    .count();
             parStatut.put(statut.name(), count);
         }
         stats.put("incidentsParStatut", parStatut);
         
         // Incidents par priorité
-        List<Incident> incidents = incidentRepository.findByDepartementId(departementId);
         Map<String, Long> parPriorite = new HashMap<>();
         for (PrioriteIncident priorite : PrioriteIncident.values()) {
             long count = incidents.stream()
@@ -157,15 +162,41 @@ public class AdminService {
         }
         stats.put("incidentsParPriorite", parPriorite);
         
+        // Calculer les statistiques manquantes
+        long totalIncidents = incidents.size();
+        long incidentsResolus = incidents.stream()
+                .filter(i -> i.getStatut() == StatutIncident.RESOLU || i.getStatut() == StatutIncident.CLOTURE)
+                .count();
+        long incidentsEnCours = incidents.stream()
+                .filter(i -> i.getStatut() == StatutIncident.PRIS_EN_CHARGE || 
+                             i.getStatut() == StatutIncident.EN_RESOLUTION)
+                .count();
+        long incidentsEnAttente = incidents.stream()
+                .filter(i -> i.getStatut() == StatutIncident.SIGNALE)
+                .count();
+        
         // Agents disponibles
-        stats.put("agentsDisponibles", agentsDisponibles(admin).size());
+        List<Utilisateur> agents = agentsDisponibles(admin);
+        
+        // Temps moyen de résolution (exemple simple)
+        double tempsMoyen = incidents.stream()
+                .filter(i -> i.getStatut() == StatutIncident.RESOLU || i.getStatut() == StatutIncident.CLOTURE)
+                .filter(i -> i.getDateCreation() != null && i.getDateDerniereMiseAJour() != null)
+                .mapToLong(i -> java.time.Duration.between(i.getDateCreation(), i.getDateDerniereMiseAJour()).toHours())
+                .average()
+                .orElse(0.0);
+        
+        // Ajouter toutes les statistiques
+        stats.put("totalIncidents", totalIncidents);
+        stats.put("incidentsResolus", incidentsResolus);
+        stats.put("incidentsEnCours", incidentsEnCours);
+        stats.put("incidentsEnAttente", incidentsEnAttente);
+        stats.put("agentsDisponibles", (long) agents.size());
         stats.put("totalAgents", utilisateurRepository.findByDepartementId(departementId)
                 .stream()
                 .filter(u -> u.getRole() == RoleType.AGENT_MUNICIPAL)
                 .count());
-        
-        // Incidents en attente
-        stats.put("incidentsEnAttente", incidentsEnAttente(admin).size());
+        stats.put("tempsResolutionMoyen", String.format("%.1f", tempsMoyen));
         
         return stats;
     }
