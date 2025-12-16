@@ -1,8 +1,10 @@
 package com.smartcity.incident_management.services.email;
 
 import com.smartcity.incident_management.entities.Incident;
+import com.smartcity.incident_management.entities.PasswordResetToken;
 import com.smartcity.incident_management.entities.Utilisateur;
 import com.smartcity.incident_management.enums.StatutIncident;
+import com.smartcity.incident_management.repository.PasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -14,7 +16,9 @@ import org.thymeleaf.context.Context;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import java.time.LocalDateTime;
 import java.util.Locale;
+import java.util.UUID;
 
 @Service
 public class EmailService {
@@ -24,6 +28,9 @@ public class EmailService {
     
     @Autowired
     private TemplateEngine templateEngine;
+    
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
     
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -36,12 +43,21 @@ public class EmailService {
      */
     public void envoyerEmailBienvenue(Utilisateur utilisateur, String motDePasseTemporaire) {
         try {
+            String tokenValue = UUID.randomUUID().toString();
+            PasswordResetToken token = new PasswordResetToken();
+            token.setToken(tokenValue);
+            token.setUtilisateur(utilisateur);
+            token.setCreatedAt(LocalDateTime.now());
+            token.setExpiresAt(LocalDateTime.now().plusHours(24));
+            token.setUsed(false);
+            passwordResetTokenRepository.save(token);
+            
             Context context = new Context(Locale.FRENCH);
             context.setVariable("utilisateur", utilisateur);
             context.setVariable("email", utilisateur.getEmail());
-            context.setVariable("motDePasseTemporaire", motDePasseTemporaire);
             context.setVariable("loginUrl", baseUrl + "/connexion");
             context.setVariable("baseUrl", baseUrl);
+            context.setVariable("resetUrl", baseUrl + "/mot-de-passe/reinitialiser?token=" + tokenValue);
             
             String htmlContent = templateEngine.process("emails/bienvenue", context);
             

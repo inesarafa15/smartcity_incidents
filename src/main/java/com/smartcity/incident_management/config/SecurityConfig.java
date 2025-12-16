@@ -3,6 +3,7 @@ package com.smartcity.incident_management.config;
 import com.smartcity.incident_management.security.OAuth2AuthenticationSuccessHandler;
 import com.smartcity.incident_management.security.UserDetailsServiceImpl;
 import com.smartcity.incident_management.services.oauth2.CustomOAuth2UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +45,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/inscription", "/connexion", "/oauth2/**", "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
+                .requestMatchers("/mot-de-passe/**").permitAll()
                 .requestMatchers("/super-admin/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMINISTRATEUR")
                 .requestMatchers("/agent/**").hasRole("AGENT_MUNICIPAL")
