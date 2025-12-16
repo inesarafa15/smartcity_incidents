@@ -61,18 +61,15 @@
         <div class="credentials">
             <p><strong>Vos identifiants de connexion :</strong></p>
             <p>Email : <strong th:text="${email}"></strong></p>
-            <p th:if="${motDePasseTemporaire != null}">
-                Mot de passe temporaire : <strong th:text="${motDePasseTemporaire}"></strong>
-            </p>
-            <p th:if="${motDePasseTemporaire != null}" style="color: #e74c3c; font-size: 0.9em;">
-                ⚠️ Veuillez changer ce mot de passe lors de votre première connexion.
+            <p style="color: #555; font-size: 0.95em;">
+                Pour des raisons de sécurité, définissez votre mot de passe en cliquant sur le bouton ci-dessous.
             </p>
         </div>
         
-        <p>Vous pouvez maintenant vous connecter à la plateforme et commencer à signaler des incidents dans votre ville.</p>
+        <p>Définissez votre mot de passe avant de vous connecter à la plateforme.</p>
         
         <div style="text-align: center;">
-            <a th:href="${loginUrl}" class="button">Se connecter</a>
+            <a th:href="${resetUrl}" class="button">Définir mon mot de passe</a>
         </div>
         
         <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>

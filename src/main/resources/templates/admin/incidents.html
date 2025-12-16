@@ -59,6 +59,13 @@
                                         th:attr="data-bs-target='#affecterModal' + ${incident.id}">
                                     Affecter
                                 </button>
+                                <a th:if="${incident.latitude != null && incident.longitude != null}"
+                                   th:href="'https://www.google.com/maps?q=' + ${incident.latitude} + ',' + ${incident.longitude}"
+                                   class="btn btn-sm btn-outline-secondary ms-1"
+                                   target="_blank"
+                                   title="Localiser sur la carte">
+                                    Localiser
+                                </a>
                             </td>
                         </tr>
                     </tbody>
