@@ -16,7 +16,7 @@
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             transition: transform 0.2s;
         }
         .incident-card:hover {
@@ -26,7 +26,7 @@
         .incident-header-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 25px 30px;
             position: relative;
             overflow: hidden;
         }
@@ -67,7 +67,7 @@
         .info-box {
             background: #f8f9fa;
             border-left: 4px solid #667eea;
-            padding: 20px;
+            padding: 20px 25px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
@@ -94,12 +94,13 @@
         }
         .action-btn {
             border-radius: 10px;
-            padding: 12px 24px;
+            padding: 10px 20px;
             font-weight: 600;
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            margin: 5px 0;
         }
         .action-btn:hover {
             transform: translateY(-2px);
@@ -108,8 +109,9 @@
         .photo-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 10px;
             margin-top: 20px;
+            padding: 10px 0;
         }
         .photo-item {
             position: relative;
@@ -166,7 +168,7 @@
         .timeline-item {
             position: relative;
             margin-bottom: 30px;
-            padding: 20px;
+            padding: 15px 20px;
             background: #f8f9fa;
             border-radius: 10px;
         }
@@ -195,7 +197,7 @@
             background: #fff;
             border: 2px solid #e9ecef;
             border-radius: 10px;
-            padding: 15px;
+            padding: 12px 15px;
             margin-bottom: 15px;
             transition: all 0.3s;
         }
@@ -216,8 +218,8 @@
         }
         .breadcrumb {
             background: transparent;
-            padding: 0;
-            margin-bottom: 20px;
+            padding: 15px 0;
+            margin-bottom: 25px;
         }
         .breadcrumb-item a {
             color: #667eea;
@@ -240,6 +242,39 @@
             font-size: 1.05rem;
             line-height: 1.8;
             color: #495057;
+        }
+        
+        /* Nouvelles classes pour le padding */
+        .incident-card .card-body {
+            padding: 25px;
+        }
+        
+        .incident-header-card .card-body {
+            padding: 0;
+        }
+        
+        .container-fluid.p-4 {
+            padding: 30px !important;
+        }
+        
+        .main-content {
+            padding: 20px 0;
+        }
+        
+        .quick-actions > .incident-card {
+            margin-bottom: 20px;
+        }
+        
+        .quick-actions > .incident-card:last-child {
+            margin-bottom: 0;
+        }
+        
+        .modal-body {
+            padding: 20px 25px;
+        }
+        
+        .modal-footer {
+            padding: 15px 25px;
         }
     </style>
 </head>
@@ -372,16 +407,44 @@
                     <!-- Photos -->
                     <div th:if="${incident.photos != null and !incident.photos.isEmpty()}" class="incident-card">
                         <div class="card-body">
-                            <h5 class="card-title mb-3">
-                                <i class="fas fa-images text-success"></i> Photos (<span th:text="${incident.photos.size()}">0</span>)
+                            <h5 class="card-title mb-4">
+                                <i class="fas fa-images text-success"></i> Galerie Photos
                             </h5>
-                            <div class="photo-gallery">
-                                <div th:each="photo : ${incident.photos}" class="photo-item" 
-                                     data-bs-toggle="modal" data-bs-target="#photoModal"
-                                     th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
-                                    <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo incident" loading="lazy">
-                                    <div class="photo-overlay">
-                                        <i class="fas fa-search-plus fa-2x text-white"></i>
+
+                            <!-- Photos de création -->
+                            <div th:with="creationPhotos=${incident.photos.?[typePhoto == null || typePhoto.name() == 'CREATION']}">
+                                <div th:if="${!creationPhotos.isEmpty()}">
+                                    <h6 class="border-bottom pb-2 mb-3 text-muted">
+                                        <i class="fas fa-camera text-secondary me-2"></i>Photos du signalement
+                                    </h6>
+                                    <div class="photo-gallery mb-4">
+                                        <div th:each="photo : ${creationPhotos}" class="photo-item" 
+                                             data-bs-toggle="modal" data-bs-target="#photoModal"
+                                             th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                            <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo incident" loading="lazy">
+                                            <div class="photo-overlay">
+                                                <i class="fas fa-search-plus fa-2x text-white"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Photos de résolution -->
+                            <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION']}">
+                                <div th:if="${!resolutionPhotos.isEmpty()}">
+                                    <h6 class="border-bottom pb-2 mb-3 text-success">
+                                        <i class="fas fa-check-double me-2"></i>Preuves de résolution
+                                    </h6>
+                                    <div class="photo-gallery">
+                                        <div th:each="photo : ${resolutionPhotos}" class="photo-item" 
+                                             data-bs-toggle="modal" data-bs-target="#photoModal"
+                                             th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                            <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Preuve résolution" loading="lazy">
+                                            <div class="photo-overlay">
+                                                <i class="fas fa-search-plus fa-2x text-white"></i>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
