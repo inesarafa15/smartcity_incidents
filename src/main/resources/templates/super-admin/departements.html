@@ -87,7 +87,6 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -113,7 +112,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- Filtres -->
             <div class="filter-card d-flex justify-content-end align-items-center">
                 <form method="get" action="/super-admin/departements" class="d-flex align-items-center gap-2">
                     <label for="size" class="form-label mb-0 text-muted fw-bold small text-nowrap">Afficher :</label>
@@ -127,7 +125,6 @@
                 </form>
             </div>
 
-            <!-- Tableau -->
             <div class="table-card">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
@@ -186,7 +183,6 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
                 <div th:if="${departements.totalPages > 1}" class="d-flex justify-content-center py-4 border-top">
                     <nav>
                         <ul class="pagination mb-0">

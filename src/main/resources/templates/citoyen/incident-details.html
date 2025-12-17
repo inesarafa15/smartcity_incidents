@@ -219,7 +219,6 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -253,7 +252,6 @@
                 </div>
             </div>
 
-            <!-- Messages Flash -->
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -264,9 +262,7 @@
             </div>
 
             <div class="row">
-                <!-- Colonne principale -->
                 <div class="col-lg-8">
-                    <!-- Titre et Badges -->
                     <div class="incident-card">
                         <div class="card-body">
                             <div class="row">
@@ -319,7 +315,6 @@
                         </div>
                     </div>
 
-                    <!-- Description -->
                     <div class="incident-card">
                         <div class="card-body">
                             <h5 class="card-title mb-3">
@@ -329,7 +324,6 @@
                         </div>
                     </div>
 
-                    <!-- Localisation -->
                     <div class="incident-card">
                         <div class="card-body">
                             <h5 class="card-title mb-3">
@@ -354,14 +348,12 @@
                         </div>
                     </div>
 
-                    <!-- Photos -->
                     <div th:if="${incident.photos != null and !incident.photos.isEmpty()}" class="incident-card">
                         <div class="card-body">
                             <h5 class="card-title mb-4">
                                 <i class="fas fa-images text-success"></i> Galerie Photos
                             </h5>
 
-                            <!-- Photos de création -->
                             <div th:with="creationPhotos=${incident.photos.?[typePhoto == null || typePhoto.name() == 'CREATION']}">
                                 <div th:if="${!creationPhotos.isEmpty()}">
                                     <h6 class="border-bottom pb-2 mb-3 text-muted">
@@ -380,7 +372,6 @@
                                 </div>
                             </div>
 
-                            <!-- Photos de résolution actuelles -->
                             <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && (estRefuse == null || !estRefuse)]}">
                                 <div th:if="${!resolutionPhotos.isEmpty()}">
                                     <h6 class="border-bottom pb-2 mb-3 text-success">
@@ -401,14 +392,12 @@
                         </div>
                     </div>
 
-                    <!-- TIMELINE CHRONOLOGIQUE AMÉLIORÉE -->
                     <div class="incident-card">
                         <div class="card-body">
                             <h5 class="card-title mb-4">
                                 <i class="fas fa-history text-info"></i> Historique Chronologique
                             </h5>
                             <div class="timeline">
-                                <!-- 1. Signalement initial -->
                                 <div class="timeline-item">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <strong><i class="fas fa-flag"></i> Incident signalé</strong>
@@ -420,7 +409,6 @@
                                     <p class="mb-0 text-muted">📍 Votre signalement a été enregistré avec succès</p>
                                 </div>
                                 
-                                <!-- 2. Assignation -->
                                 <div th:if="${incident.agentAssigne != null}" class="timeline-item info">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <strong><i class="fas fa-user-plus"></i> Assigné à un agent</strong>
@@ -430,11 +418,9 @@
                                     </p>
                                 </div>
                                 
-                                <!-- 3. Historique des notifications -->
                                 <th:block th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}">
                                     <th:block th:each="notif : ${incident.notificationsIncident}">
                                         
-                                        <!-- TENTATIVE REFUSÉE -->
                                         <div th:if="${notif.message.contains('🔄') or notif.message.contains('refusée')}" 
                                              class="timeline-item danger">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -445,14 +431,12 @@
                                                 </small>
                                             </div>
                                             
-                                            <!-- Motif du refus -->
                                             <div th:if="${notif.message.contains('Motif')}" class="alert alert-danger py-2 mb-2">
                                                 <strong class="d-block"><i class="fas fa-exclamation-triangle"></i> Motif :</strong>
                                                 <p class="mb-0 small" 
                                                    th:text="${#strings.substringAfter(#strings.substringBefore(notif.message + ' ', '📝'), 'Motif du refus : ')}">Motif</p>
                                             </div>
                                             
-                                            <!-- Mini-galerie des photos refusées -->
                                             <div th:if="${incident.photos != null}" class="mt-2">
                                                 <th:block th:with="refusedPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && estRefuse == true]}">
                                                     <div th:if="${!refusedPhotos.isEmpty()}" class="mini-gallery">
@@ -476,7 +460,6 @@
                                             </p>
                                         </div>
                                         
-                                        <!-- RÉSOLUTION VALIDÉE -->
                                         <div th:if="${notif.message.contains('✅') and notif.message.contains('validée')}" 
                                              class="timeline-item success">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -491,7 +474,6 @@
                                             </p>
                                         </div>
                                         
-                                        <!-- AUTRES NOTIFICATIONS (filtrées) -->
                                         <div th:if="${!notif.message.contains('🔄') and 
                                                     !notif.message.contains('refusée') and 
                                                     !notif.message.contains('✅') and
@@ -515,7 +497,6 @@
                                     </th:block>
                                 </th:block>
                                 
-                                <!-- 4. Feedback soumis -->
                                 <div th:if="${incident.dateFeedback != null}" class="timeline-item success">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <strong><i class="fas fa-star"></i> Votre feedback soumis</strong>
@@ -538,7 +519,6 @@
                                     </p>
                                 </div>
                                 
-                                <!-- 5. Clôture finale -->
                                 <div th:if="${incident.statut != null and incident.statut.name() == 'CLOTURE'}" class="timeline-item">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <strong><i class="fas fa-archive"></i> Incident clôturé</strong>
@@ -556,9 +536,7 @@
                     </div>
                 </div>
 
-                <!-- Colonne latérale -->
                 <div class="col-lg-4">
-                    <!-- Informations -->
                     <div class="incident-card">
                         <div class="card-body">
                             <h5 class="card-title mb-3">
@@ -581,7 +559,6 @@
                         </div>
                     </div>
 
-                    <!-- Section Résolution et Feedback -->
                     <div th:if="${incident.statut != null and (incident.statut.name() == 'RESOLU' or incident.statut.name() == 'CLOTURE')}" 
                          class="incident-card">
                         <div class="card-body">
@@ -589,7 +566,6 @@
                                 <i class="fas fa-check-circle text-success"></i> Résolution
                             </h5>
 
-                            <!-- Commentaire RÉEL de l'agent (filtré) -->
                             <div class="resolution-section">
                                 <h6 class="fw-bold mb-2">
                                     <i class="fas fa-comment-dots text-success"></i> Commentaire de l'agent
@@ -616,7 +592,6 @@
                                 </p>
                             </div>
 
-                            <!-- Historique des Feedbacks (Avant refus) -->
                             <div th:if="${incident.historiquesFeedback != null and !incident.historiquesFeedback.isEmpty()}" class="feedback-history-section mb-4">
                                 <h6 class="fw-bold mb-3 text-muted">
                                     <i class="fas fa-history"></i> Historique des Feedbacks (Avant refus)
@@ -660,7 +635,6 @@
                                 <hr class="my-4">
                             </div>
 
-                            <!-- Mon Feedback (si déjà soumis) -->
                         
                             <div th:if="${incident.dateFeedback != null}" class="feedback-section">
                                 <h6 class="fw-bold mb-3">
@@ -701,7 +675,6 @@
                                 </div>
                             </div>
 
-                            <!-- Bouton Feedback -->
                             <div th:if="${incident.dateFeedback == null and incident.statut.name() == 'RESOLU'}" 
                                  class="text-center mt-3 pt-3" style="border-top: 1px solid #e9ecef;">
                                 <p class="text-muted small mb-3">
@@ -718,7 +691,6 @@
         </div>
     </div>
 
-    <!-- Modal Photo -->
     <div class="modal fade" id="photoModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
@@ -733,7 +705,6 @@
         </div>
     </div>
 
-    <!-- Modal Feedback -->
     <div class="modal fade" id="feedbackModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -796,7 +767,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script th:inline="javascript">
-        // Photo modal
         const photoModal = document.getElementById('photoModal');
         if (photoModal) {
             photoModal.addEventListener('show.bs.modal', function (event) {
@@ -806,8 +776,6 @@
             });
         }
 
-        // Leaflet Map
-        /*<![CDATA[*/
         const lat = /*[[${incident.latitude}]]*/ null;
         const lng = /*[[${incident.longitude}]]*/ null;
         const adresse = /*[[${incident.adresseTextuelle}]]*/ 'Localisation de l\'incident';
@@ -837,7 +805,6 @@
                 radius: 50
             }).addTo(map);
         }
-        /*]]>*/
     </script>
 </body>
 </html>
