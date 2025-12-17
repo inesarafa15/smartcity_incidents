@@ -11,6 +11,47 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
     <style>
+    /* Custom button color overrides */
+    .btn-black {
+        background-color: #212529 !important;
+        border-color: #212529 !important;
+        color: white !important;
+    }
+    
+    .btn-black:hover,
+    .btn-black:focus {
+        background-color: #000000 !important;
+        border-color: #000000 !important;
+        color: white !important;
+    }
+    
+    /* New custom color for the eye button */
+    .btn-custom-eye {
+        background-color: #198754 !important; /* Bootstrap's success color */
+        border-color: #198754 !important;
+        color: white !important;
+    }
+    
+    .btn-custom-eye:hover,
+    .btn-custom-eye:focus {
+        background-color: #157347 !important;
+        border-color: #146c43 !important;
+        color: white !important;
+    }
+    
+    /* Override btn-outline-secondary */
+    .btn-outline-secondary {
+        color: #6c757d !important;
+        border-color: #6c757d !important;
+        background-color: transparent !important;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #6c757d !important;
+        color: white !important;
+    }
+</style>
+    <style>
         :root {
             --primary-color: #2c3e50;
             --secondary-color: #34495e;
@@ -343,6 +384,16 @@
             border-color: #667eea;
             box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
         }
+        .btn-custom-filter {
+    background-color: rgba(44, 62, 80, 0.5);
+    color: #2c3e50;
+    border: 1px solid #2c3e50;
+}
+
+.btn-custom-filter:hover {
+    background-color: rgba(44, 62, 80, 0.35);
+    color: #fff;
+}
 
         @media (max-width: 768px) {
             .main-content {
@@ -361,6 +412,13 @@
             .action-buttons {
                 flex-wrap: wrap;
             }
+			.bg-primary, .btn-primary {
+			    background-color: #0e7490 !important;
+			}
+			
+			.btn-primary:hover {
+			    background-color: #155e75 !important;
+			}
             
             .table-modern thead {
                 display: none;
@@ -479,11 +537,12 @@
                                 <label class="form-label">Priorité</label>
                                 <select class="form-select" name="priorite">
                                     <option value="">Toutes les priorités</option>
-                                    <option value="URGENTE">Urgente</option>
-                                    <option value="HAUTE">Haute</option>
+                                    <option value="CRITIQUE">Urgente</option>
+                                    <option value="ELEVEE">Haute</option>
                                     <option value="MOYENNE">Moyenne</option>
-                                    <option value="BASSE">Basse</option>
+                                    <option value="FAIBLE">Basse</option>
                                 </select>
+                                
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Trier par</label>
@@ -501,7 +560,7 @@
                                 </select>
                             </div>
                             <div class="col-12">
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-custom-filter">
                                     <i class="fas fa-search"></i> Appliquer les filtres
                                 </button>
                                 <a th:href="@{/admin/incidents}" class="btn btn-secondary">
@@ -563,16 +622,16 @@
                             </td>
                             <td data-label="Priorité">
                                 <th:block th:switch="${incident.priorite?.name()}">
-                                    <span th:case="'URGENTE'" class="priority-badge bg-danger text-white">
+                                    <span th:case="'CRITIQUE'" class="priority-badge bg-danger text-white">
                                         <i class="fas fa-exclamation-triangle"></i> URGENTE
                                     </span>
-                                    <span th:case="'HAUTE'" class="priority-badge bg-warning text-dark">
+                                    <span th:case="'ELEVEE'" class="priority-badge bg-warning text-dark">
                                         <i class="fas fa-exclamation-circle"></i> HAUTE
                                     </span>
                                     <span th:case="'MOYENNE'" class="priority-badge bg-primary text-white">
                                         <i class="fas fa-info-circle"></i> MOYENNE
                                     </span>
-                                    <span th:case="'BASSE'" class="priority-badge bg-secondary text-white">
+                                    <span th:case="'FAIBLE'" class="priority-badge bg-secondary text-white">
                                         <i class="fas fa-minus-circle"></i> BASSE
                                     </span>
                                     <span th:case="*" class="text-muted">
@@ -601,36 +660,36 @@
                                 </th:block>
                             </td>
                             <td data-label="Date Création">
-                                <i class="fas fa-calendar text-primary me-2"></i>
+                                <i class="fas fa-calendar btn-black me-2"></i>
                                 <span th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy')}"></span>
                                 <br>
                                 <small class="text-muted" th:text="${#temporals.format(incident.dateCreation, 'HH:mm')}"></small>
                             </td>
                             <td data-label="Actions">
-                                <div class="action-buttons">
-                                    <th:block th:if="${incident.agentAssigne == null}">
-                                        <button type="button" 
-                                                class="btn-action btn-primary" 
-                                                data-bs-toggle="modal" 
-                                                th:attr="data-bs-target='#affecterModal' + ${incident.id}"
-                                                title="Affecter un agent">
-                                            <i class="fas fa-user-plus"></i>
-                                        </button>
-                                    </th:block>
-                                    <a th:if="${incident.latitude != null && incident.longitude != null}"
-                                       th:href="'https://www.google.com/maps?q=' + ${incident.latitude} + ',' + ${incident.longitude}"
-                                       class="btn-action btn-outline-secondary"
-                                       target="_blank"
-                                       title="Localiser sur la carte">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                    </a>
-                                    <a th:href="@{/admin/incidents/{id}(id=${incident.id})}"
-                                       class="btn-action btn-info"
-                                       title="Voir les détails">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
+    <div class="action-buttons">
+        <th:block th:if="${incident.agentAssigne == null}">
+            <button type="button" 
+                    class="btn-action btn-black" 
+                    data-bs-toggle="modal" 
+                    th:attr="data-bs-target='#affecterModal' + ${incident.id}"
+                    title="Affecter un agent">
+                <i class="fas fa-user-plus"></i>
+            </button>
+        </th:block>
+        <a th:if="${incident.latitude != null && incident.longitude != null}"
+           th:href="'https://www.google.com/maps?q=' + ${incident.latitude} + ',' + ${incident.longitude}"
+           class="btn-action btn-outline-secondary"
+           target="_blank"
+           title="Localiser sur la carte">
+            <i class="fas fa-map-marker-alt"></i>
+        </a>
+        <a th:href="@{/admin/incidents/{id}(id=${incident.id})}"
+           class="btn-action btn-custom-eye"
+           title="Voir les détails">
+            <i class="fas fa-eye"></i>
+        </a>
+    </div>
+</td>
                         </tr>
                     </tbody>
                 </table>
