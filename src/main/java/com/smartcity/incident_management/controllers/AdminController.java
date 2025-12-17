@@ -44,13 +44,19 @@ public class AdminController {
     @GetMapping("/incidents")
     public String incidents(@RequestParam(defaultValue = "0") int page,
                            @RequestParam(defaultValue = "10") int size,
+                           @RequestParam(required = false) String statut,
+                           @RequestParam(required = false) String priorite,
                            @RequestParam(defaultValue = "dateCreation") String sortBy,
                            @RequestParam(defaultValue = "DESC") String sortDir,
                            Model model) {
         Utilisateur admin = SecurityUtils.getCurrentUser();
-        Page incidents = adminService.incidentsDuDepartement(admin, page, size, sortBy, sortDir);
+        Page incidents = adminService.incidentsDuDepartement(admin, statut, priorite, page, size, sortBy, sortDir);
         model.addAttribute("incidents", incidents);
         model.addAttribute("agentsDisponibles", adminService.agentsDisponibles(admin));
+        model.addAttribute("statut", statut);
+        model.addAttribute("priorite", priorite);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
         return "admin/incidents";
     }
 

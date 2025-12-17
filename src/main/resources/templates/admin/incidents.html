@@ -512,43 +512,42 @@
 
         <div class="search-filter-container">
             <div class="card-body">
-                    <form method="get" th:action="@{/agent/incidents}">
+                    <form method="get" th:action="@{/admin/incidents}">
                         <input type="hidden" name="filter" th:value="${filter}" />
                         <div class="row g-3">
                             <div class="col-md-3">
                                 <label class="form-label">Statut</label>
                                 <select class="form-select" name="statut">
                                     <option value="">Tous les statuts</option>
-                                    <option value="SIGNALE">Signalé</option>
-                                    <option value="PRIS_EN_CHARGE">Pris en charge</option>
-                                    <option value="EN_RESOLUTION">En résolution</option>
-                                    <option value="RESOLU">Résolu</option>
+                                    <option value="SIGNALE" th:selected="${statut == 'SIGNALE'}">Signalé</option>
+                                    <option value="PRIS_EN_CHARGE" th:selected="${statut == 'PRIS_EN_CHARGE'}">Pris en charge</option>
+                                    <option value="EN_RESOLUTION" th:selected="${statut == 'EN_RESOLUTION'}">En résolution</option>
+                                    <option value="RESOLU" th:selected="${statut == 'RESOLU'}">Résolu</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Priorité</label>
                                 <select class="form-select" name="priorite">
                                     <option value="">Toutes les priorités</option>
-                                    <option value="CRITIQUE">Urgente</option>
-                                    <option value="ELEVEE">Haute</option>
-                                    <option value="MOYENNE">Moyenne</option>
-                                    <option value="FAIBLE">Basse</option>
+                                    <option value="CRITIQUE" th:selected="${priorite == 'CRITIQUE'}">Urgente</option>
+                                    <option value="ELEVEE" th:selected="${priorite == 'ELEVEE'}">Haute</option>
+                                    <option value="MOYENNE" th:selected="${priorite == 'MOYENNE'}">Moyenne</option>
+                                    <option value="FAIBLE" th:selected="${priorite == 'FAIBLE'}">Basse</option>
                                 </select>
-                                
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Trier par</label>
                                 <select class="form-select" name="sortBy">
-                                    <option value="dateCreation">Date de création</option>
-                                    <option value="priorite">Priorité</option>
-                                    <option value="statut">Statut</option>
+                                    <option value="dateCreation" th:selected="${sortBy == 'dateCreation'}">Date de création</option>
+                                    <option value="priorite" th:selected="${sortBy == 'priorite'}">Priorité</option>
+                                    <option value="statut" th:selected="${sortBy == 'statut'}">Statut</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Ordre</label>
                                 <select class="form-select" name="sortDir">
-                                    <option value="DESC">Décroissant</option>
-                                    <option value="ASC">Croissant</option>
+                                    <option value="DESC" th:selected="${sortDir == 'DESC'}">Décroissant</option>
+                                    <option value="ASC" th:selected="${sortDir == 'ASC'}">Croissant</option>
                                 </select>
                             </div>
                             <div class="col-12">

@@ -59,7 +59,7 @@ public class AdminService {
     
     // ========== GESTION DES INCIDENTS DU DÉPARTEMENT ==========
     
-    public Page<Incident> incidentsDuDepartement(Utilisateur admin, int page, int size, String sortBy, String sortDir) {
+    public Page<Incident> incidentsDuDepartement(Utilisateur admin, String statut, String priorite, int page, int size, String sortBy, String sortDir) {
         if (admin.getDepartement() == null) {
             throw new UnauthorizedException("Vous n'êtes pas affecté à un département");
         }
@@ -67,8 +67,34 @@ public class AdminService {
         Sort sort = sortDir.equalsIgnoreCase("DESC") ? 
                 Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
+
+        StatutIncident statutEnum = null;
+        if (statut != null && !statut.isEmpty()) {
+            try {
+                statutEnum = StatutIncident.valueOf(statut);
+            } catch (IllegalArgumentException e) {
+                // Ignorer si le statut n'est pas valide
+            }
+        }
+
+        PrioriteIncident prioriteEnum = null;
+        if (priorite != null && !priorite.isEmpty()) {
+            try {
+                prioriteEnum = PrioriteIncident.valueOf(priorite);
+            } catch (IllegalArgumentException e) {
+                // Ignorer si la priorité n'est pas valide
+            }
+        }
         
-        return incidentRepository.findByDepartementId(admin.getDepartement().getId(), pageable);
+        return incidentRepository.findWithFilters(
+            statutEnum, 
+            prioriteEnum, 
+            null, 
+            admin.getDepartement().getId(), 
+            null, 
+            null, 
+            pageable
+        );
     }
     
     public List<Incident> incidentsEnAttente(Utilisateur admin) {
