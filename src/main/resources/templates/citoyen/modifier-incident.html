@@ -173,7 +173,6 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -186,14 +185,12 @@
                 </div>
             </div>
 
-            <!-- Messages -->
             <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
                 <i class="fas fa-exclamation-triangle"></i>
                 <span th:text="${error}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- FORM -->
             <form th:action="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" 
                   th:object="${incidentDTO}" 
                   method="post" 
@@ -201,7 +198,6 @@
                   id="incidentForm">
 
                 <div class="form-card">
-                    <!-- Section 1: Informations générales -->
                     <div class="form-section">
                         <h5 class="section-title">
                             <i class="fas fa-info-circle text-primary"></i> Informations générales
@@ -234,7 +230,6 @@
                         </div>
                     </div>
 
-                    <!-- Section 2: Localisation -->
                     <div class="form-section">
                         <h5 class="section-title">
                             <i class="fas fa-map-marker-alt text-danger"></i> Localisation
@@ -276,7 +271,6 @@
                         </div>
                     </div>
 
-                    <!-- Section 3: Photos -->
                     <div class="form-section">
                         <h5 class="section-title">
                             <i class="fas fa-camera text-success"></i> Photos
@@ -285,7 +279,6 @@
                             </span>
                         </h5>
 
-                        <!-- Photos existantes -->
                         <div th:if="${incident.photos != null && !incident.photos.isEmpty()}">
                             <h6 class="mb-3">Photos actuelles</h6>
                             <div class="existing-photos" id="existing-photos">
@@ -299,7 +292,6 @@
                             </div>
                         </div>
 
-                        <!-- Zone d'ajout de nouvelles photos -->
                         <div>
                             <h6 class="mb-3 mt-4">Ajouter de nouvelles photos</h6>
                             <div class="alert alert-info">
@@ -318,7 +310,6 @@
                         </div>
                     </div>
 
-                    <!-- Submit Button -->
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">
                             <i class="fas fa-save"></i> Enregistrer les modifications
@@ -340,7 +331,6 @@
         let existingPhotosCount = /*[[${incident.photos != null ? incident.photos.size() : 0}]]*/ 0;
         let deletedPhotosCount = 0;
 
-        // Toast configuration
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -353,7 +343,6 @@
             Toast.fire({ icon: icon, title: message });
         }
 
-        // Initialiser la carte Leaflet
         let initialLat = /*[[${incidentDTO.latitude}]]*/ 48.8566;
         let initialLng = /*[[${incidentDTO.longitude}]]*/ 2.3522;
         let hasLocation = /*[[${incidentDTO.latitude != null && incidentDTO.longitude != null}]]*/ false;
@@ -414,14 +403,12 @@
             }
         });
 
-        // Gestion des photos
         function toggleDeletePhoto(button, event) {
             event.preventDefault();
             const photoItem = button.closest('.photo-item');
             const deleteInput = photoItem.querySelector('.photo-delete-input');
             
             if (photoItem.classList.contains('deleted')) {
-                // Annuler la suppression
                 photoItem.classList.remove('deleted');
                 deleteInput.disabled = true;
                 button.innerHTML = '<i class="fas fa-times"></i>';
@@ -429,7 +416,6 @@
                 deletedPhotosCount--;
                 showToast('info', 'Photo restaurée');
             } else {
-                // Marquer pour suppression
                 photoItem.classList.add('deleted');
                 deleteInput.disabled = false;
                 button.innerHTML = '<i class="fas fa-undo"></i>';
@@ -551,7 +537,6 @@
             document.getElementById('total-photos-count').textContent = total;
         }
 
-        // Validation du formulaire
         document.getElementById('incidentForm').addEventListener('submit', function(e) {
             const lat = document.getElementById('latitude').value;
             const lng = document.getElementById('longitude').value;
@@ -567,13 +552,11 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
         });
 
-        // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             initFileUpload();
             updatePhotoCounter();
         });
 
-        // Fonctions globales
         window.toggleDeletePhoto = toggleDeletePhoto;
         window.removeNewPhoto = removeNewPhoto;
     </script>

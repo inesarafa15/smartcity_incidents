@@ -86,7 +86,6 @@ background: #34495e;
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -107,7 +106,6 @@ background: #34495e;
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- Filtres -->
             <div class="filter-card">
                 <form method="get" action="/super-admin/utilisateurs" class="row g-3">
                     <div class="col-md-3">
@@ -151,7 +149,6 @@ background: #34495e;
                 </form>
             </div>
 
-            <!-- Statistiques -->
             <div th:if="${statistiques}" class="row mb-4">
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm rounded-3">
@@ -168,7 +165,6 @@ background: #34495e;
                 </div>
             </div>
 
-            <!-- Liste des utilisateurs -->
             <div class="table-card">
                 <div th:if="${utilisateurs == null || utilisateurs.isEmpty()}" class="text-center py-5">
                     <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
@@ -219,7 +215,6 @@ background: #34495e;
                         </table>
                     </div>
                     
-                    <!-- Pagination -->
                     <div th:if="${utilisateurs.totalPages > 1}" class="d-flex justify-content-center py-4 border-top">
                         <nav>
                             <ul class="pagination mb-0">

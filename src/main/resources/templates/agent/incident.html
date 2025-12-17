@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails Incident - Agent Municipal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -101,9 +100,7 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Messages Flash replaced by SweetAlert2 -->
 
-            <!-- En-tête avec informations principales -->
             <div class="incident-header">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -143,16 +140,13 @@
             </div>
 
             <div class="row">
-                <!-- Colonne gauche - Informations et Actions -->
                 <div class="col-lg-8">
-                    <!-- Actions selon le statut -->
                     <div class="card detail-card mb-4">
                         <div class="card-header">
                             <i class="fas fa-cogs"></i> Actions Disponibles
                         </div>
                         <div class="card-body">
                             <div class="row action-buttons text-center">
-                                <!-- Si l'incident est SIGNALE et (non assigné OU assigné à cet agent) -->
                                 <div th:if="${incident.statut != null && incident.statut.name() == 'SIGNALE' && (incident.agentAssigne == null || incident.agentAssigne.id == agent.id)}" 
                                      class="col-md-4 mb-2">
                                     <form th:action="@{/agent/incidents/{id}/prendre-en-charge(id=${incident.id})}" 
@@ -165,7 +159,6 @@
                                     </form>
                                 </div>
                                 
-                                <!-- Si l'incident est PRIS_EN_CHARGE et assigné à cet agent -->
                                 <div th:if="${incident.statut != null && incident.statut.name() == 'PRIS_EN_CHARGE' && incident.agentAssigne != null && incident.agentAssigne.id == agent.id}" 
                                      class="col-md-4 mb-2">
                                     <form th:action="@{/agent/incidents/{id}/en-resolution(id=${incident.id})}" 
@@ -178,7 +171,6 @@
                                     </form>
                                 </div>
                                 
-                                <!-- Si l'incident est EN_RESOLUTION et assigné à cet agent -->
                                 <div th:if="${incident.statut != null && incident.statut.name() == 'EN_RESOLUTION' && incident.agentAssigne != null && incident.agentAssigne.id == agent.id}" 
                                      class="col-md-4 mb-2">
                                     <form th:action="@{/agent/incidents/{id}/resolu(id=${incident.id})}" 
@@ -191,7 +183,6 @@
                                     </form>
                                 </div>
                                 
-                                <!-- Bouton pour envoyer une mise à jour au citoyen -->
                                 <div th:if="${incident.agentAssigne != null && incident.agentAssigne.id == agent.id}" 
                                      class="col-md-4 mb-2">
                                     <button type="button" class="btn btn-info btn-lg w-100" data-bs-toggle="modal" data-bs-target="#updateModal">
@@ -200,7 +191,6 @@
                                     </button>
                                 </div>
                                 
-                                <!-- Bouton pour ajouter un commentaire -->
                                 <div class="col-md-4 mb-2">
                                     <button type="button" class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#commentModal">
                                         <i class="fas fa-comment"></i><br>
@@ -211,7 +201,6 @@
                         </div>
                     </div>
 
-                    <!-- Description et détails -->
                     <div class="card detail-card mb-4">
                         <div class="card-header">
                             <i class="fas fa-info-circle"></i> Description détaillée
@@ -264,7 +253,6 @@
                         </div>
                     </div>
 
-                    <!-- Photos -->
                     <div th:if="${incident.photos != null && !incident.photos.isEmpty()}" class="card detail-card mb-4">
                         <div class="card-header">
                             <i class="fas fa-images text-primary"></i> Photos de l'incident
@@ -283,7 +271,6 @@
                         </div>
                     </div>
 
-                    <!-- Historique des statuts -->
                     <div class="card detail-card mb-4">
                         <div class="card-header">
                             <i class="fas fa-history text-primary"></i> Historique des statuts
@@ -331,9 +318,7 @@
                     </div>
                 </div>
 
-                <!-- Colonne droite - Informations contextuelles -->
                 <div class="col-lg-4">
-                    <!-- Informations du citoyen -->
                     <div class="card detail-card mb-4">
                         <div class="card-header">
                             <i class="fas fa-user text-primary"></i> Informations du citoyen
@@ -353,7 +338,6 @@
                         </div>
                     </div>
 
-                    <!-- Informations temporelles -->
                     <div class="card detail-card mb-4">
                         <div class="card-header">
                             <i class="fas fa-clock text-primary"></i> Informations temporelles
@@ -370,7 +354,6 @@
                         </div>
                     </div>
 
-                    <!-- Informations agent assigné -->
                     <div th:if="${incident.agentAssigne != null}" class="agent-info mb-4">
                         <h5><i class="fas fa-user-shield"></i> Agent assigné</h5>
                         <div class="d-flex align-items-center">
@@ -389,7 +372,6 @@
                         </div>
                     </div>
 
-                    <!-- Commentaires récents -->
                     <div class="card detail-card">
                         <div class="card-header">
                             <i class="fas fa-comments text-primary"></i> Derniers commentaires
@@ -426,7 +408,6 @@
         </div>
     </div>
 
-    <!-- Modal pour l'image en grand -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -441,7 +422,6 @@
         </div>
     </div>
 
-    <!-- Modal pour ajouter un commentaire -->
     <div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -467,7 +447,6 @@
         </div>
     </div>
 
-    <!-- Modal pour envoyer une mise à jour au citoyen -->
     <div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -507,7 +486,6 @@ Le service municipal
         </div>
     </div>
 
-    <!-- Modal pour contacter le citoyen -->
     <div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -552,7 +530,6 @@ Le service municipal
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:inline="javascript">
-        /*<![CDATA[*/
         document.addEventListener('DOMContentLoaded', function() {
             var lat = /*[[${incident.latitude}]]*/ null;
             var lon = /*[[${incident.longitude}]]*/ null;
@@ -564,7 +541,6 @@ Le service municipal
                 L.marker([lat, lon]).addTo(map);
             }
 
-            // Gestion des notifications SweetAlert2
             var successMsg = /*[[${success}]]*/ null;
             var errorMsg = /*[[${error}]]*/ null;
 
@@ -592,10 +568,8 @@ Le service municipal
                 });
             }
         });
-        /*]]>*/
     </script>
     <script>
-        // Gestion du modal d'image
         const imageModal = document.getElementById('imageModal');
         if (imageModal) {
             imageModal.addEventListener('show.bs.modal', function (event) {
@@ -606,7 +580,6 @@ Le service municipal
             });
         }
 
-        // Auto-sélection du texte dans le modal de mise à jour
         const updateModal = document.getElementById('updateModal');
         if (updateModal) {
             updateModal.addEventListener('shown.bs.modal', function () {
@@ -618,7 +591,6 @@ Le service municipal
             });
         }
 
-        // Confirmation avant certaines actions
         document.addEventListener('DOMContentLoaded', function() {
             const statusUpdateForms = document.querySelectorAll('form[action*="/prendre-en-charge"], form[action*="/en-resolution"], form[action*="/resolu"]');
             statusUpdateForms.forEach(form => {
