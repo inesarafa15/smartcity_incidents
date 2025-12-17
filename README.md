@@ -44,18 +44,21 @@ com.smartcity.incident_management
 ## Fonctionnalités
 
 ### Pour les citoyens
+
 - Inscription et authentification
 - Signalement d'incidents avec photos et géolocalisation
 - Consultation de l'historique de leurs incidents
 - Réception de notifications sur l'état de leurs incidents
 
 ### Pour les agents municipaux
+
 - Visualisation des incidents de leur département
 - Prise en charge d'incidents
 - Gestion du workflow des incidents (Pris en charge → En résolution → Résolu)
 - Consultation des incidents assignés
 
 ### Pour les administrateurs
+
 - Gestion des utilisateurs (création d'agents, activation/désactivation)
 - Gestion des départements et quartiers
 - Génération de rapports analytiques
@@ -80,6 +83,7 @@ Les photos sont stockées dans le dossier `uploads/` à la racine du projet. Ce 
 ## Démarrage
 
 1. Créer la base de données MySQL :
+
 ```sql
 CREATE DATABASE smartcity_incidents;
 ```
@@ -87,9 +91,6 @@ CREATE DATABASE smartcity_incidents;
 2. Configurer les paramètres de connexion dans `application.properties`
 
 3. Lancer l'application :
-```bash
-mvn spring-boot:run
-```
 
 4. Accéder à l'application : http://localhost:8080
 
@@ -116,12 +117,79 @@ mvn spring-boot:run
 - Validation des uploads (taille, type de fichier)
 - Autorisations basées sur les rôles (@PreAuthorize)
 
-## Tests
+## Workflow avancé des incidents (Chronologique)
 
-Les tests unitaires et d'intégration peuvent être ajoutés dans le package `src/test/java/com/smartcity/incident_management/`.
+### Timeline verticale (vue principale)
 
-## Auteur
+1.  **Incident signalé**
+    Création par le citoyen (date, localisation, photos)
+
+2.  **Assignation à un agent municipal**
+
+3.  **Tentative de résolution #1 refusée**
+
+- Commentaire réel de l’agent
+- Photos associées
+- Archivage automatique
+
+4.  **Tentative de résolution #2 refusée**
+
+- Données précédentes conservées
+- Ajout d’une nouvelle entrée chronologique
+
+5.  **Résolution proposée**
+    Fusion intelligente :
+
+- Notification automatique système
+  _« Votre incident a été marqué comme résolu. Merci de confirmer la résolution. »_
+- **Commentaire réel d’intervention de l’agent**
+
+6.  **Feedback citoyen**
+
+- Note
+- Commentaire persistant
+
+7.  **Clôture définitive**
+
+---
+
+### Réaffectation et archivage
+
+Lorsque la résolution **n’est pas validée par l’administrateur** :
+
+- L’incident est **réaffecté au même agent**
+- Les tentatives précédentes sont **archivées**
+- Une **nouvelle entrée est ajoutée** dans la timeline
+- Aucune donnée historique n’est supprimée ou modifiée
+
+## Fonctionnalités par rôle
+
+### Citoyen
+
+- Inscription & authentification
+- Signalement d’incidents (photos + géolocalisation)
+- Consultation de l’historique complet
+- Réception de notifications
+- Envoi de feedback après résolution
+
+### Agent municipal
+
+- Visualisation des incidents du département
+- Prise en charge et résolution
+- Ajout de commentaires d’intervention réels
+- Upload de photos par tentative
+- Suivi chronologique automatique
+
+### Administrateur
+
+- Gestion des utilisateurs et rôles
+- Validation / refus des résolutions
+- Réaffectation contrôlée
+- Supervision globale du workflow
+- Génération de rapports analytiques
 
 Développé dans le cadre du cours de Développement Web Avancé 3INLOG.
 
+```
 
+```
