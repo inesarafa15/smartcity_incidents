@@ -189,8 +189,8 @@ background: #34495e;
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="utilisateur : ${utilisateurs.content}">
-                                    <td class="text-muted" th:text="${'#' + utilisateur.id}"></td>
+                                <tr th:each="utilisateur, stat : ${utilisateurs.content}">
+                                    <td class="text-muted" th:text="${'#' + stat.count}"></td>
                                     <td>
                                         <div class="fw-bold" th:text="${utilisateur.nom + ' ' + utilisateur.prenom}"></div>
                                     </td>

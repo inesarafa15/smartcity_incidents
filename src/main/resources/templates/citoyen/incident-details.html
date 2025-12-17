@@ -126,47 +126,43 @@
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            background: #2c3e50;
+            background: #6c757d;
             border: 3px solid white;
-            box-shadow: 0 0 0 3px #2c3e50;
+            box-shadow: 0 0 0 3px #6c757d;
         }
-        .timeline-item.active::before {
+        .timeline-item.success::before {
             background: #28a745;
             box-shadow: 0 0 0 3px #28a745;
+        }
+        .timeline-item.danger::before {
+            background: #dc3545;
+            box-shadow: 0 0 0 3px #dc3545;
+        }
+        .timeline-item.info::before {
+            background: #17a2b8;
+            box-shadow: 0 0 0 3px #17a2b8;
+        }
+        .timeline-item.warning::before {
+            background: #ffc107;
+            box-shadow: 0 0 0 3px #ffc107;
+        }
+        .timeline-item.danger {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+            border-left: 4px solid #dc3545;
+        }
+        .timeline-item.success {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6f9ea 100%);
+            border-left: 4px solid #28a745;
+        }
+        .timeline-item.info {
+            background: linear-gradient(135deg, #e7f3ff 0%, #d4e9ff 100%);
+            border-left: 4px solid #17a2b8;
         }
         .info-card {
             background: #f8f9fa;
             border-left: 4px solid #2c3e50;
             padding: 20px;
             border-radius: 8px;
-        }
-        .description-text {
-            font-size: 1.05rem;
-            line-height: 1.8;
-            color: #495057;
-        }
-        .comment-box {
-            background: #fff;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-        .comment-box:hover {
-            border-color: #2c3e50;
-            box-shadow: 0 2px 10px rgba(44, 62, 80, 0.1);
-        }
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
         }
         .resolution-section {
             background: #fff;
@@ -187,10 +183,34 @@
             gap: 3px;
             margin-left: 8px;
         }
-        .section-divider {
-            height: 2px;
-            background: linear-gradient(to right, #e9ecef, transparent);
-            margin: 20px 0;
+        .mini-gallery {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .mini-photo-item {
+            width: 70px;
+            height: 70px;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 2px solid #dc3545;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .mini-photo-item:hover {
+            transform: scale(1.1);
+            border-color: #c82333;
+        }
+        .mini-photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .description-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #495057;
         }
     </style>
 </head>
@@ -199,7 +219,7 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header with Navigation -->
+            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -222,7 +242,7 @@
                     </div>
                     <div>
                         <a th:href="@{/citoyen/incidents}" class="btn btn-light me-2">
-                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                            <i class="fas fa-arrow-left"></i> Retour
                         </a>
                         <a th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE'}"
                            th:href="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" 
@@ -246,7 +266,7 @@
             <div class="row">
                 <!-- Colonne principale -->
                 <div class="col-lg-8">
-                    <!-- Statut et Priorité -->
+                    <!-- Titre et Badges -->
                     <div class="incident-card">
                         <div class="card-body">
                             <div class="row">
@@ -273,29 +293,25 @@
                                             <span th:case="'CLOTURE'" class="status-badge bg-dark text-white">
                                                 <i class="fas fa-archive"></i> CLÔTURÉ
                                             </span>
-                                            <span th:case="*" class="status-badge bg-light text-dark">
-                                                <span th:text="${incident.statut != null ? incident.statut.name() : 'N/A'}">N/A</span>
-                                            </span>
+                                            <span th:case="*" class="status-badge bg-light text-dark">N/A</span>
                                         </th:block>
                                     </div>
                                     <div>
                                         <strong class="text-muted me-2">Priorité:</strong>
                                         <th:block th:switch="${incident.priorite?.name()}">
-                                            <span th:case="'URGENTE'" class="status-badge bg-danger text-white">
-                                                <i class="fas fa-exclamation-triangle"></i> URGENTE
+                                            <span th:case="'CRITIQUE'" class="status-badge bg-danger text-white">
+                                                <i class="fas fa-exclamation-triangle"></i> CRITIQUE
                                             </span>
-                                            <span th:case="'HAUTE'" class="status-badge bg-warning text-dark">
-                                                <i class="fas fa-exclamation-circle"></i> HAUTE
+                                            <span th:case="'ELEVEE'" class="status-badge bg-warning text-dark">
+                                                <i class="fas fa-exclamation-circle"></i> ÉLEVÉE
                                             </span>
                                             <span th:case="'MOYENNE'" class="status-badge bg-primary text-white">
                                                 <i class="fas fa-info-circle"></i> MOYENNE
                                             </span>
-                                            <span th:case="'BASSE'" class="status-badge bg-secondary text-white">
-                                                <i class="fas fa-minus-circle"></i> BASSE
+                                            <span th:case="'FAIBLE'" class="status-badge bg-secondary text-white">
+                                                <i class="fas fa-minus-circle"></i> FAIBLE
                                             </span>
-                                            <span th:case="*" class="status-badge bg-light text-dark">
-                                                <span th:text="${incident.priorite != null ? incident.priorite.name() : 'N/A'}">N/A</span>
-                                            </span>
+                                            <span th:case="*" class="status-badge bg-light text-dark">N/A</span>
                                         </th:block>
                                     </div>
                                 </div>
@@ -309,7 +325,7 @@
                             <h5 class="card-title mb-3">
                                 <i class="fas fa-align-left text-primary"></i> Description
                             </h5>
-                            <p class="description-text" th:text="${incident.description}">Description de l'incident...</p>
+                            <p class="description-text" th:text="${incident.description}">Description...</p>
                         </div>
                     </div>
 
@@ -331,8 +347,6 @@
                                 <span class="info-label"><i class="fas fa-map"></i> Quartier</span>
                                 <span th:text="${incident.quartier != null ? incident.quartier.nom : 'N/A'}">Quartier</span>
                             </div>
-                            
-                            <!-- Carte -->
                             <div th:if="${incident.latitude != null and incident.longitude != null}" class="mt-4">
                                 <h6 class="mb-3"><i class="fas fa-map-location-dot"></i> Carte interactive</h6>
                                 <div id="map"></div>
@@ -366,7 +380,7 @@
                                 </div>
                             </div>
 
-                            <!-- Photos de résolution (Actuelles) -->
+                            <!-- Photos de résolution actuelles -->
                             <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && (estRefuse == null || !estRefuse)]}">
                                 <div th:if="${!resolutionPhotos.isEmpty()}">
                                     <h6 class="border-bottom pb-2 mb-3 text-success">
@@ -384,36 +398,17 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Photos de résolution (Refusées / Historique) -->
-                            <div th:with="refusedPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && estRefuse == true]}" class="mt-4">
-                                <div th:if="${!refusedPhotos.isEmpty()}">
-                                    <h6 class="border-bottom pb-2 mb-3 text-danger opacity-75">
-                                        <i class="fas fa-history me-2"></i>Historique des tentatives refusées
-                                    </h6>
-                                    <div class="photo-gallery opacity-75">
-                                        <div th:each="photo : ${refusedPhotos}" class="photo-item" 
-                                             data-bs-toggle="modal" data-bs-target="#photoModal"
-                                             th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
-                                            <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Preuve refusée" loading="lazy" style="filter: grayscale(100%);">
-                                            <div class="photo-overlay">
-                                                <i class="fas fa-search-plus fa-2x text-white"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <small class="text-muted d-block mt-2"><i class="fas fa-info-circle"></i> Ces photos appartiennent à une tentative de résolution précédente qui a été refusée.</small>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
-                    <!-- Historique -->
+                    <!-- TIMELINE CHRONOLOGIQUE AMÉLIORÉE -->
                     <div class="incident-card">
                         <div class="card-body">
                             <h5 class="card-title mb-4">
-                                <i class="fas fa-history text-info"></i> Suivi et Progression
+                                <i class="fas fa-history text-info"></i> Historique Chronologique
                             </h5>
                             <div class="timeline">
+                                <!-- 1. Signalement initial -->
                                 <div class="timeline-item">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <strong><i class="fas fa-flag"></i> Incident signalé</strong>
@@ -422,37 +417,139 @@
                                             <span th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
                                         </small>
                                     </div>
-                                    <p class="mb-0 text-muted">Votre signalement a été enregistré avec succès</p>
+                                    <p class="mb-0 text-muted">📍 Votre signalement a été enregistré avec succès</p>
                                 </div>
                                 
-                                <div th:if="${incident.agentAssigne != null}" class="timeline-item">
+                                <!-- 2. Assignation -->
+                                <div th:if="${incident.agentAssigne != null}" class="timeline-item info">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <strong><i class="fas fa-user-check"></i> Assigné à un agent</strong>
+                                        <strong><i class="fas fa-user-plus"></i> Assigné à un agent</strong>
                                     </div>
                                     <p class="mb-0 text-muted">
-                                        Pris en charge par <strong><span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span></strong>
+                                        👤 Pris en charge par <strong><span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span></strong>
                                     </p>
                                 </div>
                                 
-                                <div th:if="${incident.statut != null and incident.statut.name() == 'PRIS_EN_CHARGE'}" class="timeline-item active">
-                                    <strong><i class="fas fa-hand-paper"></i> En cours de traitement</strong>
-                                    <p class="mb-0 text-muted">Un agent travaille actuellement sur votre signalement</p>
-                                </div>
+                                <!-- 3. Historique des notifications -->
+                                <th:block th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}">
+                                    <th:block th:each="notif : ${incident.notificationsIncident}">
+                                        
+                                        <!-- TENTATIVE REFUSÉE -->
+                                        <div th:if="${notif.message.contains('🔄') or notif.message.contains('refusée')}" 
+                                             class="timeline-item danger">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <strong><i class="fas fa-redo-alt"></i> Tentative refusée</strong>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span th:text="${notif.dateEnvoi != null ? #temporals.format(notif.dateEnvoi, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                                </small>
+                                            </div>
+                                            
+                                            <!-- Motif du refus -->
+                                            <div th:if="${notif.message.contains('Motif')}" class="alert alert-danger py-2 mb-2">
+                                                <strong class="d-block"><i class="fas fa-exclamation-triangle"></i> Motif :</strong>
+                                                <p class="mb-0 small" 
+                                                   th:text="${#strings.substringAfter(#strings.substringBefore(notif.message + ' ', '📝'), 'Motif du refus : ')}">Motif</p>
+                                            </div>
+                                            
+                                            <!-- Mini-galerie des photos refusées -->
+                                            <div th:if="${incident.photos != null}" class="mt-2">
+                                                <th:block th:with="refusedPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && estRefuse == true]}">
+                                                    <div th:if="${!refusedPhotos.isEmpty()}" class="mini-gallery">
+                                                        <div th:each="photo : ${refusedPhotos}" class="mini-photo-item">
+                                                            <img th:src="@{'/' + ${photo.cheminFichier}}" 
+                                                                 style="filter: grayscale(100%); opacity: 0.6;"
+                                                                 alt="Photo refusée"
+                                                                 data-bs-toggle="modal" 
+                                                                 data-bs-target="#photoModal"
+                                                                 th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                                        </div>
+                                                    </div>
+                                                    <small th:if="${!refusedPhotos.isEmpty()}" class="text-muted d-block mt-1">
+                                                        <i class="fas fa-archive"></i> Photos de la tentative (archivées)
+                                                    </small>
+                                                </th:block>
+                                            </div>
+                                            
+                                            <p class="mb-0 mt-2 text-muted">
+                                                <i class="fas fa-redo"></i> L'agent va effectuer les corrections nécessaires
+                                            </p>
+                                        </div>
+                                        
+                                        <!-- RÉSOLUTION VALIDÉE -->
+                                        <div th:if="${notif.message.contains('✅') and notif.message.contains('validée')}" 
+                                             class="timeline-item success">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <strong><i class="fas fa-check-circle"></i> Résolution validée</strong>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span th:text="${notif.dateEnvoi != null ? #temporals.format(notif.dateEnvoi, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                                </small>
+                                            </div>
+                                            <p class="mb-0 text-success fw-bold">
+                                                <i class="fas fa-shield-check"></i> Votre incident a été validé par l'administrateur
+                                            </p>
+                                        </div>
+                                        
+                                        <!-- AUTRES NOTIFICATIONS (filtrées) -->
+                                        <div th:if="${!notif.message.contains('🔄') and 
+                                                    !notif.message.contains('refusée') and 
+                                                    !notif.message.contains('✅') and
+                                                    !notif.message.contains('a été marqué comme résolu') and
+                                                    !notif.message.contains('Merci de confirmer')}" 
+                                             class="timeline-item"
+                                             th:classappend="${notif.message.contains('assigné') ? 'info' : 
+                                                            (notif.message.contains('EN_RESOLUTION') ? 'warning' : '')}">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <strong>
+                                                    <i class="fas fa-comment-dots"></i>
+                                                    <span th:text="${notif.utilisateur != null ? notif.utilisateur.prenom : 'Système'}">Utilisateur</span>
+                                                </strong>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span th:text="${notif.dateEnvoi != null ? #temporals.format(notif.dateEnvoi, 'dd/MM HH:mm') : 'N/A'}">Date</span>
+                                                </small>
+                                            </div>
+                                            <p class="mb-0" th:text="${notif.message}">Message</p>
+                                        </div>
+                                    </th:block>
+                                </th:block>
                                 
-                                <div th:if="${incident.statut != null and incident.statut.name() == 'EN_RESOLUTION'}" class="timeline-item active">
-                                    <strong><i class="fas fa-tools"></i> Intervention en cours</strong>
-                                    <p class="mb-0 text-muted">L'équipe est sur le terrain pour résoudre le problème</p>
-                                </div>
-                                
-                                <div th:if="${incident.statut != null and (incident.statut.name() == 'RESOLU' or incident.statut.name() == 'CLOTURE')}" class="timeline-item active">
+                                <!-- 4. Feedback soumis -->
+                                <div th:if="${incident.dateFeedback != null}" class="timeline-item success">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <strong><i class="fas fa-check-circle"></i> Problème résolu</strong>
-                                        <small class="text-muted" th:if="${incident.dateDerniereMiseAJour != null}">
-                                            <i class="fas fa-calendar-check"></i>
-                                            <span th:text="${#temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                        <strong><i class="fas fa-star"></i> Votre feedback soumis</strong>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i>
+                                            <span th:text="${#temporals.format(incident.dateFeedback, 'dd/MM/yyyy HH:mm')}">Date</span>
                                         </small>
                                     </div>
-                                    <p class="mb-0 text-success fw-bold">✓ Votre incident a été résolu avec succès</p>
+                                    <p class="mb-1">
+                                        <i th:if="${incident.feedbackSatisfait}" class="fas fa-smile text-success fa-lg"></i>
+                                        <i th:unless="${incident.feedbackSatisfait}" class="fas fa-frown text-danger fa-lg"></i>
+                                        <strong th:text="${incident.feedbackSatisfait ? 'Satisfait' : 'Non satisfait'}">État</strong>
+                                    </p>
+                                    <p th:if="${incident.feedbackNote != null}" class="mb-1">
+                                        ⭐ Note: <strong><span th:text="${incident.feedbackNote}">0</span>/5</strong>
+                                    </p>
+                                    <p th:if="${incident.feedbackCommentaire != null and !incident.feedbackCommentaire.isEmpty()}" 
+                                       class="mb-0 mt-2 fst-italic small">
+                                        💬 "<span th:text="${incident.feedbackCommentaire}">Commentaire</span>"
+                                    </p>
+                                </div>
+                                
+                                <!-- 5. Clôture finale -->
+                                <div th:if="${incident.statut != null and incident.statut.name() == 'CLOTURE'}" class="timeline-item">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <strong><i class="fas fa-archive"></i> Incident clôturé</strong>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <span th:text="${incident.dateDerniereMiseAJour != null ? #temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                        </small>
+                                    </div>
+                                    <p class="mb-0 text-success fw-bold">
+                                        <i class="fas fa-check-double"></i> Dossier archivé et incident résolu définitivement
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -461,7 +558,7 @@
 
                 <!-- Colonne latérale -->
                 <div class="col-lg-4">
-                    <!-- Informations temporelles -->
+                    <!-- Informations -->
                     <div class="incident-card">
                         <div class="card-body">
                             <h5 class="card-title mb-3">
@@ -484,7 +581,7 @@
                         </div>
                     </div>
 
-                    <!-- Section Résolution et Feedback (Intégrée) -->
+                    <!-- Section Résolution et Feedback -->
                     <div th:if="${incident.statut != null and (incident.statut.name() == 'RESOLU' or incident.statut.name() == 'CLOTURE')}" 
                          class="incident-card">
                         <div class="card-body">
@@ -492,17 +589,30 @@
                                 <i class="fas fa-check-circle text-success"></i> Résolution
                             </h5>
 
-                            <!-- Commentaire de résolution -->
+                            <!-- Commentaire RÉEL de l'agent (filtré) -->
                             <div class="resolution-section">
                                 <h6 class="fw-bold mb-2">
                                     <i class="fas fa-comment-dots text-success"></i> Commentaire de l'agent
                                 </h6>
-                                <p class="mb-0 text-muted" th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}"
-                                   th:text="${incident.notificationsIncident.get(incident.notificationsIncident.size() - 1).message}">
-                                    Commentaire
-                                </p>
-                                <p class="mb-0 text-muted" th:if="${incident.notificationsIncident == null or incident.notificationsIncident.isEmpty()}">
-                                    Aucun commentaire
+                                <p class="mb-0 text-muted">
+                                    <th:block th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}">
+                                        <th:block th:each="notif, iterStat : ${incident.notificationsIncident}">
+                                            <th:block th:if="${notif.utilisateur != null and 
+                                                              notif.utilisateur.role.name() == 'AGENT_MUNICIPAL' and
+                                                              !notif.message.contains('a été marqué comme résolu') and
+                                                              !notif.message.contains('Merci de confirmer') and
+                                                              (notif.message.contains('Commentaire') or 
+                                                               notif.message.contains('intervention') or
+                                                               notif.message.contains('travaux') or
+                                                               notif.message.length() > 30) and
+                                                              iterStat.last}">
+                                                <span th:text="${notif.message}">Commentaire</span>
+                                            </th:block>
+                                        </th:block>
+                                    </th:block>
+                                    <th:block th:if="${incident.notificationsIncident == null or incident.notificationsIncident.isEmpty()}">
+                                        Intervention effectuée
+                                    </th:block>
                                 </p>
                             </div>
 
@@ -551,6 +661,7 @@
                             </div>
 
                             <!-- Mon Feedback (si déjà soumis) -->
+                        
                             <div th:if="${incident.dateFeedback != null}" class="feedback-section">
                                 <h6 class="fw-bold mb-3">
                                     <i class="fas fa-star text-warning"></i> Votre Feedback
@@ -559,8 +670,8 @@
                                 <div class="mb-2">
                                     <strong>Satisfaction:</strong>
                                     <span class="ms-2">
-                                        <i th:if="${incident.feedbackSatisfait}" class="fas fa-smile text-success"></i>
-                                        <i th:unless="${incident.feedbackSatisfait}" class="fas fa-frown text-danger"></i>
+                                        <i th:if="${incident.feedbackSatisfait}" class="fas fa-smile text-success fa-lg"></i>
+                                        <i th:unless="${incident.feedbackSatisfait}" class="fas fa-frown text-danger fa-lg"></i>
                                         <span th:text="${incident.feedbackSatisfait ? 'Satisfait' : 'Non satisfait'}">État</span>
                                     </span>
                                 </div>
@@ -585,69 +696,20 @@
 
                                 <div th:if="${incident.feedbackCommentaire != null and !incident.feedbackCommentaire.isEmpty()}" 
                                      class="mt-3 pt-3" style="border-top: 1px solid #e9ecef;">
-                                    <strong class="d-block mb-2">Votre commentaire:</strong>
-                                    <p class="mb-0 text-muted" th:text="${incident.feedbackCommentaire}">Commentaire</p>
+                                    <strong class="d-block mb-2"><i class="fas fa-comment"></i> Votre commentaire:</strong>
+                                    <p class="mb-0 text-muted fst-italic" th:text="${incident.feedbackCommentaire}">Commentaire</p>
                                 </div>
                             </div>
 
-                            <!-- Bouton Feedback (si pas encore soumis) -->
-                            <div th:if="${incident.dateFeedback == null and incident.statut.name() == 'RESOLU'}" class="text-center mt-3 pt-3" style="border-top: 1px solid #e9ecef;">
+                            <!-- Bouton Feedback -->
+                            <div th:if="${incident.dateFeedback == null and incident.statut.name() == 'RESOLU'}" 
+                                 class="text-center mt-3 pt-3" style="border-top: 1px solid #e9ecef;">
                                 <p class="text-muted small mb-3">
                                     <i class="fas fa-info-circle"></i> Aidez-nous à améliorer notre service
                                 </p>
                                 <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#feedbackModal">
                                     <i class="fas fa-star"></i> Donner mon feedback
                                 </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Commentaires et Notes -->
-                    <div class="incident-card">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">
-                                <i class="fas fa-comments text-success"></i> Mises à jour
-                            </h5>
-                            <div th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}">
-                                <div th:each="notif, iterStat : ${incident.notificationsIncident}" th:if="${iterStat.index < 5}">
-                                    <div class="comment-box">
-                                        <div class="d-flex align-items-start gap-2 mb-2">
-                                            <div class="user-avatar">
-                                                <span th:text="${notif.utilisateur != null and notif.utilisateur.prenom != null ? notif.utilisateur.prenom.substring(0, 1) : 'S'}">U</span>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <strong th:text="${notif.utilisateur != null ? notif.utilisateur.prenom + ' ' + notif.utilisateur.nom : 'Système'}">Utilisateur</strong>
-                                                <br>
-                                                <small class="text-muted">
-                                                    <i class="fas fa-clock"></i>
-                                                    <span th:text="${notif.dateEnvoi != null ? #temporals.format(notif.dateEnvoi, 'dd/MM HH:mm') : 'N/A'}">Date</span>
-                                                </small>
-                                            </div>
-                                        </div>
-                                        <p class="mb-0 text-muted" th:text="${notif.message}">Message...</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div th:if="${incident.notificationsIncident == null or incident.notificationsIncident.isEmpty()}" 
-                                 class="text-center text-muted py-3">
-                                <i class="fas fa-comment-slash fa-2x mb-2"></i>
-                                <p>Aucune mise à jour pour le moment</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Aide -->
-                    <div class="incident-card">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">
-                                <i class="fas fa-question-circle text-info"></i> Besoin d'aide ?
-                            </h5>
-                            <p class="text-muted small mb-3">
-                                Vous pouvez suivre l'évolution de votre incident en temps réel. Vous serez notifié de chaque changement de statut.
-                            </p>
-                            <div class="alert alert-info mb-0">
-                                <i class="fas fa-info-circle"></i>
-                                <strong>Astuce :</strong> Vous recevrez une notification par email à chaque mise à jour de votre incident.
                             </div>
                         </div>
                     </div>
@@ -714,10 +776,7 @@
                         <div class="mb-3">
                             <label for="commentaire" class="form-label fw-bold">Commentaire (optionnel)</label>
                             <textarea id="commentaire" name="commentaire" class="form-control" rows="4" 
-                                      placeholder="Partagez votre expérience, suggérez des améliorations..."></textarea>
-                            <small class="text-muted">
-                                <i class="fas fa-lightbulb"></i> Votre avis nous aide à améliorer notre service
-                            </small>
+                                      placeholder="Partagez votre expérience..."></textarea>
                         </div>
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     </div>
@@ -726,7 +785,7 @@
                             <i class="fas fa-times"></i> Annuler
                         </button>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> Envoyer mon Feedback
+                            <i class="fas fa-paper-plane"></i> Envoyer
                         </button>
                     </div>
                 </form>

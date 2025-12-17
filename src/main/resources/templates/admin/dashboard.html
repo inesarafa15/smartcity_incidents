@@ -122,6 +122,13 @@
             color: #6c757d;
             font-weight: 500;
         }
+        .bg-primary, .btn-primary, .status-badge.bg-primary {
+    background-color: #1a365d !important;
+}
+
+.btn-primary:hover {
+    background-color: #2d3748 !important;
+}
     </style>
 </head>
 <body>
@@ -357,7 +364,7 @@
                         <div class="row align-items-center">
                             <div class="col-md-8">
                                 <div class="d-flex align-items-center gap-2 mb-2">
-                                    <strong th:text="'#' + ${incident.id}">ID</strong>
+                                    <strong th:text="'#' + ${iterStat.count}">ID</strong>
                                     <span class="mx-2">•</span>
                                     <strong th:text="${incident.titre}">Titre</strong>
                                     <th:block th:switch="${incident.priorite?.name()}">
