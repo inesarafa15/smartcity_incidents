@@ -242,17 +242,20 @@
                             </th:block>
                             
                             <th:block th:switch="${incident.priorite?.name()}">
-                                <span th:case="'URGENTE'" class="status-badge bg-danger text-white">
-                                    <i class="fas fa-exclamation-triangle"></i> URGENTE
+                                <span th:case="'CRITIQUE'" class="status-badge bg-danger text-white">
+                                    <i class="fas fa-exclamation-triangle"></i> CRITIQUE
                                 </span>
-                                <span th:case="'HAUTE'" class="status-badge bg-warning text-dark">
-                                    <i class="fas fa-exclamation-circle"></i> HAUTE
+                                <span th:case="'ELEVEE'" class="status-badge bg-warning text-dark">
+                                    <i class="fas fa-exclamation-circle"></i> ELEVEE
                                 </span>
                                 <span th:case="'MOYENNE'" class="status-badge bg-primary text-white">
                                     <i class="fas fa-info-circle"></i> MOYENNE
                                 </span>
+                                <span th:case="'FAIBLE'" class="status-badge bg-secondary text-white">
+                                    <i class="fas fa-info-circle"></i> FAIBLE
+                                </span>
                                 <span th:case="*" class="status-badge bg-secondary text-white">
-                                    <i class="fas fa-minus-circle"></i> BASSE
+                                    <i class="fas fa-minus-circle"></i> -
                                 </span>
                             </th:block>
                         </div>
