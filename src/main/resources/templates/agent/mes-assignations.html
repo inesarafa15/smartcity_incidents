@@ -5,50 +5,294 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Assignations - Agent Municipal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
     <style>
-        .table-hover tbody tr:hover {
-            background-color: #f8f9fa;
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #ecf0f1;
+            
+            --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            --warning-gradient: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+            --danger-gradient: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            --info-gradient: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        }
+
+        .main-content {
+            padding: 30px;
+            background: #f5f6fa;
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: none;
+            transition: all 0.3s ease;
+            height: 100%;
+            border-left: 4px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon.total { background: var(--primary-color); }
+        .stat-icon.in-progress { background: var(--warning-color); }
+        .stat-icon.resolved { background: var(--success-color); }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .search-filter-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .incidents-table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+
+        .table-modern {
+            --bs-table-bg: transparent;
+            --bs-table-striped-bg: rgba(44, 62, 80, 0.02);
+            --bs-table-hover-bg: rgba(44, 62, 80, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table-modern thead {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .table-modern thead th {
+            border: none;
+            padding: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            color: white;
+        }
+
+        .table-modern tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .table-modern tbody tr:hover {
+            background: rgba(44, 62, 80, 0.05);
+            transform: translateY(-2px);
             cursor: pointer;
         }
-        .badge-status {
-            font-size: 0.85rem;
-            padding: 5px 10px;
+
+        .table-modern tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            border: none;
+            color: #2c3e50;
         }
-        .action-buttons .btn {
-            min-width: 120px;
-            margin: 2px;
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+
+        .priority-badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-action {
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .priority-urgent { border-left: 4px solid #dc3545; }
+        .priority-high { border-left: 4px solid #ffc107; }
+        .priority-medium { border-left: 4px solid #007bff; }
+        .priority-low { border-left: 4px solid #6c757d; }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #6c757d;
         }
+
         .empty-state i {
             font-size: 5rem;
             margin-bottom: 25px;
             opacity: 0.4;
         }
-        .priority-urgent {
-            border-left: 4px solid #dc3545;
+
+        .pagination-modern .page-link {
+            border: none;
+            border-radius: 6px;
+            margin: 0 3px;
+            color: var(--primary-color);
+            transition: all 0.3s ease;
         }
-        .priority-high {
-            border-left: 4px solid #ffc107;
+
+        .pagination-modern .page-link:hover {
+            background: rgba(44, 62, 80, 0.1);
+            color: var(--primary-color);
+            transform: translateY(-2px);
         }
-        .priority-medium {
-            border-left: 4px solid #007bff;
+
+        .pagination-modern .page-item.active .page-link {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px rgba(44, 62, 80, 0.2);
         }
-        .priority-low {
-            border-left: 4px solid #6c757d;
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .status-column {
-            min-width: 140px;
+
+        .info-card h6 {
+            margin-bottom: 10px;
+            font-weight: 600;
         }
-        .action-column {
-            min-width: 220px;
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .table-modern thead {
+                display: none;
+            }
+            
+            .table-modern tbody tr {
+                display: block;
+                margin-bottom: 20px;
+                border: 1px solid #e9ecef;
+                border-radius: 15px;
+                overflow: hidden;
+            }
+            
+            .table-modern tbody td {
+                display: block;
+                text-align: right;
+                padding: 15px;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .table-modern tbody td::before {
+                content: attr(data-label);
+                float: left;
+                font-weight: 600;
+                color: #667eea;
+            }
+            
+            .table-modern tbody td:last-child {
+                border-bottom: none;
+            }
         }
     </style>
 </head>
@@ -56,352 +300,340 @@
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
-        <div class="container-fluid p-4">
-            <!-- En-tête -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-clipboard-list"></i> Mes Assignations</h2>
-                <div>
-                    <a th:href="@{/agent/dashboard}" class="btn btn-outline-secondary me-2">
+        <!-- En-tête du tableau de bord -->
+        <div class="dashboard-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-clipboard-list me-3"></i>Mes Assignations
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="fas fa-tasks me-2"></i>
+                        Gérez les incidents qui vous ont été affectés
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/agent/dashboard}" class="btn btn-light me-2">
                         <i class="fas fa-arrow-left"></i> Tableau de bord
                     </a>
-                    <a th:href="@{/agent/incidents}" class="btn btn-outline-primary">
-                        <i class="fas fa-list"></i> Voir tous les incidents
+                    <a th:href="@{/agent/incidents}" class="btn btn-outline-light">
+                        <i class="fas fa-list"></i> Tous les incidents
                     </a>
                 </div>
             </div>
+        </div>
 
-            <!-- Messages Flash -->
-            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+        <!-- Messages Flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
 
-            <!-- Filtres et statistiques -->
-            <div class="row mb-4">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-body">
-                            <form method="get" th:action="@{/agent/mes-assignations}" class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Statut</label>
-                                    <select class="form-select" name="statut">
-                                        <option value="">Tous les statuts</option>
-                                        <option value="PRIS_EN_CHARGE" th:selected="${param.statut == 'PRIS_EN_CHARGE'}">Pris en charge</option>
-                                        <option value="EN_RESOLUTION" th:selected="${param.statut == 'EN_RESOLUTION'}">En résolution</option>
-                                        <option value="RESOLU" th:selected="${param.statut == 'RESOLU'}">Résolu</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Priorité</label>
-                                    <select class="form-select" name="priorite">
-                                        <option value="">Toutes les priorités</option>
-                                        <option value="URGENTE" th:selected="${param.priorite == 'URGENTE'}">Urgente</option>
-                                        <option value="HAUTE" th:selected="${param.priorite == 'HAUTE'}">Haute</option>
-                                        <option value="MOYENNE" th:selected="${param.priorite == 'MOYENNE'}">Moyenne</option>
-                                        <option value="BASSE" th:selected="${param.priorite == 'BASSE'}">Basse</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Trier par</label>
-                                    <select class="form-select" name="sort">
-                                        <option value="dateCreation,desc" th:selected="${param.sort == 'dateCreation,desc'}">Date (plus récent)</option>
-                                        <option value="dateCreation,asc" th:selected="${param.sort == 'dateCreation,asc'}">Date (plus ancien)</option>
-                                        <option value="priorite,desc" th:selected="${param.sort == 'priorite,desc'}">Priorité (haute en premier)</option>
-                                        <option value="statut,asc" th:selected="${param.sort == 'statut,asc'}">Statut</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Par page</label>
-                                    <select class="form-select" name="size">
-                                        <option value="10" th:selected="${param.size == '10'}">10</option>
-                                        <option value="20" th:selected="${param.size == '20'}">20</option>
-                                        <option value="50" th:selected="${param.size == '50'}">50</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-10 d-flex align-items-end">
-                                    <button type="submit" class="btn btn-primary me-2">
-                                        <i class="fas fa-search"></i> Filtrer
-                                    </button>
-                                    <a th:href="@{/agent/mes-assignations}" class="btn btn-secondary">
-                                        <i class="fas fa-redo"></i> Réinitialiser
-                                    </a>
-                                </div>
-                            </form>
-                        </div>
+        <!-- Statistiques -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fas fa-layer-group"></i>
                     </div>
-                </div>
-                
-                <!-- Statistiques rapides -->
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title mb-3"><i class="fas fa-chart-bar"></i> Vue d'ensemble</h6>
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="text-center p-2">
-                                        <h4 class="mb-1 text-primary" th:text="${statTotal ?: 0}">0</h4>
-                                        <small class="text-muted">Total assignés</small>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center p-2">
-                                        <h4 class="mb-1 text-warning" 
-                                            th:text="${(statPrisEnCharge ?: 0) + (statEnResolution ?: 0)}">0</h4>
-                                        <small class="text-muted">En cours</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="stat-number" th:text="${statTotal ?: 0}">0</div>
+                    <div class="stat-label">Total Assignés</div>
                 </div>
             </div>
-
-            <!-- Tableau des incidents -->
-            <div class="card">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="fas fa-tasks"></i> Mes incidents assignés
-                        <span th:if="${incidents != null}" class="text-muted fs-6">
-                            (<span th:text="${incidents.totalElements}">0</span> incidents)
-                        </span>
-                    </h5>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon in-progress">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div class="stat-number" th:text="${(statPrisEnCharge ?: 0) + (statEnResolution ?: 0)}">0</div>
+                    <div class="stat-label">En Cours</div>
                 </div>
-                <div class="card-body p-0">
-                    <!-- État vide -->
-                    <div th:if="${incidents == null || incidents.empty}" class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <h4>Aucun incident assigné</h4>
-                        <p class="text-muted mb-4">Vous n'avez actuellement aucun incident assigné.</p>
-                        <a th:href="@{/agent/incidents}" class="btn btn-primary">
-                            <i class="fas fa-list"></i> Voir tous les incidents du département
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon resolved">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number" th:text="${statResolu ?: 0}">0</div>
+                    <div class="stat-label">Résolus</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres et Recherche -->
+        <div class="search-filter-container">
+            <h6 class="mb-3 fw-bold text-uppercase text-muted" style="font-size: 0.8rem;">
+                <i class="fas fa-filter me-2"></i>Filtres de recherche
+            </h6>
+            <form method="get" th:action="@{/agent/mes-assignations}">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Statut</label>
+                        <select class="form-select" name="statut">
+                            <option value="">Tous les statuts</option>
+                            <option value="PRIS_EN_CHARGE" th:selected="${param.statut == 'PRIS_EN_CHARGE'}">Pris en charge</option>
+                            <option value="EN_RESOLUTION" th:selected="${param.statut == 'EN_RESOLUTION'}">En résolution</option>
+                            <option value="RESOLU" th:selected="${param.statut == 'RESOLU'}">Résolu</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Priorité</label>
+                        <select class="form-select" name="priorite">
+                            <option value="">Toutes les priorités</option>
+                            <option value="URGENTE" th:selected="${param.priorite == 'URGENTE'}">Urgente</option>
+                            <option value="HAUTE" th:selected="${param.priorite == 'HAUTE'}">Haute</option>
+                            <option value="MOYENNE" th:selected="${param.priorite == 'MOYENNE'}">Moyenne</option>
+                            <option value="BASSE" th:selected="${param.priorite == 'BASSE'}">Basse</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Trier par</label>
+                        <select class="form-select" name="sort">
+                            <option value="dateCreation,desc" th:selected="${param.sort == 'dateCreation,desc'}">Date (plus récent)</option>
+                            <option value="dateCreation,asc" th:selected="${param.sort == 'dateCreation,asc'}">Date (plus ancien)</option>
+                            <option value="priorite,desc" th:selected="${param.sort == 'priorite,desc'}">Priorité (haute en premier)</option>
+                            <option value="statut,asc" th:selected="${param.sort == 'statut,asc'}">Statut</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Par page</label>
+                        <select class="form-select" name="size">
+                            <option value="10" th:selected="${param.size == '10'}">10</option>
+                            <option value="20" th:selected="${param.size == '20'}">20</option>
+                            <option value="50" th:selected="${param.size == '50'}">50</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Appliquer les filtres
+                        </button>
+                        <a th:href="@{/agent/mes-assignations}" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Réinitialiser
                         </a>
                     </div>
-                    
-                    <!-- Tableau avec données -->
-                    <div th:if="${incidents != null && !incidents.empty}" class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 5%;">#</th>
-                                    <th style="width: 25%;">Titre</th>
-                                    <th style="width: 15%;" class="status-column">Statut</th>
-                                    <th style="width: 12%;">Priorité</th>
-                                    <th style="width: 15%;">Citoyen</th>
-                                    <th style="width: 13%;">Date création</th>
-                                    <th style="width: 15%;" class="action-column text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="incident : ${incidents.content}"
-                                    th:classappend="${incident.priorite != null ? 
-                                        (incident.priorite.name() == 'URGENTE' ? 'priority-urgent' : 
-                                         incident.priorite.name() == 'HAUTE' ? 'priority-high' : 
-                                         incident.priorite.name() == 'MOYENNE' ? 'priority-medium' : 
-                                         incident.priorite.name() == 'BASSE' ? 'priority-low' : '') : ''}">
-                                    <td>
-                                        <strong class="text-muted" th:text="${incident.id ?: '0'}">#1</strong>
-                                    </td>
-                                    <td>
-                                        <a th:href="@{/agent/incidents/{id}(id=${incident.id})}" class="text-decoration-none text-dark">
-                                            <strong th:text="${incident.titre ?: 'Sans titre'}">Titre</strong><br/>
-                                            <small class="text-muted d-block mt-1" 
-                                                   th:text="${incident.description != null ? #strings.abbreviate(incident.description, 80) : '-'}">
-                                                Description courte
-                                            </small>
-                                        </a>
-                                    </td>
-                                    <td class="status-column">
-                                        <span th:if="${incident.statut != null}"
-                                              class="badge badge-status d-block"
-                                              th:classappend="${incident.statut.name() == 'SIGNALE' ? 'bg-secondary' : 
-                                                              (incident.statut.name() == 'PRIS_EN_CHARGE' ? 'bg-info' :
-                                                              (incident.statut.name() == 'EN_RESOLUTION' ? 'bg-warning text-dark' :
-                                                              (incident.statut.name() == 'RESOLU' ? 'bg-success' : 'bg-dark')))}"
-                                              th:text="${incident.statut.name()}">
-                                            SIGNALE
-                                        </span>
-                                        <span th:if="${incident.statut == null}" class="badge badge-status bg-secondary d-block">-</span>
-                                    </td>
-                                    <td>
-                                        <span th:if="${incident.priorite != null}"
-                                              class="badge badge-status d-block"
-                                              th:classappend="${incident.priorite.name() == 'BASSE' ? 'bg-secondary' :
-                                                              (incident.priorite.name() == 'MOYENNE' ? 'bg-primary' :
-                                                              (incident.priorite.name() == 'HAUTE' ? 'bg-warning text-dark' :
-                                                              (incident.priorite.name() == 'URGENTE' ? 'bg-danger' : 'bg-dark')))}"
-                                              th:text="${incident.priorite.name()}">
-                                            MOYENNE
-                                        </span>
-                                        <span th:if="${incident.priorite == null}" class="badge badge-status bg-secondary d-block">-</span>
-                                    </td>
-                                    <td>
-                                        <span th:if="${incident.auteur != null}" class="d-flex align-items-center">
-                                            <i class="fas fa-user-circle me-2 text-primary"></i>
-                                            <div>
-                                                <small class="d-block" th:text="${incident.auteur.prenom + ' ' + incident.auteur.nom}">Citoyen</small>
-                                                <small class="text-muted" th:text="${incident.auteur.email}">email</small>
-                                            </div>
-                                        </span>
-                                        <span th:if="${incident.auteur == null}" class="text-muted">
-                                            <i class="fas fa-user-slash"></i> Non spécifié
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small class="d-block">
-                                            <i class="fas fa-calendar-alt text-muted me-1"></i>
-                                            <span th:if="${incident.dateCreation != null}" 
-                                                  th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy')}">Date</span>
-                                            <span th:if="${incident.dateCreation == null}">-</span>
-                                        </small>
-                                        <small class="text-muted">
-                                            <i class="fas fa-clock text-muted me-1"></i>
-                                            <span th:if="${incident.dateCreation != null}" 
-                                                  th:text="${#temporals.format(incident.dateCreation, 'HH:mm')}">Heure</span>
-                                        </small>
-                                    </td>
-                                    <td class="text-center action-buttons">
-                                        <!-- Lien vers les détails -->
-                                        <a th:href="@{/agent/incidents/{id}(id=${incident.id})}" 
-                                           class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-eye"></i> Détails
-                                        </a>
-                                        <a th:if="${incident.latitude != null && incident.longitude != null}"
-                                           th:href="'https://www.google.com/maps?q=' + ${incident.latitude} + ',' + ${incident.longitude}"
-                                           class="btn btn-outline-secondary btn-sm">
-                                            <i class="fas fa-map-location-dot"></i> Localiser
-                                        </a>
-                                        <a th:unless="${incident.latitude != null && incident.longitude != null}"
-                                           th:href="'https://www.google.com/maps?q=' + ${incident.adresseTextuelle}"
-                                           class="btn btn-outline-secondary btn-sm">
-                                            <i class="fas fa-map-location-dot"></i> Localiser
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
+            </form>
+        </div>
 
-                <!-- Pagination -->
-                <div th:if="${incidents != null && !incidents.empty && incidents.totalPages > 1}" 
-                     class="card-footer bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-0 text-muted">
-                                Affichage de <strong><span th:text="${incidents.number * incidents.size + 1}">1</span></strong> 
-                                à <strong><span th:text="${incidents.number * incidents.size + incidents.numberOfElements}">10</span></strong> 
-                                sur <strong><span th:text="${incidents.totalElements}">100</span></strong> incidents
-                            </p>
-                        </div>
-                        
-                        <nav aria-label="Pagination">
-                            <ul class="pagination justify-content-center mb-0">
-                                <li class="page-item" th:classappend="${incidents.first} ? 'disabled' : ''">
-                                    <a class="page-link" 
-                                       th:href="@{/agent/mes-assignations(page=0, size=${size}, 
-                                                              statut=${statut}, 
-                                                              priorite=${priorite}, 
-                                                              sort=${sort})}"
-                                       aria-label="Première">
-                                        <i class="fas fa-angle-double-left"></i>
-                                    </a>
-                                </li>
-                                
-                                <li class="page-item" th:classappend="${incidents.first} ? 'disabled' : ''">
-                                    <a class="page-link" 
-                                       th:href="@{/agent/mes-assignations(page=${incidents.number - 1}, size=${size}, 
-                                                              statut=${statut}, 
-                                                              priorite=${priorite}, 
-                                                              sort=${sort})}"
-                                       aria-label="Précédent">
-                                        <i class="fas fa-angle-left"></i>
-                                    </a>
-                                </li>
-                                
-                                <!-- Afficher quelques pages autour de la page actuelle -->
-                                <li th:each="i : ${#numbers.sequence(
-                                    Math.max(0, incidents.number - 2),
-                                    Math.min(incidents.totalPages - 1, incidents.number + 2)
-                                )}" 
-                                    class="page-item" th:classappend="${i == incidents.number} ? 'active' : ''">
-                                    <a class="page-link" 
-                                       th:href="@{/agent/mes-assignations(page=${i}, size=${size}, 
-                                                              statut=${statut}, 
-                                                              priorite=${priorite}, 
-                                                              sort=${sort})}"
-                                       th:text="${i + 1}">1</a>
-                                </li>
-                                
-                                <li class="page-item" th:classappend="${incidents.last} ? 'disabled' : ''">
-                                    <a class="page-link" 
-                                       th:href="@{/agent/mes-assignations(page=${incidents.number + 1}, size=${size}, 
-                                                              statut=${statut}, 
-                                                              priorite=${priorite}, 
-                                                              sort=${sort})}"
-                                       aria-label="Suivant">
-                                        <i class="fas fa-angle-right"></i>
-                                    </a>
-                                </li>
-                                
-                                <li class="page-item" th:classappend="${incidents.last} ? 'disabled' : ''">
-                                    <a class="page-link" 
-                                       th:href="@{/agent/mes-assignations(page=${incidents.totalPages - 1}, size=${size}, 
-                                                              statut=${statut}, 
-                                                              priorite=${priorite}, 
-                                                              sort=${sort})}"
-                                       aria-label="Dernière">
-                                        <i class="fas fa-angle-double-right"></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                        
-                        <div class="text-muted">
-                            <small>
-                                Page <strong><span th:text="${incidents.number + 1}">1</span></strong> 
-                                sur <strong><span th:text="${incidents.totalPages}">10</span></strong>
-                            </small>
-                        </div>
-                    </div>
-                </div>
+        <!-- Tableau des incidents -->
+        <div class="incidents-table-container">
+            <h5 class="mb-4">
+                <i class="fas fa-tasks"></i> Mes incidents assignés
+                <span th:if="${incidents != null}" class="text-muted fs-6">
+                    (<span th:text="${incidents.totalElements}">0</span> incidents)
+                </span>
+            </h5>
+
+            <!-- État vide -->
+            <div th:if="${incidents == null || incidents.empty}" class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h4>Aucun incident assigné</h4>
+                <p class="text-muted mb-4">Vous n'avez actuellement aucun incident assigné.</p>
+                <a th:href="@{/agent/incidents}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Voir tous les incidents du département
+                </a>
             </div>
-            
-            <!-- Informations rapides -->
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="alert alert-info">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-info-circle fa-2x me-3"></i>
-                            <div>
-                                <h6 class="mb-1">Guide rapide des statuts</h6>
-                                <p class="mb-0">
-                                    <span class="badge bg-info me-2">PRIS_EN_CHARGE</span> → 
-                                    <span class="badge bg-warning me-2">EN_RESOLUTION</span> → 
-                                    <span class="badge bg-success">RESOLU</span>
-                                    <br>
-                                    <small class="text-muted">Cliquez sur le titre d'un incident pour voir les détails complets et gérer son statut.</small>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+
+            <!-- Tableau avec données -->
+            <div th:if="${incidents != null && !incidents.empty}" class="table-responsive">
+                <table class="table table-modern">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 25%;">Titre</th>
+                            <th style="width: 12%;">Statut</th>
+                            <th style="width: 12%;">Priorité</th>
+                            <th style="width: 18%;">Citoyen</th>
+                            <th style="width: 13%;">Date Création</th>
+                            <th style="width: 15%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="incident, stat : ${incidents.content}"
+                            th:classappend="${incident.priorite != null ? 
+                                (incident.priorite.name() == 'URGENTE' ? 'priority-urgent' : 
+                                 incident.priorite.name() == 'HAUTE' ? 'priority-high' : 
+                                 incident.priorite.name() == 'MOYENNE' ? 'priority-medium' : 
+                                 incident.priorite.name() == 'BASSE' ? 'priority-low' : '') : ''}">
+                            <td data-label="ID">
+                                <span class="badge bg-light text-dark">#<span th:text="${stat.count}">1</span></span>
+                            </td>
+                            <td data-label="Titre">
+                                <strong th:text="${incident.titre ?: 'Sans titre'}">Titre</strong>
+                                <br>
+                                <small class="text-muted" th:text="${incident.description != null ? #strings.abbreviate(incident.description, 60) : '-'}">
+                                    Description courte
+                                </small>
+                            </td>
+                            <td data-label="Statut">
+                                <th:block th:switch="${incident.statut?.name()}">
+                                    <span th:case="'SIGNALE'" class="status-badge bg-warning text-dark">
+                                        <i class="fas fa-clock"></i> SIGNALÉ
+                                    </span>
+                                    <span th:case="'PRIS_EN_CHARGE'" class="status-badge bg-info text-white">
+                                        <i class="fas fa-hand-paper"></i> PRIS EN CHARGE
+                                    </span>
+                                    <span th:case="'EN_RESOLUTION'" class="status-badge bg-primary text-white">
+                                        <i class="fas fa-tools"></i> EN RÉSOLUTION
+                                    </span>
+                                    <span th:case="'RESOLU'" class="status-badge bg-success text-white">
+                                        <i class="fas fa-check-circle"></i> RÉSOLU
+                                    </span>
+                                    <span th:case="*" class="status-badge bg-secondary text-white">
+                                        <i class="fas fa-question-circle"></i> N/A
+                                    </span>
+                                </th:block>
+                            </td>
+                            <td data-label="Priorité">
+                                <th:block th:switch="${incident.priorite?.name()}">
+                                    <span th:case="'URGENTE'" class="priority-badge bg-danger text-white">
+                                        <i class="fas fa-exclamation-triangle"></i> URGENTE
+                                    </span>
+                                    <span th:case="'HAUTE'" class="priority-badge bg-warning text-dark">
+                                        <i class="fas fa-exclamation-circle"></i> HAUTE
+                                    </span>
+                                    <span th:case="'MOYENNE'" class="priority-badge bg-primary text-white">
+                                        <i class="fas fa-info-circle"></i> MOYENNE
+                                    </span>
+                                    <span th:case="'BASSE'" class="priority-badge bg-secondary text-white">
+                                        <i class="fas fa-minus-circle"></i> BASSE
+                                    </span>
+                                    <span th:case="*" class="text-muted">-</span>
+                                </th:block>
+                            </td>
+                            <td data-label="Citoyen">
+                                <th:block th:if="${incident.auteur != null}">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                             style="width: 32px; height: 32px;">
+                                            <span th:text="${incident.auteur.prenom.substring(0,1)}">C</span>
+                                        </div>
+                                        <div>
+                                            <small class="d-block fw-bold" th:text="${incident.auteur.prenom + ' ' + incident.auteur.nom}">Citoyen</small>
+                                            <small class="text-muted" th:text="${incident.auteur.email}">email</small>
+                                        </div>
+                                    </div>
+                                </th:block>
+                                <th:block th:unless="${incident.auteur != null}">
+                                    <span class="text-muted">
+                                        <i class="fas fa-user-slash"></i> Non spécifié
+                                    </span>
+                                </th:block>
+                            </td>
+                            <td data-label="Date Création">
+                                <i class="fas fa-calendar text-primary me-2"></i>
+                                <span th:if="${incident.dateCreation != null}" 
+                                      th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy')}">Date</span>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <span th:if="${incident.dateCreation != null}" 
+                                          th:text="${#temporals.format(incident.dateCreation, 'HH:mm')}">Heure</span>
+                                </small>
+                            </td>
+                            <td data-label="Actions">
+                                <div class="action-buttons">
+                                    <a th:href="@{/agent/incidents/{id}(id=${incident.id})}" 
+                                       class="btn-action btn-info"
+                                       title="Voir les détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a th:if="${incident.latitude != null && incident.longitude != null}"
+                                       th:href="'https://www.google.com/maps?q=' + ${incident.latitude} + ',' + ${incident.longitude}"
+                                       class="btn-action btn-outline-secondary"
+                                       target="_blank"
+                                       title="Localiser">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </a>
+                                    <a th:unless="${incident.latitude != null && incident.longitude != null}"
+                                       th:href="'https://www.google.com/maps?q=' + ${incident.adresseTextuelle}"
+                                       class="btn-action btn-outline-secondary"
+                                       target="_blank"
+                                       title="Localiser">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${incidents != null && !incidents.empty && incidents.totalPages > 1}" class="mt-4">
+                <ul class="pagination pagination-modern justify-content-center">
+                    <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
+                        <a class="page-link" 
+                           th:href="@{/agent/mes-assignations(page=0, size=${size}, statut=${statut}, priorite=${priorite}, sort=${sort})}">
+                            <i class="fas fa-chevron-left"></i> Précédent
+                        </a>
+                    </li>
+                    
+                    <!-- Première page -->
+                    <li class="page-item" th:if="${incidents.number > 2}">
+                        <a class="page-link" th:href="@{/agent/mes-assignations(page=0, size=${size}, statut=${statut}, priorite=${priorite}, sort=${sort})}">1</a>
+                    </li>
+                    <li class="page-item disabled" th:if="${incidents.number > 3}">
+                        <span class="page-link">...</span>
+                    </li>
+                    
+                    <!-- Pages autour de la page actuelle -->
+                    <li th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, incidents.number - 1), T(java.lang.Math).min(incidents.totalPages - 1, incidents.number + 1))}"
+                        class="page-item" th:classappend="${i == incidents.number} ? 'active'">
+                        <a class="page-link" 
+                           th:href="@{/agent/mes-assignations(page=${i}, size=${size}, statut=${statut}, priorite=${priorite}, sort=${sort})}" 
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    
+                    <!-- Dernière page -->
+                    <li class="page-item disabled" th:if="${incidents.number < incidents.totalPages - 4}">
+                        <span class="page-link">...</span>
+                    </li>
+                    <li class="page-item" th:if="${incidents.number < incidents.totalPages - 3}">
+                        <a class="page-link" 
+                           th:href="@{/agent/mes-assignations(page=${incidents.totalPages - 1}, size=${size}, statut=${statut}, priorite=${priorite}, sort=${sort})}" 
+                           th:text="${incidents.totalPages}">10</a>
+                    </li>
+                    
+                    <li class="page-item" th:classappend="${incidents.last} ? 'disabled'">
+                        <a class="page-link" 
+                           th:href="@{/agent/mes-assignations(page=${incidents.number + 1}, size=${size}, statut=${statut}, priorite=${priorite}, sort=${sort})}">
+                            Suivant <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Informations rapides -->
+        <div class="info-card">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle fa-2x me-3"></i>
+                <div>
+                    <h6 class="mb-1">Guide rapide des statuts</h6>
+                    <p class="mb-0">
+                        <span class="badge bg-info me-2">PRIS EN CHARGE</span> → 
+                        <span class="badge bg-warning text-dark me-2">EN RÉSOLUTION</span> → 
+                        <span class="badge bg-success">RÉSOLU</span>
+                        <br>
+                        <small>Cliquez sur le titre d'un incident pour voir les détails complets et gérer son statut.</small>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Amélioration de l'UX : cliquer sur toute la ligne pour aller aux détails
         document.addEventListener('DOMContentLoaded', function() {
             const tableRows = document.querySelectorAll('tbody tr');
             tableRows.forEach(row => {
-                // S'assurer que le clic n'est pas sur un bouton ou un formulaire
                 row.addEventListener('click', function(e) {
-                    // Ne pas déclencher si on clique sur un bouton, un lien ou un formulaire
                     if (e.target.tagName === 'BUTTON' || 
                         e.target.tagName === 'A' || 
                         e.target.tagName === 'INPUT' ||
@@ -413,24 +645,4 @@
                         return;
                     }
                     
-                    // Trouver le lien de détails dans cette ligne
-                    const detailsLink = row.querySelector('a[href*="/agent/incidents/"]');
-                    if (detailsLink) {
-                        window.location.href = detailsLink.href;
-                    }
-                });
-                
-                // Ajouter un effet visuel au survol
-                row.addEventListener('mouseenter', function() {
-                    if (!this.classList.contains('table-active')) {
-                        this.style.cursor = 'pointer';
-                    }
-                });
-            });
-            
-        
-           
-        });
-    </script>
-</body>
-</html>
+                    const det

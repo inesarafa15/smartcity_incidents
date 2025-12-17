@@ -5,58 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - SmartCity Incidents</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 25px;
+            border-bottom: none;
+            text-align: center;
+        }
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        .input-group-text {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="text-center">Connexion</h3>
+                        <div class="mb-3">
+                            <i class="fas fa-user-circle fa-3x"></i>
+                        </div>
+                        <h3 class="mb-0">Connexion</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4">
                         <div th:if="${error}" class="alert alert-danger" role="alert">
-                            <span th:text="${error}"></span>
+                            <i class="fas fa-exclamation-circle me-2"></i><span th:text="${error}"></span>
                         </div>
                         <div th:if="${param.error}" class="alert alert-danger" role="alert">
-                            Email ou mot de passe incorrect.
+                            <i class="fas fa-exclamation-circle me-2"></i>Email ou mot de passe incorrect.
                         </div>
                         <div th:if="${param.logout}" class="alert alert-success" role="alert">
-                            Vous avez été déconnecté avec succès.
+                            <i class="fas fa-info-circle me-2"></i>Vous avez été déconnecté avec succès.
                         </div>
                         <form th:action="@{/connexion}" method="post">
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="username" required>
+                                <label for="email" class="form-label fw-bold">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="email" name="username" required>
+                                </div>
                             </div>
                             <div class="mb-3">
-                                <label for="motDePasse" class="form-label">Mot de passe</label>
-                                <input type="password" class="form-control" id="motDePasse" name="password" required>
+                                <label for="motDePasse" class="form-label fw-bold">Mot de passe</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="motDePasse" name="password" required>
+                                </div>
+                                <div class="text-end mt-1">
+                                    <a href="/mot-de-passe/oublie" class="text-decoration-none small text-muted">Mot de passe oublié ?</a>
+                                </div>
                             </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Se connecter</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+                            </button>
                         </div>
                         </form>
                         
-                        <div class="text-center mt-3">
-                            <hr>
-                            <p class="text-muted">Ou</p>
-                            <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-danger">
-                                <svg width="18" height="18" viewBox="0 0 18 18" style="margin-right: 8px; vertical-align: middle;">
+                        <div class="text-center mt-4">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div style="height: 1px; background: #dee2e6; width: 100%;"></div>
+                                <span class="px-2 text-muted small text-nowrap">OU CONTINUER AVEC</span>
+                                <div style="height: 1px; background: #dee2e6; width: 100%;"></div>
+                            </div>
+                            
+                            <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-secondary w-100 mb-2 d-flex align-items-center justify-content-center">
+                                <svg width="18" height="18" viewBox="0 0 18 18" style="margin-right: 10px;">
                                     <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
                                     <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
                                     <path fill="#FBBC05" d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.712 0-.595.102-1.172.282-1.712V4.956H.957C.348 6.175 0 7.55 0 9c0 1.45.348 2.825.957 4.044l3.007-2.332z"/>
                                     <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.956L3.964 7.288C4.672 5.163 6.656 3.58 9 3.58z"/>
                                 </svg>
-                                Se connecter avec Google
+                                Google
                             </a>
-                            <p class="text-muted mt-2" style="font-size: 0.85rem;">
-                                L'authentification Google est disponible uniquement pour les citoyens
+                            <p class="text-muted small mb-0">
+                                (Uniquement pour les citoyens)
                             </p>
                         </div>
                         
-                        <div class="text-center mt-3">
-                            <a th:href="@{/inscription}">Pas encore de compte ? S'inscrire</a>
+                        <div class="text-center mt-4 pt-3 border-top">
+                            <span class="text-muted">Pas encore de compte ?</span>
+                            <a th:href="@{/inscription}" class="text-decoration-none fw-bold ms-1" style="color: #3498db;">S'inscrire</a>
                         </div>
                     </div>
                 </div>

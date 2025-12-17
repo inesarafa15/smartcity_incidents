@@ -202,7 +202,7 @@
                         <p class="mb-0 opacity-75">Gestion et suivi de l'intervention</p>
                     </div>
                     <div>
-                        <a th:href="@{/agent/incidents}" class="btn btn-light">
+                        <a th:href="@{/agent/mes-assignations}" class="btn btn-light">
                             <i class="fas fa-arrow-left"></i> Retour à la liste
                         </a>
                     </div>
@@ -399,6 +399,36 @@
                                         <strong class="text-danger"><i class="fas fa-exclamation-triangle"></i> Motif du refus:</strong>
                                         <p class="mb-0 mt-1" th:text="${#strings.substringAfter(notif.message, 'Motif:')}">Motif</p>
                                     </div>
+                                </div>
+                            </th:block>
+
+                            <!-- Historique des Feedbacks -->
+                            <th:block th:if="${incident.historiquesFeedback != null}">
+                                <div th:each="hist : ${incident.historiquesFeedback}" class="timeline-item" style="border-left-color: #6c757d;">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <strong><i class="fas fa-history"></i> Feedback (Historique)</strong>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i>
+                                            <span th:text="${#temporals.format(hist.dateFeedback, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                        </small>
+                                    </div>
+                                    <p class="mb-1">
+                                        <i th:if="${hist.satisfait}" class="fas fa-smile text-success"></i>
+                                        <i th:unless="${hist.satisfait}" class="fas fa-frown text-danger"></i>
+                                        <strong th:text="${hist.satisfait ? 'Satisfait' : 'Non satisfait'}">État</strong>
+                                        <span class="badge bg-secondary ms-2">Refusé le <span th:text="${#temporals.format(hist.dateRefus, 'dd/MM/yyyy')}">Date</span></span>
+                                    </p>
+                                    <p th:if="${hist.note != null}" class="mb-1">
+                                        Note: 
+                                        <span class="feedback-rating">
+                                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                                <i class="fas fa-star" th:classappend="${i <= hist.note ? 'text-warning' : 'text-muted'}"></i>
+                                            </th:block>
+                                        </span>
+                                    </p>
+                                    <p th:if="${hist.commentaire != null}" class="mb-0 mt-2 fst-italic">
+                                        "<span th:text="${hist.commentaire}">Commentaire</span>"
+                                    </p>
                                 </div>
                             </th:block>
 

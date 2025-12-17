@@ -228,8 +228,8 @@
                                     Aucun incident ne correspond aux critères
                                 </td>
                             </tr>
-                            <tr th:each="incident : ${incidents.content}">
-                                <td class="text-muted" th:text="'#' + ${incident.id}"></td>
+                            <tr th:each="incident, stat : ${incidents.content}">
+                                <td class="text-muted" th:text="'#' + ${stat.count}"></td>
                                 <td>
                                     <div class="fw-bold text-dark" th:text="${incident.titre}"></div>
                                 </td>

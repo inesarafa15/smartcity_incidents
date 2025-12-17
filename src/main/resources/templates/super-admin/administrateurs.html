@@ -147,8 +147,8 @@
                                     Aucun administrateur trouvé
                                 </td>
                             </tr>
-                            <tr th:each="admin : ${administrateurs.content}">
-                                <td class="text-muted" th:text="${'#' + admin.id}"></td>
+                            <tr th:each="admin, stat : ${administrateurs.content}">
+                                <td class="text-muted" th:text="${'#' + stat.count}"></td>
                                 <td>
                                     <div class="fw-bold" th:text="${admin.nom + ' ' + admin.prenom}"></div>
                                 </td>

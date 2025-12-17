@@ -152,8 +152,8 @@
                                     Aucun agent trouvé
                                 </td>
                             </tr>
-                            <tr th:each="agent : ${agents.content}">
-                                <td class="text-muted" th:text="'#' + ${agent.id}"></td>
+                            <tr th:each="agent, stat : ${agents.content}">
+                                <td class="text-muted" th:text="'#' + ${stat.count}"></td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="bg-light rounded-circle p-2 me-3 text-primary">
