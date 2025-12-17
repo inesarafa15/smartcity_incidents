@@ -8,6 +8,9 @@ import com.smartcity.incident_management.services.citoyen.IncidentCitoyenService
 import com.smartcity.incident_management.services.utilisateur.DepartementService;
 import com.smartcity.incident_management.services.utilisateur.QuartierService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +19,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
+
 
 @Controller
 @RequestMapping("/citoyen")
@@ -136,24 +141,31 @@ public class CitoyenController {
     }
     
     @PostMapping("/incidents/nouveau")
-    public String signalerIncident(@Valid @ModelAttribute IncidentDTO dto,
-                                  BindingResult result,
-                                  RedirectAttributes redirectAttributes) {
+    public String signalerIncident(
+            @Valid @ModelAttribute IncidentDTO dto,
+            BindingResult result,
+            @RequestParam(value = "photos", required = false) List<MultipartFile> photos,
+            RedirectAttributes redirectAttributes,
+            Model model
+    ) {
         if (result.hasErrors()) {
             return "citoyen/nouveau-incident";
         }
-        
+
         try {
+            dto.setPhotos(photos);
+
             Utilisateur citoyen = SecurityUtils.getCurrentUser();
             incidentCitoyenService.signalerIncident(citoyen, dto);
-            redirectAttributes.addFlashAttribute("success", 
-                    "Incident signalé avec succès !");
+
+            redirectAttributes.addFlashAttribute("success", "Incident signalé avec succès !");
             return "redirect:/citoyen/incidents";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/citoyen/incidents/nouveau";
         }
     }
+
     
     @GetMapping("/incidents/{id}")
     public String consulterIncident(@PathVariable Long id, Model model) {
