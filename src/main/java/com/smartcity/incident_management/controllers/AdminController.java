@@ -46,6 +46,8 @@ public class AdminController {
     @GetMapping("/incidents")
     public String incidents(@RequestParam(defaultValue = "0") int page,
                            @RequestParam(defaultValue = "10") int size,
+                           @RequestParam(required = false) String statut,
+                           @RequestParam(required = false) String priorite,
                            @RequestParam(defaultValue = "dateCreation") String sortBy,
                            @RequestParam(defaultValue = "DESC") String sortDir,
                            @RequestParam(required = false) String statut,
@@ -53,26 +55,13 @@ public class AdminController {
                            Model model) {
         
         Utilisateur admin = SecurityUtils.getCurrentUser();
-        Page<Incident> incidents;
-        
-        // Check if any filters are applied
-        if ((statut != null && !statut.isEmpty()) || (priorite != null && !priorite.isEmpty())) {
-            incidents = adminService.incidentsDuDepartementFiltres(
-                admin, page, size, sortBy, sortDir, statut, priorite);
-        } else {
-            incidents = adminService.incidentsDuDepartement(admin, page, size, sortBy, sortDir);
-        }
-        
+        Page incidents = adminService.incidentsDuDepartement(admin, statut, priorite, page, size, sortBy, sortDir);
         model.addAttribute("incidents", incidents);
         model.addAttribute("agentsDisponibles", adminService.agentsDisponibles(admin));
-        
-        // Add filter parameters to model for form binding
         model.addAttribute("statut", statut);
         model.addAttribute("priorite", priorite);
-        model.addAttribute("size", size);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortDir", sortDir);
-        
         return "admin/incidents";
     }
 
