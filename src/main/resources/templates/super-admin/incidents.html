@@ -107,7 +107,6 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -119,7 +118,6 @@
                 </div>
             </div>
 
-            <!-- Alerts -->
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fas fa-check-circle me-2"></i>
                 <span th:text="${success}"></span>
@@ -131,7 +129,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- Filtres -->
             <div class="filter-card">
                 <form method="get" action="/super-admin/incidents" class="row g-3">
                     <div class="col-md-2">
@@ -190,7 +187,6 @@
                 </form>
             </div>
 
-            <!-- Statistiques Rapides -->
             <div th:if="${statistiques}" class="row mb-4">
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm rounded-3">
@@ -207,7 +203,6 @@
                 </div>
             </div>
 
-            <!-- Liste des incidents -->
             <div class="table-card">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -299,7 +294,6 @@
                     </table>
                 </div>
                 
-                <!-- Pagination -->
                 <div class="p-3 border-top" th:if="${incidents.totalPages > 1}">
                     <nav>
                         <ul class="pagination justify-content-center mb-0">

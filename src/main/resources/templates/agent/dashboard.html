@@ -120,7 +120,6 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -137,9 +136,7 @@
                 </div>
             </div>
 
-            <!-- Stats Cards Row -->
             <div class="row mb-4 g-3">
-                <!-- Total assignés -->
                 <div class="col-xl-3 col-md-6">
                     <div class="card card-stats h-100">
                         <div class="card-body p-3">
@@ -156,7 +153,6 @@
                     </div>
                 </div>
 
-                <!-- En cours -->
                 <div class="col-xl-3 col-md-6">
                     <div class="card card-stats h-100">
                         <div class="card-body p-3">
@@ -173,7 +169,6 @@
                     </div>
                 </div>
 
-                <!-- Résolus -->
                 <div class="col-xl-3 col-md-6">
                     <div class="card card-stats h-100">
                         <div class="card-body p-3">
@@ -190,7 +185,6 @@
                     </div>
                 </div>
 
-                <!-- Critiques -->
                 <div class="col-xl-3 col-md-6">
                     <div class="card card-stats h-100">
                         <div class="card-body p-3">
@@ -208,9 +202,7 @@
                 </div>
             </div>
 
-            <!-- Charts Row -->
             <div class="row mb-4">
-                <!-- Graphique par statut -->
                 <div class="col-md-6 mb-4">
                     <div class="card card-chart h-100">
                         <div class="card-header">
@@ -224,7 +216,6 @@
                     </div>
                 </div>
 
-                <!-- Graphique par priorité -->
                 <div class="col-md-6 mb-4">
                     <div class="card card-chart h-100">
                         <div class="card-header">
@@ -239,7 +230,6 @@
                 </div>
             </div>
 
-            <!-- Tableau des incidents récents -->
             <div class="incident-table">
                 <div class="table-header">
                     <h5 class="mb-0">
@@ -250,14 +240,12 @@
                     </a>
                 </div>
                 
-                <!-- État vide -->
                 <div th:if="${incidentsAssignes == null or incidentsAssignes.isEmpty()}" class="empty-state">
                     <i class="fas fa-inbox"></i>
                     <h4>Aucun incident assigné</h4>
                     <p class="text-muted">Les incidents qui vous seront assignés apparaîtront ici</p>
                 </div>
 
-                <!-- Tableau avec données -->
                 <div th:unless="${incidentsAssignes == null or incidentsAssignes.isEmpty()}" class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead style="background: #f8f9fa;">
@@ -337,9 +325,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:inline="javascript">
-        /*<![CDATA[*/
         document.addEventListener('DOMContentLoaded', function() {
-            // SweetAlert2 notifications
             const successMsg = /*[[${success}]]*/ null;
             const errorMsg = /*[[${error}]]*/ null;
 
@@ -367,11 +353,9 @@
                 });
             }
 
-            // Données pour les graphiques
             const statutData = /*[[${incidentsParStatut}]]*/ {};
             const prioriteData = /*[[${incidentsParPriorite}]]*/ {};
 
-            // Graphique par statut
             const statutCtx = document.getElementById('statutChart');
             if (statutCtx && statutData && Object.keys(statutData).length > 0) {
                 new Chart(statutCtx, {
@@ -412,7 +396,6 @@
                 });
             }
 
-            // Graphique par priorité
             const prioriteCtx = document.getElementById('prioriteChart');
             if (prioriteCtx && prioriteData && Object.keys(prioriteData).length > 0) {
                 new Chart(prioriteCtx, {
@@ -458,7 +441,6 @@
                 });
             }
         });
-        /*]]>*/
     </script>
 </body>
 </html>

@@ -125,7 +125,6 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -145,7 +144,6 @@
                 </div>
             </div>
 
-            <!-- Messages Flash -->
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -155,7 +153,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- Filtres -->
             <div class="filter-card">
                 <h5 class="mb-3"><i class="fas fa-filter"></i> Filtres de recherche</h5>
                 <form method="get" th:action="@{/citoyen/incidents}">
@@ -168,17 +165,19 @@
                                 <option value="PRIS_EN_CHARGE" th:selected="${statut == 'PRIS_EN_CHARGE'}">Pris en charge</option>
                                 <option value="EN_RESOLUTION" th:selected="${statut == 'EN_RESOLUTION'}">En résolution</option>
                                 <option value="RESOLU" th:selected="${statut == 'RESOLU'}">Résolu</option>
+                                 <option value="CLOTURE" th:selected="${statut == 'RESOLU'}">Cloturé</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label for="priorite" class="form-label fw-bold">Priorité</label>
-                            <select class="form-select" id="priorite" name="priorite">
-                                <option value="">Toutes les priorités</option>
-                                <option value="URGENTE" th:selected="${priorite == 'URGENTE'}">Urgente</option>
-                                <option value="HAUTE" th:selected="${priorite == 'HAUTE'}">Haute</option>
-                                <option value="MOYENNE" th:selected="${priorite == 'MOYENNE'}">Moyenne</option>
-                                <option value="BASSE" th:selected="${priorite == 'BASSE'}">Basse</option>
-                            </select>
+                            <!-- CORRIGER CES VALEURS -->
+						<select class="form-select" id="priorite" name="priorite">
+						    <option value="">Toutes les priorités</option>
+						    <option value="CRITIQUE" th:selected="${priorite == 'CRITIQUE'}">Critique</option>
+						    <option value="ELEVEE" th:selected="${priorite == 'ELEVEE'}">Elevée</option>
+						    <option value="MOYENNE" th:selected="${priorite == 'MOYENNE'}">Moyenne</option>
+						    <option value="FAIBLE" th:selected="${priorite == 'FAIBLE'}">Faible</option>
+						</select>
                         </div>
                         <div class="col-md-2">
                             <label for="size" class="form-label fw-bold">Par page</label>
@@ -200,14 +199,12 @@
                 </form>
             </div>
 
-            <!-- Empty State -->
             <div th:if="${incidents == null or incidents.isEmpty()}" class="empty-state">
                 <i class="fas fa-inbox"></i>
                 <h3>Aucun incident trouvé</h3>
                 <p class="text-muted mb-4">Vous n'avez pas encore signalé d'incident ou aucun résultat ne correspond à vos filtres.</p>
             </div>
 
-            <!-- Table -->
             <div th:unless="${incidents == null or incidents.isEmpty()}" class="table-card">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
@@ -225,12 +222,10 @@
                         </thead>
                         <tbody>
                             <tr th:each="incident, stat : ${incidents.content}">
-                                <!-- ID -->
                                 <td>
                                     <strong class="text-primary" th:text="'#' + ${stat.count}">ID</strong>
                                 </td>
                                 
-                                <!-- Titre -->
                                 <td>
                                     <div class="fw-bold" th:text="${incident.titre}">Titre</div>
                                     <small class="text-muted" 
@@ -239,7 +234,6 @@
                                     </small>
                                 </td>
                                 
-                                <!-- Statut & Progression -->
                                 <td>
                                     <th:block th:switch="${incident.statut?.name()}">
                                         <div th:case="'SIGNALE'">
@@ -284,7 +278,6 @@
                                     </th:block>
                                 </td>
                                 
-                                <!-- Priorité -->
                                 <td>
                                     <th:block th:switch="${incident.priorite?.name()}">
                                         <span th:case="'URGENTE'">
@@ -307,7 +300,6 @@
                                     </th:block>
                                 </td>
                                 
-                                <!-- Assigné à -->
                                 <td>
                                     <span th:if="${incident.agentAssigne != null}">
                                         <i class="fas fa-user-check text-success"></i>
@@ -318,7 +310,6 @@
                                     </span>
                                 </td>
                                 
-                                <!-- Date création -->
                                 <td>
                                     <small>
                                         <i class="fas fa-calendar text-muted"></i>
@@ -329,23 +320,19 @@
                                     </small>
                                 </td>
                                 
-                                <!-- Localisation -->
                                 <td>
                                     <small class="text-muted" th:text="${incident.quartier != null ? incident.quartier.nom : (incident.adresseTextuelle != null ? (#strings.length(incident.adresseTextuelle) > 20 ? #strings.substring(incident.adresseTextuelle, 0, 20) + '...' : incident.adresseTextuelle) : 'N/A')}">
                                         Localisation
                                     </small>
                                 </td>
                                 
-                                <!-- Actions -->
                                 <td class="text-center">
-                                    <!-- Voir détails -->
                                     <a th:href="@{/citoyen/incidents/{id}(id=${incident.id})}" 
                                        class="btn btn-sm btn-outline-dark btn-action"
                                        title="Voir les détails">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     
-                                    <!-- Modifier (pour tout incident non résolu/clôturé) -->
                                     <a th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE'}"
                                        th:href="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" 
                                        class="btn btn-sm btn-outline-primary btn-action"
@@ -353,7 +340,6 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
-                                    <!-- Localiser -->
                                     <a th:if="${incident.latitude != null and incident.longitude != null}"
                                        th:href="@{'https://www.google.com/maps?q=' + ${incident.latitude} + ',' + ${incident.longitude}}"
                                        class="btn btn-sm btn-outline-success btn-action"
@@ -375,7 +361,6 @@
                     </table>
                 </div>
                 
-                <!-- Pagination -->
                 <div class="p-3 bg-light border-top">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted small">

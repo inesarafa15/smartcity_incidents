@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails de l'incident - Agent Municipal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -192,7 +191,6 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -209,9 +207,7 @@
                 </div>
             </div>
 
-            <!-- Messages Flash replaced by SweetAlert2 -->
 
-            <!-- Alert si résolu mais pas de feedback -->
             <div th:if="${incident.statut != null and incident.statut.name() == 'RESOLU' and incident.dateFeedback == null}" 
                  class="alert alert-warning" role="alert">
                 <i class="fas fa-hourglass-half"></i> 
@@ -219,9 +215,7 @@
             </div>
 
             <div class="row">
-                <!-- Colonne principale -->
                 <div class="col-lg-8">
-                    <!-- Informations générales -->
                     <div class="detail-card">
                         <h5 class="section-title">
                             <i class="fas fa-info-circle text-primary"></i> Informations Générales
@@ -271,7 +265,6 @@
                         <p class="mt-2" th:text="${incident.description}">Description</p>
                     </div>
 
-                    <!-- Localisation -->
                     <div class="detail-card">
                         <h5 class="section-title">
                             <i class="fas fa-map-marker-alt text-danger"></i> Localisation
@@ -294,7 +287,6 @@
                         </div>
                     </div>
 
-                    <!-- Photos -->
                     <div th:if="${incident.photos != null and !incident.photos.isEmpty()}" class="detail-card">
                         <div th:with="creationPhotos=${incident.photos.?[typePhoto == null || typePhoto.name() == 'CREATION']}">
                             <div th:if="${!creationPhotos.isEmpty()}">
@@ -311,7 +303,6 @@
                             </div>
                         </div>
 
-                        <!-- Photos de résolution (Actuelles) -->
                         <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && (estRefuse == null || !estRefuse)]}" class="mt-4">
                             <div th:if="${!resolutionPhotos.isEmpty()}">
                                 <h5 class="section-title">
@@ -327,7 +318,6 @@
                             </div>
                         </div>
 
-                        <!-- Photos de résolution (Refusées / Historique) -->
                         <div th:with="refusedPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && estRefuse == true]}" class="mt-4">
                             <div th:if="${!refusedPhotos.isEmpty()}">
                                 <h5 class="section-title text-danger opacity-75">
@@ -347,13 +337,11 @@
                         </div>
                     </div>
 
-                    <!-- Historique complet -->
                     <div class="detail-card">
                         <h5 class="section-title">
                             <i class="fas fa-history text-info"></i> Historique Complet
                         </h5>
                         <div class="timeline">
-                            <!-- Incident signalé -->
                             <div class="timeline-item">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <strong><i class="fas fa-flag"></i> Incident signalé</strong>
@@ -368,7 +356,6 @@
                                 <p class="mb-0 text-muted small">Priorité: <span th:text="${incident.priorite?.name()}">N/A</span></p>
                             </div>
 
-                            <!-- Assignation à un agent -->
                             <div th:if="${incident.agentAssigne != null}" class="timeline-item info">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <strong><i class="fas fa-user-plus"></i> Incident assigné</strong>
@@ -378,7 +365,6 @@
                                 </p>
                             </div>
 
-                            <!-- Historique des notifications -->
                             <th:block th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}">
                                 <div th:each="notif : ${incident.notificationsIncident}" 
                                      class="timeline-item"
@@ -397,7 +383,6 @@
                                     </div>
                                     <p class="mb-0" th:text="${notif.message}">Message</p>
                                     
-                                    <!-- Afficher le motif de refus si présent dans le message -->
                                     <div th:if="${notif.message.contains('Motif:')}" class="refusal-reason mt-2">
                                         <strong class="text-danger"><i class="fas fa-exclamation-triangle"></i> Motif du refus:</strong>
                                         <p class="mb-0 mt-1" th:text="${#strings.substringAfter(notif.message, 'Motif:')}">Motif</p>
@@ -405,7 +390,6 @@
                                 </div>
                             </th:block>
 
-                            <!-- Historique des Feedbacks -->
                             <th:block th:if="${incident.historiquesFeedback != null}">
                                 <div th:each="hist : ${incident.historiquesFeedback}" class="timeline-item" style="border-left-color: #6c757d;">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -435,7 +419,6 @@
                                 </div>
                             </th:block>
 
-                            <!-- Feedback citoyen -->
                             <div th:if="${incident.dateFeedback != null}" class="timeline-item success">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <strong><i class="fas fa-star"></i> Feedback du citoyen</strong>
@@ -462,7 +445,6 @@
                                 </p>
                             </div>
 
-                            <!-- Clôture -->
                             <div th:if="${incident.statut != null and incident.statut.name() == 'CLOTURE'}" class="timeline-item">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <strong><i class="fas fa-archive"></i> Incident clôturé</strong>
@@ -477,46 +459,38 @@
                     </div>
                 </div>
 
-                <!-- Colonne latérale -->
                 <div class="col-lg-4">
-                 <!-- Actions Rapides (Agent) -->
                     <div class="detail-card">
                         <h5 class="section-title">
                             <i class="fas fa-bolt text-warning"></i> Actions Rapides
                         </h5>
                         <div class="d-grid gap-2">
-                             <!-- Prendre en charge -->
                             <button th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE' and (incident.agentAssigne == null or isAssigned)}" 
                                     type="button" class="btn btn-primary action-btn" onclick="confirmerPriseEnCharge()">
                                 <i class="fas fa-hand-paper"></i> Prendre en charge
                             </button>
                             
-                            <!-- En résolution -->
                             <button th:if="${incident.statut != null and incident.statut.name() == 'PRIS_EN_CHARGE' and isAssigned}" 
                                     type="button" class="btn btn-warning action-btn" onclick="confirmerEnResolution()">
                                 <i class="fas fa-tools"></i> Mettre en résolution
                             </button>
                             
-                            <!-- Marquer résolu -->
                             <button th:if="${incident.statut != null and incident.statut.name() == 'EN_RESOLUTION' and isAssigned}" 
                                     type="button" class="btn btn-success action-btn" data-bs-toggle="modal" data-bs-target="#resolveModal">
                                 <i class="fas fa-check-circle"></i> Marquer résolu
                             </button>
                             
-                            <!-- Mise à jour citoyen -->
                             <button th:if="${isAssigned}" type="button" class="btn btn-info action-btn" 
                                     data-bs-toggle="modal" data-bs-target="#updateModal">
                                 <i class="fas fa-paper-plane"></i> Envoyer mise à jour
                             </button>
                             
-                            <!-- Ajouter commentaire -->
                             <button type="button" class="btn btn-outline-secondary action-btn" 
                                     data-bs-toggle="modal" data-bs-target="#commentModal">
                                 <i class="fas fa-comment"></i> Ajouter commentaire
                             </button>
                         </div>
                     </div>
-                    <!-- Informations -->
                     <div class="detail-card">
                         <h5 class="section-title">
                             <i class="fas fa-clock text-info"></i> Informations
@@ -554,14 +528,12 @@
 
                    
 
-                    <!-- Résolution (Same as Admin) -->
                     <div th:if="${incident.statut != null and (incident.statut.name() == 'RESOLU' or incident.statut.name() == 'CLOTURE')}" 
                          class="detail-card">
                         <h5 class="section-title">
                             <i class="fas fa-check-circle text-success"></i> Résolution
                         </h5>
 
-                        <!-- Commentaire de résolution -->
                         <div class="resolution-comment">
                             <h6 class="fw-bold mb-2">
                                 <i class="fas fa-comment-dots text-success"></i> Commentaire de l'agent
@@ -575,7 +547,6 @@
                             </p>
                         </div>
 
-                        <!-- Feedback citoyen -->
                         <div th:if="${incident.dateFeedback != null}" class="feedback-section">
                             <h6 class="fw-bold mb-3">
                                 <i class="fas fa-star text-warning"></i> Feedback du Citoyen
@@ -620,7 +591,6 @@
         </div>
     </div>
 
-    <!-- Formulaires cachés pour soumission -->
     <form id="priseEnChargeForm" th:action="@{/agent/incidents/{id}/prendre-en-charge(id=${incident.id})}" method="post" style="display: none;">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
     </form>
@@ -629,7 +599,6 @@
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
     </form>
 
-    <!-- Modal Photo -->
     <div class="modal fade" id="photoModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
@@ -644,7 +613,6 @@
         </div>
     </div>
 
-    <!-- Modal Résolution avec upload -->
     <div class="modal fade" id="resolveModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -682,7 +650,6 @@
         </div>
     </div>
 
-    <!-- Modal Commentaire -->
     <div class="modal fade" id="commentModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -712,7 +679,6 @@
         </div>
     </div>
 
-    <!-- Modal Mise à jour -->
     <div class="modal fade" id="updateModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -754,7 +720,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:inline="javascript">
-        // Photo modal
         const photoModal = document.getElementById('photoModal');
         if (photoModal) {
             photoModal.addEventListener('show.bs.modal', function (event) {
@@ -764,7 +729,6 @@
             });
         }
 
-        // Fonctions de confirmation avec SweetAlert2
         function confirmerPriseEnCharge() {
             Swal.fire({
                 title: 'Prendre en charge cet incident ?',
@@ -803,8 +767,6 @@
             });
         }
 
-        // Leaflet Map
-        /*<![CDATA[*/
         const lat = /*[[${incident.latitude}]]*/ null;
         const lng = /*[[${incident.longitude}]]*/ null;
         const adresse = /*[[${incident.adresseTextuelle}]]*/ 'Localisation de l\'incident';
@@ -817,7 +779,6 @@
                 maxZoom: 19
             }).addTo(map);
             
-            // Custom marker icon
             const customIcon = L.divIcon({
                 className: 'custom-marker',
                 html: '<div style="background: #dc3545; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><i class="fas fa-exclamation" style="color: white; font-size: 16px;"></i></div>',
@@ -828,7 +789,6 @@
             const marker = L.marker([lat, lng], {icon: customIcon}).addTo(map);
             marker.bindPopup("<strong>📍 Localisation de l'incident</strong><br>" + adresse).openPopup();
             
-            // Add circle to show approximate area
             L.circle([lat, lng], {
                 color: '#dc3545',
                 fillColor: '#dc3545',
@@ -837,7 +797,6 @@
             }).addTo(map);
         }
 
-        // Gestion des notifications SweetAlert2
         const successMsg = /*[[${success}]]*/ null;
         const errorMsg = /*[[${error}]]*/ null;
 
@@ -864,10 +823,8 @@
                 showConfirmButton: false
             });
         }
-        /*]]>*/
     </script>
     <script>
-        // Gestion du drag & drop pour upload d'images
         const dropzone = document.getElementById('dropzone');
         const input = document.getElementById('imagesInput');
         const filesList = document.getElementById('filesList');

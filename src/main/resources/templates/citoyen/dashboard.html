@@ -125,7 +125,6 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -163,7 +162,6 @@
             </div>
 
             <div class="row mt-4">
-                <!-- Statistiques rapides -->
                 <div class="col-12 mb-4">
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3">
                         <div class="col">
@@ -248,9 +246,7 @@
                     </div>
                 </div>
 
-                <!-- Section centrale du dashboard -->
                 <div class="col-12 mb-4">
-                    <!-- Tableau -->
                     <div class="table-card">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
@@ -274,7 +270,6 @@
                                     </tr>
                                     <tr th:each="incident : ${incidents.content}">
                                         <td>
-                                            <!-- Logic to determine which photo to show -->
                                             <th:block th:with="isResolved=${incident.statut.name() == 'RESOLU' || incident.statut.name() == 'CLOTURE'},
                                                                resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION']},
                                                                creationPhotos=${incident.photos.?[typePhoto == null || typePhoto.name() == 'CREATION']},
@@ -325,7 +320,6 @@
                         </div>
                     </div>
                     
-                    <!-- Pagination simplifiée -->
                     <div th:if="${incidents.totalPages > 1}" class="d-flex justify-content-center mt-4">
                         <nav aria-label="Page navigation">
                             <ul class="pagination">

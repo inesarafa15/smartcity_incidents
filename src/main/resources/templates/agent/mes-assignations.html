@@ -318,7 +318,6 @@
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
-        <!-- En-tête du tableau de bord -->
         <div class="dashboard-header">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -341,7 +340,6 @@
             </div>
         </div>
 
-        <!-- Messages Flash -->
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -351,7 +349,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
-        <!-- Statistiques -->
         <div class="row">
             <div class="col-md-4">
                 <div class="stat-card">
@@ -382,7 +379,6 @@
             </div>
         </div>
 
-        <!-- Filtres et Recherche -->
         <div class="search-filter-container">
     <h6 class="mb-3 fw-bold text-uppercase text-muted" style="font-size: 0.8rem;">
         <i class="fas fa-filter me-2"></i>Filtres de recherche
@@ -436,7 +432,6 @@
 </div>
 
 
-        <!-- Tableau des incidents -->
         <div class="incidents-table-container">
             <h5 class="mb-4">
                 <i class="fas fa-tasks"></i> Mes incidents assignés
@@ -445,7 +440,6 @@
                 </span>
             </h5>
 
-            <!-- État vide -->
             <div th:if="${incidents == null || incidents.empty}" class="empty-state">
                 <i class="fas fa-inbox"></i>
                 <h4>Aucun incident assigné</h4>
@@ -453,7 +447,6 @@
                 
             </div>
 
-            <!-- Tableau avec données -->
             <div th:if="${incidents != null && !incidents.empty}" class="table-responsive">
                 <table class="table table-modern">
                     <thead>
@@ -581,7 +574,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             <nav th:if="${incidents != null && !incidents.empty && incidents.totalPages > 1}" class="mt-4">
                 <ul class="pagination pagination-modern justify-content-center">
                     <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
@@ -591,7 +583,6 @@
                         </a>
                     </li>
                     
-                    <!-- Première page -->
                     <li class="page-item" th:if="${incidents.number > 2}">
                         <a class="page-link" th:href="@{/agent/mes-assignations(page=0, size=${param.size ?: 10}, statut=${param.statut}, priorite=${param.priorite}, sort=${param.sort ?: 'dateCreation,desc'})}">1</a>
                     </li>
@@ -599,7 +590,6 @@
                         <span class="page-link">...</span>
                     </li>
                     
-                    <!-- Pages autour de la page actuelle -->
                     <li th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, incidents.number - 1), T(java.lang.Math).min(incidents.totalPages - 1, incidents.number + 1))}"
                         class="page-item" th:classappend="${i == incidents.number} ? 'active'">
                         <a class="page-link" 
@@ -607,7 +597,6 @@
                            th:text="${i + 1}">1</a>
                     </li>
                     
-                    <!-- Dernière page -->
                     <li class="page-item disabled" th:if="${incidents.number < incidents.totalPages - 4}">
                         <span class="page-link">...</span>
                     </li>
@@ -627,7 +616,6 @@
             </nav>
         </div>
 
-        <!-- Informations rapides -->
         <div class="info-card">
             <div class="d-flex align-items-center">
                 <i class="fas fa-info-circle fa-2x me-3"></i>
