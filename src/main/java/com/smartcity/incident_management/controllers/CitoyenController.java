@@ -14,12 +14,16 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import com.smartcity.incident_management.security.UserDetailsImpl;
 
 
 @Controller
@@ -38,6 +42,9 @@ public class CitoyenController {
     
     @Autowired
     private com.smartcity.incident_management.services.utilisateur.NotificationService notificationService;
+
+    @Autowired
+    private com.smartcity.incident_management.services.utilisateur.UtilisateurService utilisateurService;
     
     @GetMapping("/dashboard")
     public String dashboard(
@@ -238,5 +245,36 @@ public class CitoyenController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/citoyen/incidents/" + id;
+    }
+
+    @GetMapping("/profil")
+    public String profil(Model model) {
+        Utilisateur citoyen = SecurityUtils.getCurrentUser();
+        model.addAttribute("citoyen", citoyen);
+        return "citoyen/profil";
+    }
+
+    @PostMapping("/profil")
+    public String modifierProfil(@RequestParam String nom,
+                                 @RequestParam String prenom,
+                                 @RequestParam String email,
+                                 @RequestParam String telephone,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            Utilisateur citoyen = SecurityUtils.getCurrentUser();
+            Utilisateur updatedUser = utilisateurService.mettreAJourProfil(citoyen.getId(), nom, prenom, email, telephone);
+            
+            // Mettre à jour le contexte de sécurité
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            UserDetailsImpl newUserDetails = new UserDetailsImpl(updatedUser);
+            UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                    newUserDetails, auth.getCredentials(), auth.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+            
+            redirectAttributes.addFlashAttribute("success", "Profil mis à jour avec succès");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/citoyen/profil";
     }
 }

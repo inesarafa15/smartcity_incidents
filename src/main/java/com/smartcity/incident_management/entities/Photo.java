@@ -42,6 +42,9 @@ public class Photo {
     @Column(name = "date_upload", nullable = false, updatable = false)
     private LocalDateTime dateUpload = LocalDateTime.now();
     
+    @Column(name = "est_refuse")
+    private Boolean estRefuse = false;
+    
     // Relation avec l'incident
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "incident_id", nullable = false)

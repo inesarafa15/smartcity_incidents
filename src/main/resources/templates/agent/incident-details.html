@@ -11,38 +11,44 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
     <style>
-        .incident-card {
+        .page-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .detail-card {
+            background: #fff;
             border: none;
             border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            overflow: hidden;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .section-title {
+            color: #2c3e50;
+            font-weight: 600;
             margin-bottom: 20px;
-            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
         }
-        .incident-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
         }
-        .incident-header-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px 30px;
-            position: relative;
-            overflow: hidden;
+        .info-row:last-child {
+            border-bottom: none;
         }
-        .incident-header-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 15s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
         }
         .status-badge {
             padding: 8px 20px;
@@ -53,54 +59,19 @@
             align-items: center;
             gap: 8px;
         }
-        .priority-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse-dot 2s infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .info-box {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .info-box h6 {
-            color: #667eea;
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .info-row:last-child {
-            border-bottom: none;
-        }
-        .info-label {
-            font-weight: 600;
-            color: #6c757d;
-        }
         .action-btn {
             border-radius: 10px;
-            padding: 10px 20px;
+            padding: 12px 20px;
             font-weight: 600;
             transition: all 0.3s;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 5px 0;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .action-btn:hover {
             transform: translateY(-2px);
@@ -108,10 +79,9 @@
         }
         .photo-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-            padding: 10px 0;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
         }
         .photo-item {
             position: relative;
@@ -123,34 +93,23 @@
         }
         .photo-item:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
         }
         .photo-item img {
             width: 100%;
-            height: 200px;
+            height: 150px;
             object-fit: cover;
         }
-        .photo-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
+        .feedback-section {
+            background: #fff;
+            border-left: 4px solid #2c3e50;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
         }
-        .photo-item:hover .photo-overlay {
-            opacity: 1;
-        }
-        #map {
-            height: 400px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1;
+        .feedback-rating {
+            display: inline-flex;
+            gap: 3px;
+            margin-left: 8px;
         }
         .timeline {
             position: relative;
@@ -163,12 +122,12 @@
             top: 0;
             bottom: 0;
             width: 3px;
-            background: linear-gradient(to bottom, #667eea, #764ba2);
+            background: linear-gradient(to bottom, #2c3e50, #34495e);
         }
         .timeline-item {
             position: relative;
-            margin-bottom: 30px;
-            padding: 15px 20px;
+            margin-bottom: 25px;
+            padding: 20px;
             background: #f8f9fa;
             border-radius: 10px;
         }
@@ -180,101 +139,51 @@
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2c3e50;
             border: 3px solid white;
-            box-shadow: 0 0 0 3px #667eea;
+            box-shadow: 0 0 0 3px #2c3e50;
         }
-        .timeline-item.active::before {
+        .timeline-item.success::before {
             background: #28a745;
             box-shadow: 0 0 0 3px #28a745;
-            animation: pulse-timeline 2s infinite;
         }
-        @keyframes pulse-timeline {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+        .timeline-item.warning::before {
+            background: #ffc107;
+            box-shadow: 0 0 0 3px #ffc107;
         }
-        .comment-box {
-            background: #fff;
-            border: 2px solid #e9ecef;
+        .timeline-item.danger::before {
+            background: #dc3545;
+            box-shadow: 0 0 0 3px #dc3545;
+        }
+        .timeline-item.info::before {
+            background: #17a2b8;
+            box-shadow: 0 0 0 3px #17a2b8;
+        }
+        #map {
+            height: 350px;
             border-radius: 10px;
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1;
         }
-        .comment-box:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+        .info-card {
+            background: #f8f9fa;
+            border-left: 4px solid #2c3e50;
+            padding: 20px;
+            border-radius: 8px;
         }
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        .breadcrumb {
-            background: transparent;
-            padding: 15px 0;
-            margin-bottom: 25px;
-        }
-        .breadcrumb-item a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        .breadcrumb-item.active {
-            color: #6c757d;
-        }
-        .quick-actions {
-            position: sticky;
-            top: 20px;
-        }
-        .incident-id-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-        .description-text {
-            font-size: 1.05rem;
-            line-height: 1.8;
-            color: #495057;
-        }
-        
-        /* Nouvelles classes pour le padding */
-        .incident-card .card-body {
-            padding: 25px;
-        }
-        
-        .incident-header-card .card-body {
-            padding: 0;
-        }
-        
-        .container-fluid.p-4 {
-            padding: 30px !important;
-        }
-        
-        .main-content {
-            padding: 20px 0;
-        }
-        
-        .quick-actions > .incident-card {
+        .resolution-comment {
+            background: #fff;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
         }
-        
-        .quick-actions > .incident-card:last-child {
-            margin-bottom: 0;
-        }
-        
-        .modal-body {
-            padding: 20px 25px;
-        }
-        
-        .modal-footer {
-            padding: 15px 25px;
+        .refusal-reason {
+            background: #fff;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -283,228 +192,253 @@
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a th:href="@{/agent/dashboard}"><i class="fas fa-home"></i> Accueil</a></li>
-                    <li class="breadcrumb-item"><a th:href="@{/agent/mes-assignations}">Mes Assignations</a></li>
-                    <li class="breadcrumb-item active">Détails #<span th:text="${incident.id}">ID</span></li>
-                </ol>
-            </nav>
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-file-alt"></i> Détails de l'Incident #<span th:text="${incident.id}">ID</span>
+                        </h1>
+                        <p class="mb-0 opacity-75">Gestion et suivi de l'intervention</p>
+                    </div>
+                    <div>
+                        <a th:href="@{/agent/incidents}" class="btn btn-light">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
 
             <!-- Messages Flash replaced by SweetAlert2 -->
+
+            <!-- Alert si résolu mais pas de feedback -->
+            <div th:if="${incident.statut != null and incident.statut.name() == 'RESOLU' and incident.dateFeedback == null}" 
+                 class="alert alert-warning" role="alert">
+                <i class="fas fa-hourglass-half"></i> 
+                <strong>En attente du feedback citoyen</strong> - L'incident est résolu mais le citoyen n'a pas encore donné son avis.
+            </div>
 
             <div class="row">
                 <!-- Colonne principale -->
                 <div class="col-lg-8">
-                    <!-- En-tête de l'incident -->
-                    <div class="incident-card incident-header-card">
-                        <div class="position-relative">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <h1 class="h3 mb-2 text-white" th:text="${incident.titre}">Titre</h1>
-                                    <span class="incident-id-badge">
-                                        <i class="fas fa-hashtag"></i> Incident #<span th:text="${incident.id}">ID</span>
-                                    </span>
-                                </div>
-                                <div class="text-end">
-                                    <!-- Status Badge with Switch -->
-                                    <th:block th:switch="${incident.statut?.name()}">
-                                        <span th:case="'SIGNALE'" class="status-badge bg-white text-secondary mb-2 d-inline-block">
-                                            <span class="priority-indicator" style="background-color: #6c757d;"></span>
-                                            <span>SIGNALÉ</span>
-                                        </span>
-                                        <span th:case="'PRIS_EN_CHARGE'" class="status-badge bg-white text-info mb-2 d-inline-block">
-                                            <span class="priority-indicator" style="background-color: #17a2b8;"></span>
-                                            <span>PRIS EN CHARGE</span>
-                                        </span>
-                                        <span th:case="'EN_RESOLUTION'" class="status-badge bg-white text-warning mb-2 d-inline-block">
-                                            <span class="priority-indicator" style="background-color: #ffc107;"></span>
-                                            <span>EN RÉSOLUTION</span>
-                                        </span>
-                                        <span th:case="'RESOLU'" class="status-badge bg-white text-success mb-2 d-inline-block">
-                                            <span class="priority-indicator" style="background-color: #28a745;"></span>
-                                            <span>RÉSOLU</span>
-                                        </span>
-                                        <span th:case="*" class="status-badge bg-white text-dark mb-2 d-inline-block">
-                                            <span class="priority-indicator" style="background-color: #6c757d;"></span>
-                                            <span th:text="${incident.statut != null ? incident.statut.name() : 'N/A'}">N/A</span>
-                                        </span>
-                                    </th:block>
-                                    <br>
-                                    <!-- Priority Badge with Switch -->
-                                    <th:block th:switch="${incident.priorite?.name()}">
-                                        <span th:case="'URGENTE'" class="status-badge bg-danger text-white">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <span>URGENTE</span>
-                                        </span>
-                                        <span th:case="'HAUTE'" class="status-badge bg-warning text-dark">
-                                            <i class="fas fa-exclamation-circle"></i>
-                                            <span>HAUTE</span>
-                                        </span>
-                                        <span th:case="'MOYENNE'" class="status-badge bg-primary text-white">
-                                            <i class="fas fa-info-circle"></i>
-                                            <span>MOYENNE</span>
-                                        </span>
-                                        <span th:case="'BASSE'" class="status-badge bg-secondary text-white">
-                                            <i class="fas fa-minus-circle"></i>
-                                            <span>BASSE</span>
-                                        </span>
-                                        <span th:case="*" class="status-badge bg-white text-dark">
-                                            <i class="fas fa-question-circle"></i>
-                                            <span th:text="${incident.priorite != null ? incident.priorite.name() : 'N/A'}">N/A</span>
-                                        </span>
-                                    </th:block>
-                                </div>
-                            </div>
+                    <!-- Informations générales -->
+                    <div class="detail-card">
+                        <h5 class="section-title">
+                            <i class="fas fa-info-circle text-primary"></i> Informations Générales
+                        </h5>
+                        <h3 class="mb-3" th:text="${incident.titre}">Titre</h3>
+                        <div class="mb-3">
+                            <th:block th:switch="${incident.statut?.name()}">
+                                <span th:case="'SIGNALE'" class="status-badge bg-secondary text-white me-2">
+                                    <i class="fas fa-flag"></i> SIGNALÉ
+                                </span>
+                                <span th:case="'PRIS_EN_CHARGE'" class="status-badge bg-info text-white me-2">
+                                    <i class="fas fa-hand-paper"></i> PRIS EN CHARGE
+                                </span>
+                                <span th:case="'EN_RESOLUTION'" class="status-badge bg-warning text-dark me-2">
+                                    <i class="fas fa-tools"></i> EN RÉSOLUTION
+                                </span>
+                                <span th:case="'RESOLU'" class="status-badge bg-success text-white me-2">
+                                    <i class="fas fa-check-circle"></i> RÉSOLU
+                                </span>
+                                <span th:case="'CLOTURE'" class="status-badge bg-dark text-white me-2">
+                                    <i class="fas fa-archive"></i> CLÔTURÉ
+                                </span>
+                                <span th:case="*" class="status-badge bg-light text-dark me-2">N/A</span>
+                            </th:block>
+                            
+                            <th:block th:switch="${incident.priorite?.name()}">
+                                <span th:case="'URGENTE'" class="status-badge bg-danger text-white">
+                                    <i class="fas fa-exclamation-triangle"></i> URGENTE
+                                </span>
+                                <span th:case="'HAUTE'" class="status-badge bg-warning text-dark">
+                                    <i class="fas fa-exclamation-circle"></i> HAUTE
+                                </span>
+                                <span th:case="'MOYENNE'" class="status-badge bg-primary text-white">
+                                    <i class="fas fa-info-circle"></i> MOYENNE
+                                </span>
+                                <span th:case="*" class="status-badge bg-secondary text-white">
+                                    <i class="fas fa-minus-circle"></i> BASSE
+                                </span>
+                            </th:block>
                         </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="incident-card">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">
-                                <i class="fas fa-align-left text-primary"></i> Description
-                            </h5>
-                            <p class="description-text" th:text="${incident.description}">Description de l'incident...</p>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-align-left"></i> Description</span>
                         </div>
+                        <p class="mt-2" th:text="${incident.description}">Description</p>
                     </div>
 
                     <!-- Localisation -->
-                    <div class="incident-card">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">
-                                <i class="fas fa-map-marker-alt text-danger"></i> Localisation
-                            </h5>
-                            <div class="info-row">
-                                <span class="info-label"><i class="fas fa-location-dot"></i> Adresse</span>
-                                <span th:text="${incident.adresseTextuelle}">Adresse</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label"><i class="fas fa-building"></i> Département</span>
-                                <span th:text="${incident.departement != null ? incident.departement.nom : 'N/A'}">Département</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label"><i class="fas fa-map"></i> Quartier</span>
-                                <span th:text="${incident.quartier != null ? incident.quartier.nom : 'N/A'}">Quartier</span>
-                            </div>
-                            <div th:if="${incident.latitude != null and incident.longitude != null}" class="info-row">
-                                <span class="info-label"><i class="fas fa-compass"></i> Coordonnées</span>
-                                <span>
-                                    <span th:text="${incident.latitude}">0.0</span>, 
-                                    <span th:text="${incident.longitude}">0.0</span>
-                                </span>
-                            </div>
-                            
-                            <!-- Carte -->
-                            <div th:if="${incident.latitude != null and incident.longitude != null}" class="mt-4">
-                                <h6 class="mb-3"><i class="fas fa-map-location-dot"></i> Carte interactive</h6>
-                                <div id="map"></div>
-                            </div>
+                    <div class="detail-card">
+                        <h5 class="section-title">
+                            <i class="fas fa-map-marker-alt text-danger"></i> Localisation
+                        </h5>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-location-dot"></i> Adresse</span>
+                            <span th:text="${incident.adresseTextuelle}">Adresse</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-building"></i> Département</span>
+                            <span th:text="${incident.departement != null ? (incident.departement.libelle != null ? incident.departement.libelle : incident.departement.nom.name()) : 'N/A'}">Département</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-map"></i> Quartier</span>
+                            <span th:text="${incident.quartier != null ? incident.quartier.nom : 'N/A'}">Quartier</span>
+                        </div>
+                        <div th:if="${incident.latitude != null and incident.longitude != null}" class="mt-4">
+                            <h6 class="mb-3"><i class="fas fa-map-location-dot"></i> Carte interactive</h6>
+                            <div id="map"></div>
                         </div>
                     </div>
 
                     <!-- Photos -->
-                    <div th:if="${incident.photos != null and !incident.photos.isEmpty()}" class="incident-card">
-                        <div class="card-body">
-                            <h5 class="card-title mb-4">
-                                <i class="fas fa-images text-success"></i> Galerie Photos
-                            </h5>
-
-                            <!-- Photos de création -->
-                            <div th:with="creationPhotos=${incident.photos.?[typePhoto == null || typePhoto.name() == 'CREATION']}">
-                                <div th:if="${!creationPhotos.isEmpty()}">
-                                    <h6 class="border-bottom pb-2 mb-3 text-muted">
-                                        <i class="fas fa-camera text-secondary me-2"></i>Photos du signalement
-                                    </h6>
-                                    <div class="photo-gallery mb-4">
-                                        <div th:each="photo : ${creationPhotos}" class="photo-item" 
-                                             data-bs-toggle="modal" data-bs-target="#photoModal"
-                                             th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
-                                            <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo incident" loading="lazy">
-                                            <div class="photo-overlay">
-                                                <i class="fas fa-search-plus fa-2x text-white"></i>
-                                            </div>
-                                        </div>
+                    <div th:if="${incident.photos != null and !incident.photos.isEmpty()}" class="detail-card">
+                        <div th:with="creationPhotos=${incident.photos.?[typePhoto == null || typePhoto.name() == 'CREATION']}">
+                            <div th:if="${!creationPhotos.isEmpty()}">
+                                <h5 class="section-title">
+                                    <i class="fas fa-camera text-primary"></i> Photos du Signalement (Citoyen)
+                                </h5>
+                                <div class="photo-gallery">
+                                    <div th:each="photo : ${creationPhotos}" class="photo-item" 
+                                         data-bs-toggle="modal" data-bs-target="#photoModal"
+                                         th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                        <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo signalement">
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Photos de résolution -->
-                            <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION']}">
-                                <div th:if="${!resolutionPhotos.isEmpty()}">
-                                    <h6 class="border-bottom pb-2 mb-3 text-success">
-                                        <i class="fas fa-check-double me-2"></i>Preuves de résolution
-                                    </h6>
-                                    <div class="photo-gallery">
-                                        <div th:each="photo : ${resolutionPhotos}" class="photo-item" 
-                                             data-bs-toggle="modal" data-bs-target="#photoModal"
-                                             th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
-                                            <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Preuve résolution" loading="lazy">
-                                            <div class="photo-overlay">
-                                                <i class="fas fa-search-plus fa-2x text-white"></i>
-                                            </div>
-                                        </div>
+                        <!-- Photos de résolution (Actuelles) -->
+                        <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && (estRefuse == null || !estRefuse)]}" class="mt-4">
+                            <div th:if="${!resolutionPhotos.isEmpty()}">
+                                <h5 class="section-title">
+                                    <i class="fas fa-check-double text-success"></i> Photos de Résolution
+                                </h5>
+                                <div class="photo-gallery">
+                                    <div th:each="photo : ${resolutionPhotos}" class="photo-item" 
+                                         data-bs-toggle="modal" data-bs-target="#photoModal"
+                                         th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                        <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo résolution">
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Photos de résolution (Refusées / Historique) -->
+                        <div th:with="refusedPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && estRefuse == true]}" class="mt-4">
+                            <div th:if="${!refusedPhotos.isEmpty()}">
+                                <h5 class="section-title text-danger opacity-75">
+                                    <i class="fas fa-history"></i> Historique des tentatives refusées
+                                </h5>
+                                <div class="photo-gallery opacity-75">
+                                    <div th:each="photo : ${refusedPhotos}" class="photo-item" 
+                                         data-bs-toggle="modal" data-bs-target="#photoModal"
+                                         th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                        <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo refusée" style="filter: grayscale(100%);">
+                                    </div>
+                                </div>
+                                <div class="alert alert-secondary mt-2 py-2">
+                                    <small><i class="fas fa-info-circle"></i> Ces photos appartiennent à une tentative de résolution précédente qui a été refusée.</small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Historique -->
-                    <div class="incident-card">
-                        <div class="card-body">
-                            <h5 class="card-title mb-4">
-                                <i class="fas fa-history text-info"></i> Historique et Progression
-                            </h5>
-                            <div class="timeline">
-                                <!-- Incident signalé -->
-                                <div class="timeline-item">
+                    <!-- Historique complet -->
+                    <div class="detail-card">
+                        <h5 class="section-title">
+                            <i class="fas fa-history text-info"></i> Historique Complet
+                        </h5>
+                        <div class="timeline">
+                            <!-- Incident signalé -->
+                            <div class="timeline-item">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong><i class="fas fa-flag"></i> Incident signalé</strong>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i>
+                                        <span th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                    </small>
+                                </div>
+                                <p class="mb-1 text-muted">
+                                    Par <strong><span th:text="${incident.auteur != null ? incident.auteur.prenom + ' ' + incident.auteur.nom : 'N/A'}">Citoyen</span></strong>
+                                </p>
+                                <p class="mb-0 text-muted small">Priorité: <span th:text="${incident.priorite?.name()}">N/A</span></p>
+                            </div>
+
+                            <!-- Assignation à un agent -->
+                            <div th:if="${incident.agentAssigne != null}" class="timeline-item info">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong><i class="fas fa-user-plus"></i> Incident assigné</strong>
+                                </div>
+                                <p class="mb-0 text-muted">
+                                    Agent: <strong><span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span></strong>
+                                </p>
+                            </div>
+
+                            <!-- Historique des notifications -->
+                            <th:block th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}">
+                                <div th:each="notif : ${incident.notificationsIncident}" 
+                                     class="timeline-item"
+                                     th:classappend="${notif.message.contains('résolu') or notif.message.contains('RESOLU') ? 'success' : 
+                                                     (notif.message.contains('refus') or notif.message.contains('PRIS_EN_CHARGE') ? 'danger' : 
+                                                     (notif.message.contains('EN_RESOLUTION') ? 'warning' : ''))}">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <strong><i class="fas fa-flag"></i> Incident signalé</strong>
+                                        <strong>
+                                            <i class="fas fa-comment-dots"></i>
+                                            <span th:text="${notif.utilisateur != null ? notif.utilisateur.prenom + ' ' + notif.utilisateur.nom : 'Système'}">Utilisateur</span>
+                                        </strong>
                                         <small class="text-muted">
-                                            <i class="fas fa-calendar"></i>
-                                            <span th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                            <i class="fas fa-clock"></i>
+                                            <span th:text="${notif.dateEnvoi != null ? #temporals.format(notif.dateEnvoi, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
                                         </small>
                                     </div>
-                                    <p class="mb-0 text-muted">
-                                        Par <strong><span th:text="${incident.auteur != null ? incident.auteur.prenom + ' ' + incident.auteur.nom : 'N/A'}">Citoyen</span></strong>
-                                    </p>
-                                </div>
-                                
-                                <!-- Agent assigné -->
-                                <div th:if="${incident.agentAssigne != null}" class="timeline-item">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <strong><i class="fas fa-user-check"></i> Assigné à un agent</strong>
+                                    <p class="mb-0" th:text="${notif.message}">Message</p>
+                                    
+                                    <!-- Afficher le motif de refus si présent dans le message -->
+                                    <div th:if="${notif.message.contains('Motif:')}" class="refusal-reason mt-2">
+                                        <strong class="text-danger"><i class="fas fa-exclamation-triangle"></i> Motif du refus:</strong>
+                                        <p class="mb-0 mt-1" th:text="${#strings.substringAfter(notif.message, 'Motif:')}">Motif</p>
                                     </div>
-                                    <p class="mb-0 text-muted">
-                                        Agent: <strong><span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span></strong>
-                                    </p>
                                 </div>
-                                
-                                <!-- Pris en charge -->
-                                <div th:if="${incident.statut != null and incident.statut.name() == 'PRIS_EN_CHARGE'}" class="timeline-item active">
-                                    <strong><i class="fas fa-hand-paper"></i> Pris en charge</strong>
-                                    <p class="mb-0 text-muted">L'agent travaille actuellement sur cet incident</p>
+                            </th:block>
+
+                            <!-- Feedback citoyen -->
+                            <div th:if="${incident.dateFeedback != null}" class="timeline-item success">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong><i class="fas fa-star"></i> Feedback du citoyen</strong>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i>
+                                        <span th:text="${#temporals.format(incident.dateFeedback, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                    </small>
                                 </div>
-                                
-                                <!-- En résolution -->
-                                <div th:if="${incident.statut != null and incident.statut.name() == 'EN_RESOLUTION'}" class="timeline-item active">
-                                    <strong><i class="fas fa-tools"></i> En résolution</strong>
-                                    <p class="mb-0 text-muted">L'intervention est en cours sur le terrain</p>
+                                <p class="mb-1">
+                                    <i th:if="${incident.feedbackSatisfait}" class="fas fa-smile text-success"></i>
+                                    <i th:unless="${incident.feedbackSatisfait}" class="fas fa-frown text-danger"></i>
+                                    <strong th:text="${incident.feedbackSatisfait ? 'Satisfait' : 'Non satisfait'}">État</strong>
+                                </p>
+                                <p th:if="${incident.feedbackNote != null}" class="mb-1">
+                                    Note: 
+                                    <span class="feedback-rating">
+                                        <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                            <i class="fas fa-star" th:classappend="${i <= incident.feedbackNote ? 'text-warning' : 'text-muted'}"></i>
+                                        </th:block>
+                                    </span>
+                                </p>
+                                <p th:if="${incident.feedbackCommentaire != null}" class="mb-0 mt-2 fst-italic">
+                                    "<span th:text="${incident.feedbackCommentaire}">Commentaire</span>"
+                                </p>
+                            </div>
+
+                            <!-- Clôture -->
+                            <div th:if="${incident.statut != null and incident.statut.name() == 'CLOTURE'}" class="timeline-item">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong><i class="fas fa-archive"></i> Incident clôturé</strong>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar-check"></i>
+                                        <span th:text="${incident.dateDerniereMiseAJour != null ? #temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
+                                    </small>
                                 </div>
-                                
-                                <!-- Résolu -->
-                                <div th:if="${incident.statut != null and incident.statut.name() == 'RESOLU'}" class="timeline-item active">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <strong><i class="fas fa-check-circle"></i> Résolu</strong>
-                                        <small class="text-muted" th:if="${incident.dateDerniereMiseAJour != null}">
-                                            <i class="fas fa-calendar-check"></i>
-                                            <span th:text="${#temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm')}">Date</span>
-                                        </small>
-                                    </div>
-                                    <p class="mb-0 text-success fw-bold">✓ L'incident a été résolu avec succès</p>
-                                </div>
+                                <p class="mb-0 text-success fw-bold">✓ Incident validé et archivé par l'administrateur</p>
                             </div>
                         </div>
                     </div>
@@ -512,131 +446,139 @@
 
                 <!-- Colonne latérale -->
                 <div class="col-lg-4">
-                    <div class="quick-actions">
-                        <!-- Actions rapides -->
-                        <div class="incident-card">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">
-                                    <i class="fas fa-bolt text-warning"></i> Actions rapides
-                                </h5>
-                                
-                                <!-- Prendre en charge -->
-                                <div th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE' and (incident.agentAssigne == null or isAssigned)}" 
-                                     class="d-grid mb-2">
-                                    <button type="button" class="action-btn btn btn-primary w-100" onclick="confirmerPriseEnCharge()">
-                                        <i class="fas fa-hand-paper"></i> Prendre en charge
-                                    </button>
-                                </div>
-                                
-                                <!-- En résolution -->
-                                <div th:if="${incident.statut != null and incident.statut.name() == 'PRIS_EN_CHARGE' and isAssigned}" class="d-grid mb-2">
-                                    <button type="button" class="action-btn btn btn-warning w-100" onclick="confirmerEnResolution()">
-                                        <i class="fas fa-tools"></i> Mettre en résolution
-                                    </button>
-                                </div>
-                                
-                                <!-- Marquer résolu (modal obligatoire) -->
-                                <div th:if="${incident.statut != null and incident.statut.name() == 'EN_RESOLUTION' and isAssigned}" class="d-grid mb-2">
-                                    <button type="button" class="action-btn btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#resolveModal">
-                                        <i class="fas fa-check-circle"></i> Marquer résolu
-                                    </button>
-                                </div>
-                                
-                                <!-- Mise à jour citoyen -->
-                                <div th:if="${isAssigned}" class="d-grid mb-2">
-                                    <button type="button" class="action-btn btn btn-info w-100" 
-                                            data-bs-toggle="modal" data-bs-target="#updateModal">
-                                        <i class="fas fa-paper-plane"></i> Envoyer mise à jour
-                                    </button>
-                                </div>
-                                
-                                <!-- Ajouter commentaire -->
-                                <div class="d-grid">
-                                    <button type="button" class="action-btn btn btn-outline-secondary w-100" 
-                                            data-bs-toggle="modal" data-bs-target="#commentModal">
-                                        <i class="fas fa-comment"></i> Ajouter commentaire
-                                    </button>
-                                </div>
+                 <!-- Actions Rapides (Agent) -->
+                    <div class="detail-card">
+                        <h5 class="section-title">
+                            <i class="fas fa-bolt text-warning"></i> Actions Rapides
+                        </h5>
+                        <div class="d-grid gap-2">
+                             <!-- Prendre en charge -->
+                            <button th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE' and (incident.agentAssigne == null or isAssigned)}" 
+                                    type="button" class="btn btn-primary action-btn" onclick="confirmerPriseEnCharge()">
+                                <i class="fas fa-hand-paper"></i> Prendre en charge
+                            </button>
+                            
+                            <!-- En résolution -->
+                            <button th:if="${incident.statut != null and incident.statut.name() == 'PRIS_EN_CHARGE' and isAssigned}" 
+                                    type="button" class="btn btn-warning action-btn" onclick="confirmerEnResolution()">
+                                <i class="fas fa-tools"></i> Mettre en résolution
+                            </button>
+                            
+                            <!-- Marquer résolu -->
+                            <button th:if="${incident.statut != null and incident.statut.name() == 'EN_RESOLUTION' and isAssigned}" 
+                                    type="button" class="btn btn-success action-btn" data-bs-toggle="modal" data-bs-target="#resolveModal">
+                                <i class="fas fa-check-circle"></i> Marquer résolu
+                            </button>
+                            
+                            <!-- Mise à jour citoyen -->
+                            <button th:if="${isAssigned}" type="button" class="btn btn-info action-btn" 
+                                    data-bs-toggle="modal" data-bs-target="#updateModal">
+                                <i class="fas fa-paper-plane"></i> Envoyer mise à jour
+                            </button>
+                            
+                            <!-- Ajouter commentaire -->
+                            <button type="button" class="btn btn-outline-secondary action-btn" 
+                                    data-bs-toggle="modal" data-bs-target="#commentModal">
+                                <i class="fas fa-comment"></i> Ajouter commentaire
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Informations -->
+                    <div class="detail-card">
+                        <h5 class="section-title">
+                            <i class="fas fa-clock text-info"></i> Informations
+                        </h5>
+                        <div class="info-card">
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-calendar-plus"></i> Créé le</span>
+                                <span th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
                             </div>
+                            <div class="info-row" th:if="${incident.dateDerniereMiseAJour != null}">
+                                <span class="info-label"><i class="fas fa-sync-alt"></i> Mis à jour</span>
+                                <span th:text="${#temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm')}">Date</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-user-shield"></i> Agent</span>
+                                <span th:if="${incident.agentAssigne != null}" 
+                                      th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span>
+                                <span th:if="${incident.agentAssigne == null}" class="text-muted">Non assigné</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-user"></i> Citoyen</span>
+                                <span th:if="${incident.auteur != null}" 
+                                      th:text="${incident.auteur.prenom + ' ' + incident.auteur.nom}">Citoyen</span>
+                            </div>
+                             <div class="info-row" th:if="${incident.auteur != null}">
+                                <span class="info-label"><i class="fas fa-envelope"></i> Email</span>
+                                <span th:text="${incident.auteur.email}">Email</span>
+                             </div>
+                             <div class="info-row" th:if="${incident.auteur != null and incident.auteur.telephone != null}">
+                                <span class="info-label"><i class="fas fa-phone"></i> Tél</span>
+                                <span th:text="${incident.auteur.telephone}">Tél</span>
+                             </div>
+                        </div>
+                    </div>
+
+                   
+
+                    <!-- Résolution (Same as Admin) -->
+                    <div th:if="${incident.statut != null and (incident.statut.name() == 'RESOLU' or incident.statut.name() == 'CLOTURE')}" 
+                         class="detail-card">
+                        <h5 class="section-title">
+                            <i class="fas fa-check-circle text-success"></i> Résolution
+                        </h5>
+
+                        <!-- Commentaire de résolution -->
+                        <div class="resolution-comment">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-comment-dots text-success"></i> Commentaire de l'agent
+                            </h6>
+                            <p class="mb-0 text-muted" th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}"
+                               th:text="${incident.notificationsIncident.get(incident.notificationsIncident.size() - 1).message}">
+                                Commentaire
+                            </p>
+                            <p class="mb-0 text-muted" th:if="${incident.notificationsIncident == null or incident.notificationsIncident.isEmpty()}">
+                                Aucun commentaire
+                            </p>
                         </div>
 
-                        <!-- Informations citoyen -->
-                        <div class="incident-card">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">
-                                    <i class="fas fa-user text-primary"></i> Informations Citoyen
-                                </h5>
-                                <div class="text-center mb-3">
-                                    <div class="user-avatar mx-auto mb-2" style="width: 60px; height: 60px; font-size: 24px;">
-                                        <span th:text="${incident.auteur != null and incident.auteur.prenom != null ? incident.auteur.prenom.substring(0, 1) : 'C'}">C</span>
-                                    </div>
-                                    <h6 th:text="${incident.auteur != null ? incident.auteur.prenom + ' ' + incident.auteur.nom : 'N/A'}">Nom Prénom</h6>
-                                    <p class="text-muted mb-1">
-                                        <i class="fas fa-envelope"></i>
-                                        <span th:text="${incident.auteur != null ? incident.auteur.email : 'N/A'}">email@example.com</span>
-                                    </p>
-                                    <p th:if="${incident.auteur != null and incident.auteur.telephone != null}" class="text-muted mb-0">
-                                        <i class="fas fa-phone"></i>
-                                        <span th:text="${incident.auteur.telephone}">Téléphone</span>
-                                    </p>
-                                </div>
+                        <!-- Feedback citoyen -->
+                        <div th:if="${incident.dateFeedback != null}" class="feedback-section">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-star text-warning"></i> Feedback du Citoyen
+                            </h6>
+                            
+                            <div class="mb-2">
+                                <strong>Satisfaction:</strong>
+                                <span class="ms-2">
+                                    <i th:if="${incident.feedbackSatisfait}" class="fas fa-smile text-success"></i>
+                                    <i th:unless="${incident.feedbackSatisfait}" class="fas fa-frown text-danger"></i>
+                                    <span th:text="${incident.feedbackSatisfait ? 'Satisfait' : 'Non satisfait'}">État</span>
+                                </span>
                             </div>
-                        </div>
 
-                        <!-- Informations temporelles -->
-                        <div class="incident-card">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">
-                                    <i class="fas fa-clock text-info"></i> Informations Temporelles
-                                </h5>
-                                <div class="info-box" style="background: #e7f3ff; border-color: #17a2b8;">
-                                    <div class="info-row">
-                                        <span class="info-label"><i class="fas fa-calendar-plus"></i> Créé le</span>
-                                        <span th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</span>
-                                    </div>
-                                    <div th:if="${incident.dateDerniereMiseAJour != null}" class="info-row">
-                                        <span class="info-label"><i class="fas fa-sync-alt"></i> Mis à jour</span>
-                                        <span th:text="${#temporals.format(incident.dateDerniereMiseAJour, 'dd/MM/yyyy HH:mm')}">Date</span>
-                                    </div>
-                                    <div th:if="${incident.agentAssigne != null}" class="info-row">
-                                        <span class="info-label"><i class="fas fa-user-shield"></i> Agent assigné</span>
-                                        <span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span>
-                                    </div>
-                                </div>
+                            <div th:if="${incident.feedbackNote != null}" class="mb-2">
+                                <strong>Note:</strong>
+                                <span class="feedback-rating">
+                                    <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <i class="fas fa-star" 
+                                           th:classappend="${i <= incident.feedbackNote ? 'text-warning' : 'text-muted'}"></i>
+                                    </th:block>
+                                </span>
+                                <span class="text-muted">(<span th:text="${incident.feedbackNote}">0</span>/5)</span>
                             </div>
-                        </div>
 
-                        <!-- Commentaires récents -->
-                        <div class="incident-card">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">
-                                    <i class="fas fa-comments text-success"></i> Commentaires et Notes
-                                </h5>
-                                <div th:if="${incident.notificationsIncident != null and !incident.notificationsIncident.isEmpty()}">
-                                    <div th:each="notif, iterStat : ${incident.notificationsIncident}" th:if="${iterStat.index < 5}">
-                                        <div class="comment-box">
-                                            <div class="d-flex align-items-start gap-2 mb-2">
-                                                <div class="user-avatar">
-                                                    <span th:text="${notif.utilisateur != null and notif.utilisateur.prenom != null ? notif.utilisateur.prenom.substring(0, 1) : 'S'}">U</span>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <strong th:text="${notif.utilisateur != null ? notif.utilisateur.prenom + ' ' + notif.utilisateur.nom : 'Système'}">Utilisateur</strong>
-                                                    <br>
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-clock"></i>
-                                                        <span th:text="${notif.dateEnvoi != null ? #temporals.format(notif.dateEnvoi, 'dd/MM HH:mm') : 'N/A'}">Date</span>
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <p class="mb-0 text-muted" th:text="${notif.message}">Message...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div th:if="${incident.notificationsIncident == null or incident.notificationsIncident.isEmpty()}" 
-                                     class="text-center text-muted py-3">
-                                    <i class="fas fa-comment-slash fa-2x mb-2"></i>
-                                    <p>Aucun commentaire pour le moment</p>
-                                </div>
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i>
+                                    <span th:text="${#temporals.format(incident.dateFeedback, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                </small>
+                            </div>
+
+                            <div th:if="${incident.feedbackCommentaire != null and !incident.feedbackCommentaire.isEmpty()}" 
+                                 class="mt-3 pt-3" style="border-top: 1px solid #e9ecef;">
+                                <strong class="d-block mb-2">Commentaire:</strong>
+                                <p class="mb-0 text-muted fst-italic" th:text="${incident.feedbackCommentaire}">Commentaire</p>
                             </div>
                         </div>
                     </div>

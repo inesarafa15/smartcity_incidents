@@ -413,6 +413,11 @@ public class SuperAdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
     }
     
+    public Incident trouverIncidentParId(Long id) {
+        return incidentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident non trouvé"));
+    }
+    
     public List<Incident> tousLesIncidents() {
         return incidentRepository.findAll();
     }
