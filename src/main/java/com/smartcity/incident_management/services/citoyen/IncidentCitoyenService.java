@@ -55,11 +55,11 @@ public class IncidentCitoyenService {
     private long maxFileSize;
     
     private static final List<String> ALLOWED_CONTENT_TYPES = Arrays.asList(
-        "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"
+        "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" ,"image/jfif"
     );
     
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(
-        "jpg", "jpeg", "png", "gif", "webp"
+        "jpg", "jpeg", "png", "gif", "webp", "jfif"
     );
     
     public Incident signalerIncident(Utilisateur citoyen, IncidentDTO dto) throws IOException {
@@ -319,7 +319,6 @@ public class IncidentCitoyenService {
         
         return incidentRepository.save(incident);
     }
-}
 
     public Incident modifierIncident(Long id, Utilisateur citoyen, IncidentDTO dto) throws IOException {
         Incident incident = incidentRepository.findById(id)

@@ -161,10 +161,10 @@
                             <label class="form-label required">Priorité</label>
                             <select class="form-select" th:field="*{priorite}" required>
                                 <option value="">Sélectionner une priorité</option>
-                                <option value="BASSE">🟢 Basse - Problème mineur</option>
+                                <option value="FAIBLE">🟢 Basse - Problème mineur</option>
                                 <option value="MOYENNE">🔵 Moyenne - Nécessite attention</option>
-                                <option value="HAUTE">🟡 Haute - Problème sérieux</option>
-                                <option value="URGENTE">🔴 Urgente - Danger immédiat</option>
+                                <option value="ELVEE">🟡 Haute - Problème sérieux</option>
+                                <option value="CRITIQUE">🔴 Urgente - Danger immédiat</option>
                             </select>
                             <div th:errors="*{priorite}" class="text-danger small mt-1"></div>
                         </div>
