@@ -264,27 +264,6 @@
                                         </small>
                                     </td>
                                     <td class="text-center action-buttons">
-                                        <!-- Action selon le statut -->
-                                        <form th:if="${incident.statut != null && incident.statut.name() == 'PRIS_EN_CHARGE'}"
-                                              th:action="@{/agent/incidents/{id}/en-resolution(id=${incident.id})}" 
-                                              method="post"
-                                              class="d-inline-block"
-                                              onsubmit="return confirm('Voulez-vous mettre cet incident en résolution ?');">
-                                            <button type="submit" class="btn btn-warning btn-sm">
-                                                <i class="fas fa-tools"></i> En résolution
-                                            </button>
-                                        </form>
-                                        
-                                        <form th:if="${incident.statut != null && incident.statut.name() == 'EN_RESOLUTION'}"
-                                              th:action="@{/agent/incidents/{id}/resolu(id=${incident.id})}" 
-                                              method="post"
-                                              class="d-inline-block"
-                                              onsubmit="return confirm('Confirmez-vous que cet incident est résolu ?');">
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="fas fa-check"></i> Résolu
-                                            </button>
-                                        </form>
-                                        
                                         <!-- Lien vers les détails -->
                                         <a th:href="@{/agent/incidents/{id}(id=${incident.id})}" 
                                            class="btn btn-outline-primary btn-sm">
@@ -449,17 +428,8 @@
                 });
             });
             
-            // Confirmation avant les actions
-            const forms = document.querySelectorAll('form[action*="/en-resolution"], form[action*="/resolu"]');
-            forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    const action = this.action.includes('en-resolution') ? 
-                        'mettre en résolution' : 'marquer comme résolu';
-                    if (!confirm(`Êtes-vous sûr de vouloir ${action} cet incident ?`)) {
-                        e.preventDefault();
-                    }
-                });
-            });
+        
+           
         });
     </script>
 </body>

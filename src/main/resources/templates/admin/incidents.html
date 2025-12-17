@@ -658,7 +658,7 @@
                     </li>
                     
                     <!-- Pages autour de la page actuelle -->
-                    <li th:each="i : ${#numbers.sequence(max(0, incidents.number - 1), min(incidents.totalPages - 1, incidents.number + 1))}"
+                    <li th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, incidents.number - 1), T(java.lang.Math).min(incidents.totalPages - 1, incidents.number + 1))}"
                         class="page-item" th:classappend="${i == incidents.number} ? 'active'">
                         <a class="page-link" th:href="@{/admin/incidents(page=${i}, size=${incidents.size})}" th:text="${i + 1}"></a>
                     </li>
