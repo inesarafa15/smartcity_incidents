@@ -236,6 +236,35 @@ public class IncidentCitoyenService {
         Pageable pageable = PageRequest.of(page, size, sort);
         return incidentRepository.findByAuteurId(citoyen.getId(), pageable);
     }
+
+    public Page<Incident> mesIncidentsFiltres(Utilisateur citoyen, int page, int size, String sortBy, String sortDir, 
+                                             String statutStr, Long departementId, String dateFilter) {
+        Sort sort = sortDir.equalsIgnoreCase("DESC") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        StatutIncident statut = null;
+        if (statutStr != null && !statutStr.isEmpty()) {
+            try {
+                statut = StatutIncident.valueOf(statutStr);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid status
+            }
+        }
+        
+        java.time.LocalDateTime dateDebut = null;
+        java.time.LocalDateTime dateFin = null;
+        
+        if ("today".equals(dateFilter)) {
+            dateDebut = java.time.LocalDate.now().atStartOfDay();
+            dateFin = java.time.LocalDate.now().atTime(java.time.LocalTime.MAX);
+        } else if ("week".equals(dateFilter)) {
+            dateDebut = java.time.LocalDate.now().minusDays(7).atStartOfDay();
+            dateFin = java.time.LocalDate.now().atTime(java.time.LocalTime.MAX);
+        }
+        
+        return incidentRepository.findByAuteurIdAndFilters(citoyen.getId(), statut, departementId, dateDebut, dateFin, pageable);
+    }
     
     public Incident consulterIncident(Long incidentId, Utilisateur citoyen) {
         Incident incident = incidentRepository.findById(incidentId)
@@ -291,3 +320,48 @@ public class IncidentCitoyenService {
         return incidentRepository.save(incident);
     }
 }
+
+    public Incident modifierIncident(Long id, Utilisateur citoyen, IncidentDTO dto) throws IOException {
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident non trouvé"));
+
+        if (!incident.getAuteur().getId().equals(citoyen.getId())) {
+            throw new UnauthorizedException("Vous n'êtes pas autorisé à modifier cet incident");
+        }
+
+        if (incident.getStatut() == StatutIncident.RESOLU || incident.getStatut() == StatutIncident.CLOTURE) {
+            throw new com.smartcity.incident_management.exceptions.BadRequestException("Impossible de modifier un incident résolu ou clôturé");
+        }
+
+        Departement departement = departementRepository.findById(dto.getDepartementId())
+                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé"));
+
+        Quartier quartier = quartierRepository.findById(dto.getQuartierId())
+                .orElseThrow(() -> new ResourceNotFoundException("Quartier non trouvé"));
+
+        incident.setTitre(dto.getTitre());
+        incident.setDescription(dto.getDescription());
+        incident.setPriorite(dto.getPriorite());
+        incident.setAdresseTextuelle(dto.getAdresseTextuelle());
+        incident.setDepartement(departement);
+        incident.setQuartier(quartier);
+        
+        // Mise à jour de la position si fournie
+        if (dto.getLatitude() != null && dto.getLongitude() != null) {
+            incident.setLatitude(java.math.BigDecimal.valueOf(dto.getLatitude()));
+            incident.setLongitude(java.math.BigDecimal.valueOf(dto.getLongitude()));
+        }
+
+        incident.setDateDerniereMiseAJour(java.time.LocalDateTime.now());
+
+        Incident savedIncident = incidentRepository.save(incident);
+
+        // Gérer l'ajout de nouvelles photos
+        if (dto.getPhotos() != null && !dto.getPhotos().isEmpty()) {
+            sauvegarderPhotos(savedIncident, dto.getPhotos());
+        }
+
+        return savedIncident;
+    }
+}
+

@@ -4,6 +4,7 @@ import com.smartcity.incident_management.entities.Utilisateur;
 import com.smartcity.incident_management.security.SecurityUtils;
 import com.smartcity.incident_management.services.utilisateur.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -23,10 +24,19 @@ public class NotificationController {
     private NotificationService notificationService;
     
     @GetMapping
-    public String mesNotifications(Model model) {
+    public String mesNotifications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
         Utilisateur utilisateur = SecurityUtils.getCurrentUser();
-        model.addAttribute("notifications", notificationService.mesNotifications(utilisateur));
+        Page<com.smartcity.incident_management.entities.Notification> notifications = notificationService.mesNotifications(utilisateur, page, size);
+        
+        model.addAttribute("notifications", notifications);
         model.addAttribute("notificationsNonLues", notificationService.mesNotificationsNonLues(utilisateur));
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", notifications.getTotalPages());
+        model.addAttribute("totalItems", notifications.getTotalElements());
+        
         return "notifications/liste";
     }
     

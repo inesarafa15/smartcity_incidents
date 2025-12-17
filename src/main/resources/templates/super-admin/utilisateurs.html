@@ -5,14 +5,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tous les Utilisateurs - Super Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .filter-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .table-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table thead {
+            background: #f8f9fa;
+        }
+        .table thead th {
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #2c3e50;
+            padding: 15px;
+            white-space: nowrap;
+        }
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            border: none;
+            color: #2c3e50;
+            padding: 8px 14px;
+        }
+        .pagination .page-item.active .page-link {
+background: #34495e;
+            color: white;        }
+        .pagination .page-link:hover {
+            background: #34495e;
+            color: white;
+        }
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .btn-action:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 <body>
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
-        <div class="container-fluid">
-            <h2>Tous les Utilisateurs</h2>
+        <div class="container-fluid p-4">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-users"></i> Tous les Utilisateurs
+                        </h1>
+                        <p class="mb-0 opacity-75">Gestion globale des utilisateurs</p>
+                    </div>
+                </div>
+            </div>
 
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                 <span th:text="${success}"></span>
@@ -24,112 +108,125 @@
             </div>
 
             <!-- Filtres -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" action="/super-admin/utilisateurs" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="role" class="form-label">Rôle</label>
-                            <select class="form-select" id="role" name="role">
-                                <option value="">Tous</option>
-                                <option value="SUPER_ADMIN">Super Admin</option>
-                                <option value="ADMINISTRATEUR">Administrateur</option>
-                                <option value="AGENT_MUNICIPAL">Agent Municipal</option>
-                                <option value="CITOYEN">Citoyen</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="departementId" class="form-label">Département</label>
-                            <select class="form-select" id="departementId" name="departementId">
-                                <option value="">Tous</option>
-                                <option th:each="dep : ${departements}" th:value="${dep.id}" th:text="${dep.libelle != null ? dep.libelle : dep.nom}"></option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="actif" class="form-label">Statut</label>
-                            <select class="form-select" id="actif" name="actif">
-                                <option value="">Tous</option>
-                                <option value="true">Actif</option>
-                                <option value="false">Inactif</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="recherche" class="form-label">Recherche</label>
-                            <input type="text" class="form-control" id="recherche" name="recherche" placeholder="Nom, prénom, email">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="size" class="form-label">Par page</label>
-                            <select class="form-select" id="size" name="size">
-                           <option th:value="2" th:selected="${filtres != null && filtres.size == 2}">2</option>
-                                <option th:value="10" th:selected="${filtres != null && filtres.size == 10}">10</option>
-                                <option th:value="20" th:selected="${filtres != null && filtres.size == 20}">20</option>
-                                <option th:value="50" th:selected="${filtres != null && filtres.size == 50}">50</option>
-                            </select>
-                        </div>
-                        <div class="col-md-1 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary">Filtrer</button>
-                        </div>
-                    </form>
-                </div>
+            <div class="filter-card">
+                <form method="get" action="/super-admin/utilisateurs" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="role" class="form-label fw-bold text-muted small">Rôle</label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="">Tous</option>
+                            <option value="SUPER_ADMIN" th:selected="${filtres != null && filtres.role != null && filtres.role.name() == 'SUPER_ADMIN'}">Super Admin</option>
+                            <option value="ADMINISTRATEUR" th:selected="${filtres != null && filtres.role != null && filtres.role.name() == 'ADMINISTRATEUR'}">Administrateur</option>
+                            <option value="AGENT_MUNICIPAL" th:selected="${filtres != null && filtres.role != null && filtres.role.name() == 'AGENT_MUNICIPAL'}">Agent Municipal</option>
+                            <option value="CITOYEN" th:selected="${filtres != null && filtres.role != null && filtres.role.name() == 'CITOYEN'}">Citoyen</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="departementId" class="form-label fw-bold text-muted small">Département</label>
+                        <select class="form-select" id="departementId" name="departementId">
+                            <option value="">Tous</option>
+                            <option th:each="dep : ${departements}" 
+                                    th:value="${dep.id}" 
+                                    th:text="${dep.libelle != null ? dep.libelle : dep.nom}"
+                                    th:selected="${filtres != null && filtres.departementId == dep.id}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="actif" class="form-label fw-bold text-muted small">Statut</label>
+                        <select class="form-select" id="actif" name="actif">
+                            <option value="">Tous</option>
+                            <option value="true" th:selected="${filtres != null && filtres.actif == true}">Actif</option>
+                            <option value="false" th:selected="${filtres != null && filtres.actif == false}">Inactif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="recherche" class="form-label fw-bold text-muted small">Recherche</label>
+                        <input type="text" class="form-control" id="recherche" name="recherche" 
+                               th:value="${filtres != null ? filtres.recherche : ''}" placeholder="Nom, prénom, email">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Filtrer
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <!-- Statistiques -->
             <div th:if="${statistiques}" class="row mb-4">
                 <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>Total</h5>
-                            <p class="h3" th:text="${statistiques.total}"></p>
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
+                                <i class="fas fa-users text-primary fa-2x"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="text-muted mb-0 small">Total Utilisateurs</h6>
+                                <h3 class="mb-0" th:text="${statistiques.total}">0</h3>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Liste des utilisateurs -->
-            <div class="card">
-                <div class="card-body">
-                    <div th:if="${utilisateurs == null || utilisateurs.isEmpty()}" class="alert alert-info">
-                        Aucun utilisateur trouvé.
+            <div class="table-card">
+                <div th:if="${utilisateurs == null || utilisateurs.isEmpty()}" class="text-center py-5">
+                    <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Aucun utilisateur trouvé.</p>
+                </div>
+                
+                <div th:unless="${utilisateurs == null || utilisateurs.isEmpty()}">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom & Prénom</th>
+                                    <th>Email</th>
+                                    <th>Rôle</th>
+                                    <th>Département</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="utilisateur : ${utilisateurs.content}">
+                                    <td class="text-muted" th:text="${'#' + utilisateur.id}"></td>
+                                    <td>
+                                        <div class="fw-bold" th:text="${utilisateur.nom + ' ' + utilisateur.prenom}"></div>
+                                    </td>
+                                    <td th:text="${utilisateur.email}"></td>
+                                    <td>
+                                        <span th:class="${'badge ' + 
+                                            (utilisateur.role.name() == 'SUPER_ADMIN' ? 'bg-danger' : 
+                                            (utilisateur.role.name() == 'ADMINISTRATEUR' ? 'bg-warning text-dark' : 
+                                            (utilisateur.role.name() == 'AGENT_MUNICIPAL' ? 'bg-info text-dark' : 'bg-secondary')))}" 
+                                            th:text="${utilisateur.role}"></span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${utilisateur.departement != null}" th:text="${utilisateur.departement.nom}"></span>
+                                        <span th:unless="${utilisateur.departement != null}" class="text-muted fst-italic">-</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${utilisateur.actif}" class="badge bg-success rounded-pill">
+                                            <i class="fas fa-check me-1"></i>Actif
+                                        </span>
+                                        <span th:unless="${utilisateur.actif}" class="badge bg-secondary rounded-pill">
+                                            <i class="fas fa-ban me-1"></i>Inactif
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     
-                    <div th:unless="${utilisateurs == null || utilisateurs.isEmpty()}">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nom</th>
-                                        <th>Prénom</th>
-                                        <th>Email</th>
-                                        <th>Rôle</th>
-                                        <th>Département</th>
-                                        <th>Statut</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="utilisateur : ${utilisateurs.content}">
-                                        <td th:text="${utilisateur.id}"></td>
-                                        <td th:text="${utilisateur.nom}"></td>
-                                        <td th:text="${utilisateur.prenom}"></td>
-                                        <td th:text="${utilisateur.email}"></td>
-                                        <td><span class="badge bg-info" th:text="${utilisateur.role}"></span></td>
-                                        <td>
-                                            <span th:if="${utilisateur.departement != null}" th:text="${utilisateur.departement.nom}"></span>
-                                            <span th:unless="${utilisateur.departement != null}" class="text-muted">-</span>
-                                        </td>
-                                        <td>
-                                            <span th:if="${utilisateur.actif}" class="badge bg-success">Actif</span>
-                                            <span th:unless="${utilisateur.actif}" class="badge bg-secondary">Inactif</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <nav th:if="${utilisateurs.totalPages > 1}">
-                            <ul class="pagination justify-content-center">
+                    <!-- Pagination -->
+                    <div th:if="${utilisateurs.totalPages > 1}" class="d-flex justify-content-center py-4 border-top">
+                        <nav>
+                            <ul class="pagination mb-0">
                                 <li class="page-item" th:classappend="${filtres.page == 0} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${filtres.page - 1}, size=${filtres.size}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}">Précédent</a>
+                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${filtres.page - 1}, size=${filtres.size}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
                                 </li>
                                 <li th:each="i : ${#numbers.sequence(0, utilisateurs.totalPages - 1)}" 
                                     class="page-item" 
@@ -137,7 +234,9 @@
                                     <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${i}, size=${filtres.size}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}" th:text="${i + 1}"></a>
                                 </li>
                                 <li class="page-item" th:classappend="${filtres.page == utilisateurs.totalPages - 1} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${filtres.page + 1}, size=${filtres.size}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}">Suivant</a>
+                                    <a class="page-link" th:href="@{/super-admin/utilisateurs(page=${filtres.page + 1}, size=${filtres.size}, role=${filtres.role}, departementId=${filtres.departementId}, actif=${filtres.actif}, recherche=${filtres.recherche})}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
                                 </li>
                             </ul>
                         </nav>

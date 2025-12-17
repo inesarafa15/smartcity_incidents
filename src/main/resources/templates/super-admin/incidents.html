@@ -5,159 +5,280 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tous les Incidents - Super Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .filter-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .table-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table thead {
+            background: #f8f9fa;
+        }
+        .table thead th {
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #2c3e50;
+            padding: 15px;
+            white-space: nowrap;
+        }
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            border: none;
+            color: #2c3e50;
+            padding: 8px 14px;
+        }
+        .pagination .page-item.active .page-link {
+            background: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .pagination .page-link:hover {
+            background: #34495e;
+            color: white;
+        }
+        .badge-status {
+            font-size: 0.85em;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .badge-priority {
+            font-size: 0.8em;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+    </style>
 </head>
 <body>
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
-        <div class="container-fluid">
-            <h2>Tous les Incidents</h2>
+        <div class="container-fluid p-4">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-clipboard-list"></i> Tous les Incidents
+                        </h1>
+                        <p class="mb-0 opacity-75">Vue globale et gestion des incidents signalés</p>
+                    </div>
+                </div>
+            </div>
 
-            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <!-- Alerts -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
                 <span th:text="${success}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
                 <span th:text="${error}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
             <!-- Filtres -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" action="/super-admin/incidents" class="row g-3">
-                        <div class="col-md-2">
-                            <label for="statut" class="form-label">Statut</label>
-                            <select class="form-select" id="statut" name="statut">
-                                <option value="">Tous</option>
-                                <option value="SIGNALE">Signalé</option>
-                                <option value="PRIS_EN_CHARGE">Pris en charge</option>
-                                <option value="EN_RESOLUTION">En résolution</option>
-                                <option value="RESOLU">Résolu</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="size" class="form-label">Par page</label>
-                            <select class="form-select" id="size" name="size">
-                                <option th:value="10" th:selected="${filtres != null && filtres.size == 10}">10</option>
-                                <option th:value="20" th:selected="${filtres != null && filtres.size == 20}">20</option>
-                                <option th:value="50" th:selected="${filtres != null && filtres.size == 50}">50</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="priorite" class="form-label">Priorité</label>
-                            <select class="form-select" id="priorite" name="priorite">
-                                <option value="">Toutes</option>
-                                <option value="FAIBLE">Faible</option>
-                                <option value="MOYENNE">Moyenne</option>
-                                <option value="ELEVEE">Élevée</option>
-                                <option value="CRITIQUE">Critique</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="departementId" class="form-label">Département</label>
-                            <select class="form-select" id="departementId" name="departementId">
-                                <option value="">Tous</option>
-                                <option th:each="dep : ${departements}" th:value="${dep.id}" th:text="${dep.nom}"></option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="dateDebut" class="form-label">Date début</label>
-                            <input type="date" class="form-control" id="dateDebut" name="dateDebut">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="dateFin" class="form-label">Date fin</label>
-                            <input type="date" class="form-control" id="dateFin" name="dateFin">
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary me-2">Filtrer</button>
-                            <a th:href="@{/super-admin/incidents}" class="btn btn-secondary">Réinitialiser</a>
-                        </div>
-                    </form>
-                </div>
+            <div class="filter-card">
+                <form method="get" action="/super-admin/incidents" class="row g-3">
+                    <div class="col-md-2">
+                        <label for="statut" class="form-label text-muted small fw-bold">Statut</label>
+                        <select class="form-select border-0 bg-light" id="statut" name="statut">
+                            <option value="">Tous les statuts</option>
+                            <option value="SIGNALE" th:selected="${filtres.statut == 'SIGNALE'}">Signalé</option>
+                            <option value="PRIS_EN_CHARGE" th:selected="${filtres.statut == 'PRIS_EN_CHARGE'}">Pris en charge</option>
+                            <option value="EN_RESOLUTION" th:selected="${filtres.statut == 'EN_RESOLUTION'}">En résolution</option>
+                            <option value="RESOLU" th:selected="${filtres.statut == 'RESOLU'}">Résolu</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="priorite" class="form-label text-muted small fw-bold">Priorité</label>
+                        <select class="form-select border-0 bg-light" id="priorite" name="priorite">
+                            <option value="">Toutes</option>
+                            <option value="FAIBLE" th:selected="${filtres.priorite == 'FAIBLE'}">Faible</option>
+                            <option value="MOYENNE" th:selected="${filtres.priorite == 'MOYENNE'}">Moyenne</option>
+                            <option value="ELEVEE" th:selected="${filtres.priorite == 'ELEVEE'}">Élevée</option>
+                            <option value="CRITIQUE" th:selected="${filtres.priorite == 'CRITIQUE'}">Critique</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="departementId" class="form-label text-muted small fw-bold">Département</label>
+                        <select class="form-select border-0 bg-light" id="departementId" name="departementId">
+                            <option value="">Tous</option>
+                            <option th:each="dep : ${departements}" th:value="${dep.id}" th:text="${dep.nom}" th:selected="${filtres.departementId == dep.id}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="dateDebut" class="form-label text-muted small fw-bold">Date début</label>
+                        <input type="date" class="form-control border-0 bg-light" id="dateDebut" name="dateDebut" th:value="${filtres.dateDebut}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="dateFin" class="form-label text-muted small fw-bold">Date fin</label>
+                        <input type="date" class="form-control border-0 bg-light" id="dateFin" name="dateFin" th:value="${filtres.dateFin}">
+                    </div>
+                     <div class="col-md-2">
+                        <label for="size" class="form-label text-muted small fw-bold">Par page</label>
+                        <select class="form-select border-0 bg-light" id="size" name="size">
+                            <option th:value="10" th:selected="${filtres != null && filtres.size == 10}">10</option>
+                            <option th:value="20" th:selected="${filtres != null && filtres.size == 20}">20</option>
+                            <option th:value="50" th:selected="${filtres != null && filtres.size == 50}">50</option>
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex justify-content-end mt-3">
+                        <a th:href="@{/super-admin/incidents}" class="btn btn-light me-2">
+                            <i class="fas fa-undo me-1"></i> Réinitialiser
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i> Filtrer
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <!-- Statistiques -->
+            <!-- Statistiques Rapides -->
             <div th:if="${statistiques}" class="row mb-4">
                 <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>Total</h5>
-                            <p class="h3" th:text="${statistiques.total}"></p>
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
+                                <i class="fas fa-list-ol text-primary fa-2x"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-0">Total Incidents Filtrés</h6>
+                                <h3 class="mb-0" th:text="${statistiques.total}">0</h3>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Liste des incidents -->
-            <div class="card">
-                <div class="card-body">
-                    <div th:if="${incidents == null || incidents.isEmpty()}" class="alert alert-info">
-                        Aucun incident trouvé.
-                    </div>
-                    
-                    <div th:unless="${incidents == null || incidents.isEmpty()}">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Titre</th>
-                                        <th>Statut</th>
-                                        <th>Priorité</th>
-                                        <th>Département</th>
-                                        <th>Agent assigné</th>
-                                        <th>Date création</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="incident : ${incidents.content}">
-                                        <td th:text="${incident.id}"></td>
-                                        <td th:text="${incident.titre}"></td>
-                                        <td>
-                                            <span class="badge" 
-                                                  th:classappend="${incident.statut.name() == 'RESOLU'} ? 'bg-success' : 
-                                                                 (${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning' : 
-                                                                 (${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info' : 'bg-secondary'))"
-                                                  th:text="${incident.statut}"></span>
-                                        </td>
-                                        <td>
-                                            <span class="badge" 
-                                                  th:classappend="${incident.priorite.name() == 'CRITIQUE'} ? 'bg-danger' : 
-                                                                 (${incident.priorite.name() == 'ELEVEE'} ? 'bg-warning' : 
-                                                                 (${incident.priorite.name() == 'MOYENNE'} ? 'bg-info' : 'bg-secondary'))"
-                                                  th:text="${incident.priorite}"></span>
-                                        </td>
-                                        <td th:text="${incident.departement != null ? incident.departement.nom : 'N/A'}"></td>
-                                        <td>
-                                            <span th:if="${incident.agentAssigne != null}" 
-                                                  th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}"></span>
-                                            <span th:unless="${incident.agentAssigne != null}" class="text-muted">Non assigné</span>
-                                        </td>
-                                        <td th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm')}"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <nav th:if="${incidents.totalPages > 1}">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item" th:classappend="${filtres.page == 0} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${filtres.page - 1}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}">Précédent</a>
-                                </li>
-                                <li th:each="i : ${#numbers.sequence(0, incidents.totalPages - 1)}" 
-                                    class="page-item" 
-                                    th:classappend="${i == filtres.page} ? 'active'">
-                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${i}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}" th:text="${i + 1}"></a>
-                                </li>
-                                <li class="page-item" th:classappend="${filtres.page == incidents.totalPages - 1} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/super-admin/incidents(page=${filtres.page + 1}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}">Suivant</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Incident</th>
+                                <th>Statut</th>
+                                <th>Priorité</th>
+                                <th>Département</th>
+                                <th>Agent</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${incidents == null || incidents.isEmpty()}">
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="fas fa-clipboard-check fa-3x mb-3 d-block"></i>
+                                    Aucun incident ne correspond aux critères
+                                </td>
+                            </tr>
+                            <tr th:each="incident : ${incidents.content}">
+                                <td class="text-muted" th:text="'#' + ${incident.id}"></td>
+                                <td>
+                                    <div class="fw-bold text-dark" th:text="${incident.titre}"></div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-status" 
+                                          th:classappend="${incident.statut.name() == 'RESOLU'} ? 'bg-success bg-opacity-10 text-success' : 
+                                                         (${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning bg-opacity-10 text-warning' : 
+                                                         (${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info bg-opacity-10 text-info' : 'bg-secondary bg-opacity-10 text-secondary'))">
+                                        <i class="fas me-1" 
+                                           th:classappend="${incident.statut.name() == 'RESOLU'} ? 'fa-check-circle' : 
+                                                          (${incident.statut.name() == 'EN_RESOLUTION'} ? 'fa-tools' : 
+                                                          (${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'fa-user-clock' : 'fa-exclamation-circle'))"></i>
+                                        <span th:text="${incident.statut}"></span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-priority" 
+                                          th:classappend="${incident.priorite.name() == 'CRITIQUE'} ? 'bg-danger' : 
+                                                         (${incident.priorite.name() == 'ELEVEE'} ? 'bg-warning text-dark' : 
+                                                         (${incident.priorite.name() == 'MOYENNE'} ? 'bg-info text-dark' : 'bg-secondary'))"
+                                          th:text="${incident.priorite}"></span>
+                                </td>
+                                <td>
+                                    <span th:if="${incident.departement != null}" class="text-dark">
+                                        <i class="fas fa-building text-muted me-1"></i>
+                                        <span th:text="${incident.departement.nom}"></span>
+                                    </span>
+                                    <span th:unless="${incident.departement != null}" class="text-muted small">
+                                        <i class="fas fa-question-circle me-1"></i> N/A
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:if="${incident.agentAssigne != null}" class="d-flex align-items-center">
+                                        <div class="bg-light rounded-circle p-1 me-2 small text-primary">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <span th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}"></span>
+                                    </span>
+                                    <span th:unless="${incident.agentAssigne != null}" class="text-muted small">
+                                        <i class="fas fa-user-slash me-1"></i> Non assigné
+                                    </span>
+                                </td>
+                                <td class="text-muted small">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    <span th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm')}"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="p-3 border-top" th:if="${incidents.totalPages > 1}">
+                    <nav>
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item" th:classappend="${filtres.page == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{/super-admin/incidents(page=${filtres.page - 1}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li th:each="i : ${#numbers.sequence(0, incidents.totalPages - 1)}" 
+                                class="page-item" 
+                                th:classappend="${i == filtres.page} ? 'active'">
+                                <a class="page-link" th:href="@{/super-admin/incidents(page=${i}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}" th:text="${i + 1}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${filtres.page == incidents.totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/super-admin/incidents(page=${filtres.page + 1}, size=${filtres.size}, statut=${filtres.statut}, priorite=${filtres.priorite}, departementId=${filtres.departementId})}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>

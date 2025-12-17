@@ -5,14 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord - Citoyen</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .filter-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .table-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table thead {
+            background: #f8f9fa;
+        }
+        .table thead th {
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #2c3e50;
+            padding: 15px;
+            white-space: nowrap;
+        }
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .status-dot {
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-container {
+            display: flex;
+            align-items: center;
+        }
+        .img-thumbnail-table {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .btn-action:hover {
+            background-color: #e9ecef;
+            transform: scale(1.1);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        .empty-state i {
+            font-size: 5rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        .card-stats {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .card-stats:hover {
+            transform: translateY(-5px);
+        }
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            border: none;
+            color: #2c3e50;
+            padding: 8px 14px;
+        }
+        .pagination .page-item.active .page-link {
+            background: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .pagination .page-link:hover {
+            background: #34495e;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
-        <div class="container-fluid">
-            <h2>Tableau de bord</h2>
+        <div class="container-fluid p-4">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        </h1>
+                        <p class="mb-0 opacity-75">Vue d'ensemble de vos activités</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a th:href="@{/notifications}" class="btn btn-light position-relative" title="Notifications">
+                            <i class="fas fa-bell text-primary"></i>
+                            <span th:if="${nbNotificationsNonLues > 0}" 
+                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                  th:text="${nbNotificationsNonLues}">
+                                0
+                            </span>
+                        </a>
+                        <a th:href="@{/citoyen/incidents}" class="btn btn-outline-light">
+                            <i class="fas fa-list"></i> Mes Incidents
+                        </a>
+                        <a th:href="@{/citoyen/incidents/nouveau}" class="btn btn-warning">
+                            <i class="fas fa-plus-circle"></i> Nouveau Signalement
+                        </a>
+                    </div>
+                </div>
+            </div>
             
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                 <span th:text="${success}"></span>
@@ -25,109 +164,186 @@
 
             <div class="row mt-4">
                 <!-- Statistiques rapides -->
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5>Total incidents</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="h3" th:text="${totalIncidents}"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-warning text-dark">
-                            <h5>En cours</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="h3" th:text="${incidentsEnCours}"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <h5>Résolus</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="h3" th:text="${incidentsResolus}"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5>Notifications</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="h3" th:text="${nbNotificationsNonLues}"></p>
-                            <a th:href="@{/notifications}" class="btn btn-sm btn-info">Voir toutes</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Incidents récents -->
-                <div class="col-md-8 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Mes incidents récents</h5>
-                        </div>
-                        <div class="card-body">
-                            <div th:if="${incidents == null || incidents.isEmpty()}" class="alert alert-info">
-                                Aucun incident signalé pour le moment.
-                                <a th:href="@{/citoyen/incidents/nouveau}" class="btn btn-sm btn-primary ms-2">Signaler un incident</a>
-                            </div>
-                            <div th:unless="${incidents == null || incidents.isEmpty()}">
-                                <ul class="list-group">
-                                    <li th:each="incident : ${incidents.content}" class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <a th:href="@{/citoyen/incidents/{id}(id=${incident.id})}" th:text="${incident.titre}"></a>
-                                                <span class="badge ms-2" 
-                                                      th:classappend="${incident.statut.name() == 'RESOLU'} ? 'bg-success' : 
-                                                                     (${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning' : 
-                                                                     (${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info' : 'bg-secondary'))"
-                                                      th:text="${incident.statut}"></span>
-                                            </div>
-                                            <small class="text-muted" th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy')}"></small>
+                <div class="col-12 mb-4">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3">
+                        <div class="col">
+                            <div class="card card-stats h-100 p-2">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 bg-primary bg-opacity-10 p-2 rounded">
+                                            <i class="fas fa-clipboard-list text-primary fa-lg"></i>
                                         </div>
-                                    </li>
-                                </ul>
-                                <div class="mt-3">
-                                    <a th:href="@{/citoyen/incidents}" class="btn btn-sm btn-primary">Voir tous mes incidents</a>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h6 class="text-muted mb-0 small">Total</h6>
+                                            <h4 class="mb-0" th:text="${totalIncidents}">0</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card card-stats h-100 p-2">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 bg-warning bg-opacity-10 p-2 rounded">
+                                            <i class="fas fa-hourglass-half text-warning fa-lg"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h6 class="text-muted mb-0 small">En cours</h6>
+                                            <h4 class="mb-0" th:text="${incidentsEnCours}">0</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card card-stats h-100 p-2">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 bg-success bg-opacity-10 p-2 rounded">
+                                            <i class="fas fa-check-circle text-success fa-lg"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h6 class="text-muted mb-0 small">Résolus</h6>
+                                            <h4 class="mb-0" th:text="${incidentsResolus}">0</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card card-stats h-100 p-2">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 bg-info bg-opacity-10 p-2 rounded">
+                                            <i class="fas fa-bell text-info fa-lg"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h6 class="text-muted mb-0 small">Notifs</h6>
+                                            <h4 class="mb-0" th:text="${nbNotificationsNonLues}">0</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card card-stats h-100 p-2">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 bg-primary bg-opacity-10 p-2 rounded" style="background-color: rgba(111, 66, 193, 0.1) !important;">
+                                            <i class="fas fa-chart-line fa-lg" style="color: #6f42c1 !important;"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h6 class="text-muted mb-0 small">Succès</h6>
+                                            <h4 class="mb-0" th:text="${tauxResolution} + '%'">0%</h4>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Notifications récentes -->
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Notifications récentes</h5>
-                        </div>
-                        <div class="card-body">
-                            <div th:if="${notifications == null || notifications.isEmpty()}" class="alert alert-info">
-                                Aucune notification.
-                            </div>
-                            <ul th:unless="${notifications == null || notifications.isEmpty()}" class="list-group">
-                                <li th:each="notification : ${notifications}" class="list-group-item">
-                                    <small th:text="${notification.message}"></small>
-                                    <br>
-                                    <small class="text-muted" th:text="${#temporals.format(notification.dateEnvoi, 'dd/MM/yyyy HH:mm')}"></small>
-                                </li>
-                            </ul>
-                            <div class="mt-3">
-                                <a th:href="@{/notifications}" class="btn btn-sm btn-secondary">Voir toutes les notifications</a>
-                            </div>
+                <!-- Section centrale du dashboard -->
+                <div class="col-12 mb-4">
+                    <!-- Tableau -->
+                    <div class="table-card">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 10%;">Image</th>
+                                        <th style="width: 20%;">Titre</th>
+                                        <th style="width: 15%;">Type</th>
+                                        <th style="width: 15%;">Lieu</th>
+                                        <th style="width: 15%;">Date</th>
+                                        <th style="width: 15%;">Statut</th>
+                                        <th style="width: 10%;" class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${incidents == null || incidents.empty}">
+                                        <td colspan="7" class="text-center py-4 text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                            Aucun incident trouvé
+                                        </td>
+                                    </tr>
+                                    <tr th:each="incident : ${incidents.content}">
+                                        <td>
+                                            <!-- Logic to determine which photo to show -->
+                                            <th:block th:with="isResolved=${incident.statut.name() == 'RESOLU' || incident.statut.name() == 'CLOTURE'},
+                                                               resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION']},
+                                                               creationPhotos=${incident.photos.?[typePhoto == null || typePhoto.name() == 'CREATION']},
+                                                               finalPhoto=${isResolved && !resolutionPhotos.isEmpty() ? resolutionPhotos[0] : (!creationPhotos.isEmpty() ? creationPhotos[0] : (!incident.photos.isEmpty() ? incident.photos[0] : null))}">
+                                                
+                                                <div th:if="${finalPhoto != null}">
+                                                    <img th:src="@{'/' + ${finalPhoto.cheminFichier}}" class="img-thumbnail-table" alt="Incident">
+                                                </div>
+                                                <div th:if="${finalPhoto == null}">
+                                                    <div class="img-thumbnail-table bg-light d-flex align-items-center justify-content-center text-muted border">
+                                                        <i class="fas fa-image"></i>
+                                                    </div>
+                                                </div>
+                                            </th:block>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold" th:text="${incident.titre}">Titre</div>
+                                            <small class="text-muted" 
+                                                th:text="${incident.description != null and !#strings.isEmpty(incident.description) ? (#strings.length(incident.description) > 30 ? #strings.substring(incident.description, 0, 30) + '...' : incident.description) : ''}">
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span th:text="${incident.departement.nom}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${incident.quartier.nom}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy')}"></span>
+                                        </td>
+                                        <td>
+                                            <div class="status-container">
+                                                <span class="status-dot"
+                                                      th:style="'background-color: ' + 
+                                                      (${incident.statut.name() == 'RESOLU' || incident.statut.name() == 'CLOTURE'} ? '#198754' : 
+                                                      (${incident.statut.name() == 'REJETE'} ? '#dc3545' : '#fd7e14'))"></span>
+                                                <span th:text="${incident.statut}"></span>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <a th:href="@{/citoyen/incidents/{id}(id=${incident.id})}" class="btn btn-outline-primary btn-action" title="Voir les détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                    
+                    <!-- Pagination simplifiée -->
+                    <div th:if="${incidents.totalPages > 1}" class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/citoyen/dashboard(page=${incidents.number - 1}, statut=${statutFilter}, departementId=${departementFilter}, dateFilter=${dateFilter}, sortDir=${sortDir})}">Précédent</a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link" th:text="${'Page ' + (incidents.number + 1) + ' / ' + incidents.totalPages}"></span>
+                                </li>
+                                <li class="page-item" th:classappend="${incidents.last} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/citoyen/dashboard(page=${incidents.number + 1}, statut=${statutFilter}, departementId=${departementFilter}, dateFilter=${dateFilter}, sortDir=${sortDir})}">Suivant</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
+
+           
             </div>
         </div>
     </div>

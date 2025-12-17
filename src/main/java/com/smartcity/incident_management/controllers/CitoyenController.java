@@ -43,11 +43,16 @@ public class CitoyenController {
     public String dashboard(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String statut,
+            @RequestParam(required = false) Long departementId,
+            @RequestParam(required = false) String dateFilter,
+            @RequestParam(defaultValue = "dateCreation") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
             Model model) {
         Utilisateur citoyen = SecurityUtils.getCurrentUser();
         
-        // Récupérer les incidents récents
-        Page<Incident> incidentsRecents = incidentCitoyenService.mesIncidents(citoyen, page, size, "dateCreation", "DESC");
+        // Récupérer les incidents récents avec filtres
+        Page<Incident> incidentsRecents = incidentCitoyenService.mesIncidentsFiltres(citoyen, page, size, sortBy, sortDir, statut, departementId, dateFilter);
         
         // Récupérer les notifications non lues
         var notifications = notificationService.mesNotificationsNonLues(citoyen);
@@ -62,8 +67,10 @@ public class CitoyenController {
                             i.getStatut().name().equals("EN_RESOLUTION"))
                 .count();
         long incidentsResolus = tousIncidents.getContent().stream()
-                .filter(i -> i.getStatut().name().equals("RESOLU"))
+                .filter(i -> i.getStatut().name().equals("RESOLU") || i.getStatut().name().equals("CLOTURE"))
                 .count();
+        
+        int tauxResolution = totalIncidents > 0 ? (int) ((incidentsResolus * 100) / totalIncidents) : 0;
         
         model.addAttribute("incidents", incidentsRecents);
         model.addAttribute("notifications", notifications);
@@ -71,6 +78,15 @@ public class CitoyenController {
         model.addAttribute("totalIncidents", totalIncidents);
         model.addAttribute("incidentsEnCours", incidentsEnCours);
         model.addAttribute("incidentsResolus", incidentsResolus);
+        model.addAttribute("tauxResolution", tauxResolution);
+        
+        // Filtres
+        model.addAttribute("departements", departementService.findAll());
+        model.addAttribute("statutFilter", statut);
+        model.addAttribute("departementFilter", departementId);
+        model.addAttribute("dateFilter", dateFilter);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
         
         return "citoyen/dashboard";
     }
@@ -157,6 +173,54 @@ public class CitoyenController {
         Incident incident = incidentCitoyenService.consulterIncident(id, citoyen);
         model.addAttribute("incident", incident);
         return "citoyen/incident-details";
+    }
+
+    @GetMapping("/incidents/{id}/modifier")
+    public String modifierIncidentForm(@PathVariable Long id, Model model) {
+        Utilisateur citoyen = SecurityUtils.getCurrentUser();
+        Incident incident = incidentCitoyenService.consulterIncident(id, citoyen);
+        
+        IncidentDTO dto = new IncidentDTO();
+        dto.setTitre(incident.getTitre());
+        dto.setDescription(incident.getDescription());
+        dto.setPriorite(incident.getPriorite());
+        dto.setAdresseTextuelle(incident.getAdresseTextuelle());
+        dto.setDepartementId(incident.getDepartement().getId());
+        dto.setQuartierId(incident.getQuartier().getId());
+        if (incident.getLatitude() != null) dto.setLatitude(incident.getLatitude().doubleValue());
+        if (incident.getLongitude() != null) dto.setLongitude(incident.getLongitude().doubleValue());
+
+        model.addAttribute("incident", incident);
+        model.addAttribute("incidentDTO", dto);
+        model.addAttribute("departements", departementService.findAll());
+        model.addAttribute("quartiers", quartierService.findAll());
+        return "citoyen/modifier-incident";
+    }
+
+    @PostMapping("/incidents/{id}/modifier")
+    public String modifierIncident(@PathVariable Long id,
+                                   @Valid @ModelAttribute IncidentDTO dto,
+                                   BindingResult result,
+                                   RedirectAttributes redirectAttributes,
+                                   Model model) {
+        if (result.hasErrors()) {
+            Utilisateur citoyen = SecurityUtils.getCurrentUser();
+            Incident incident = incidentCitoyenService.consulterIncident(id, citoyen);
+            model.addAttribute("incident", incident);
+            model.addAttribute("departements", departementService.findAll());
+            model.addAttribute("quartiers", quartierService.findAll());
+            return "citoyen/modifier-incident";
+        }
+        
+        try {
+            Utilisateur citoyen = SecurityUtils.getCurrentUser();
+            incidentCitoyenService.modifierIncident(id, citoyen, dto);
+            redirectAttributes.addFlashAttribute("success", "Incident modifié avec succès !");
+            return "redirect:/citoyen/incidents";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/citoyen/incidents/" + id + "/modifier";
+        }
     }
 
     @PostMapping("/incidents/{id}/feedback")

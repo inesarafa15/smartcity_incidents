@@ -1,19 +1,16 @@
 package com.smartcity.incident_management.controllers;
 
-import com.smartcity.incident_management.dto.RapportDTO;
 import com.smartcity.incident_management.entities.Utilisateur;
 import com.smartcity.incident_management.entities.Incident;
 import com.smartcity.incident_management.security.SecurityUtils;
 import com.smartcity.incident_management.services.utilisateur.AdminService;
-import com.smartcity.incident_management.services.utilisateur.QuartierService;
-import com.smartcity.incident_management.services.utilisateur.RapportService;
-import jakarta.validation.Valid;
+import com.smartcity.incident_management.services.rapport.RapportExportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -28,10 +25,7 @@ public class AdminController {
     private AdminService adminService;
     
     @Autowired
-    private QuartierService quartierService;
-    
-    @Autowired
-    private RapportService rapportService;
+    private RapportExportService rapportExportService;
     
     // ========== DASHBOARD ==========
     
@@ -74,7 +68,7 @@ public class AdminController {
     }
 
     @PostMapping("/incidents/{id}/valider")
-    public String validerResolution(@PathVariable Long id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+    public String validerResolution(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             Utilisateur admin = SecurityUtils.getCurrentUser();
             adminService.validerResolution(id, admin);
@@ -88,7 +82,7 @@ public class AdminController {
     @PostMapping("/incidents/{id}/refuser")
     public String refuserResolution(@PathVariable Long id,
                                     @RequestParam(name = "motif", required = false) String motif,
-                                    org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+                                    RedirectAttributes redirectAttributes) {
         try {
             Utilisateur admin = SecurityUtils.getCurrentUser();
             adminService.refuserResolution(id, admin, motif);
@@ -113,41 +107,50 @@ public class AdminController {
         return "redirect:/admin/incidents";
     }
     
-    // ========== GESTION DES RAPPORTS ==========
+    // ========== EXPORT RAPPORTS ==========
     
-    @GetMapping("/rapports")
-    public String rapports(Model model) {
-        Utilisateur admin = SecurityUtils.getCurrentUser();
-        model.addAttribute("rapports", rapportService.findByAdmin(admin.getId()));
-        return "admin/rapports";
-    }
-    
-    @GetMapping("/rapports/nouveau")
-    public String nouveauRapportForm(Model model) {
-        model.addAttribute("rapportDTO", new RapportDTO());
-        model.addAttribute("quartiers", quartierService.findAll());
-        return "admin/nouveau-rapport";
-    }
-    
-    @PostMapping("/rapports/nouveau")
-    public String genererRapport(@Valid @ModelAttribute RapportDTO dto,
-                                  BindingResult result,
-                                  Model model,
-                                  RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            model.addAttribute("quartiers", quartierService.findAll());
-            return "admin/nouveau-rapport";
-        }
-        
+    @GetMapping("/rapports/export/csv")
+    public ResponseEntity<byte[]> exporterCSV() {
         try {
             Utilisateur admin = SecurityUtils.getCurrentUser();
-            adminService.genererRapportDepartement(admin, dto);
-            redirectAttributes.addFlashAttribute("success", "Rapport généré avec succès");
+            return rapportExportService.exporterCSV(admin);
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
-        return "redirect:/admin/rapports";
+    }
+    
+    @GetMapping("/rapports/export/excel")
+    public ResponseEntity<byte[]> exporterExcel() {
+        try {
+            Utilisateur admin = SecurityUtils.getCurrentUser();
+            return rapportExportService.exporterExcel(admin);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/rapports/export/pdf")
+    public ResponseEntity<byte[]> exporterPDF() {
+        try {
+            Utilisateur admin = SecurityUtils.getCurrentUser();
+            return rapportExportService.exporterPDF(admin);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/rapports/export/statistiques")
+    public ResponseEntity<byte[]> exporterStatistiques() {
+        // Similaire à exporterExcel mais seulement les stats
+        try {
+            Utilisateur admin = SecurityUtils.getCurrentUser();
+            return rapportExportService.exporterExcel(admin); // Réutilise Excel pour stats détaillées
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
-
-

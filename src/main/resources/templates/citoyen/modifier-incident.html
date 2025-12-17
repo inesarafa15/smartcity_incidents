@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier l'incident</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+</head>
+<body>
+    <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
+    
+    <div class="main-content">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Modifier l'incident</h2>
+                <a th:href="@{/citoyen/incidents}" class="btn btn-secondary">Retour</a>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <form th:action="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" th:object="${incidentDTO}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="titre" class="form-label">Titre *</label>
+                    <input type="text" class="form-control" id="titre" th:field="*{titre}" required>
+                    <div th:if="${#fields.hasErrors('titre')}" th:errors="*{titre}" class="text-danger"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description *</label>
+                    <textarea class="form-control" id="description" th:field="*{description}" rows="5" required></textarea>
+                    <div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="priorite" class="form-label">Priorité *</label>
+                    <select class="form-select" id="priorite" th:field="*{priorite}" required>
+                        <option value="">Sélectionner une priorité</option>
+                        <option value="FAIBLE">Faible</option>
+                        <option value="MOYENNE">Moyenne</option>
+                        <option value="ELEVEE">Élevée</option>
+                        <option value="CRITIQUE">Critique</option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('priorite')}" th:errors="*{priorite}" class="text-danger"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="adresseTextuelle" class="form-label">Adresse *</label>
+                    <input type="text" class="form-control" id="adresseTextuelle" th:field="*{adresseTextuelle}" required>
+                    <small class="form-text text-muted">Saisissez l'adresse ou utilisez la carte ci-dessous pour sélectionner la position</small>
+                    <div th:if="${#fields.hasErrors('adresseTextuelle')}" th:errors="*{adresseTextuelle}" class="text-danger"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Position GPS (sélectionnez sur la carte) *</label>
+                    <div id="map" style="height: 400px; width: 100%; border: 1px solid #ddd; border-radius: 4px;"></div>
+                    <small class="form-text text-muted">Cliquez sur la carte pour définir la position de l'incident</small>
+                    <input type="hidden" id="latitude" name="latitude" th:field="*{latitude}">
+                    <input type="hidden" id="longitude" name="longitude" th:field="*{longitude}">
+                </div>
+                <div class="mb-3">
+                    <label for="departementId" class="form-label">Département *</label>
+                    <select class="form-select" id="departementId" th:field="*{departementId}" required>
+                        <option value="">Sélectionner un département</option>
+                        <option th:each="dept : ${departements}" th:value="${dept.id}" th:text="${dept.nom}"></option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('departementId')}" th:errors="*{departementId}" class="text-danger"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="quartierId" class="form-label">Quartier *</label>
+                    <select class="form-select" id="quartierId" th:field="*{quartierId}" required>
+                        <option value="">Sélectionner un quartier</option>
+                        <option th:each="quartier : ${quartiers}" th:value="${quartier.id}" th:text="${quartier.nom}"></option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('quartierId')}" th:errors="*{quartierId}" class="text-danger"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="photos" class="form-label">Ajouter des photos (optionnel, max 10MB par fichier)</label>
+                    <input type="file" class="form-control" id="photos" name="photos" multiple accept="image/*">
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        // Initialiser la carte Leaflet
+        let initialLat = /*[[${incidentDTO.latitude}]]*/ 48.8566;
+        let initialLng = /*[[${incidentDTO.longitude}]]*/ 2.3522;
+        let hasLocation = /*[[${incidentDTO.latitude != null && incidentDTO.longitude != null}]]*/ false;
+
+        let map = L.map('map').setView([hasLocation ? initialLat : 48.8566, hasLocation ? initialLng : 2.3522], hasLocation ? 15 : 13);
+        let marker = null;
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        if (hasLocation) {
+            marker = L.marker([initialLat, initialLng]).addTo(map);
+        } else if (navigator.geolocation) {
+            // Géolocalisation de l'utilisateur si pas de position définie
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                if (!hasLocation) {
+                    map.setView([lat, lon], 15);
+                }
+            });
+        }
+        
+        // Gestion du clic sur la carte
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            
+            if (marker) {
+                marker.setLatLng([lat, lon]);
+            } else {
+                marker = L.marker([lat, lon]).addTo(map);
+            }
+            
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+        });
+        
+        // Recherche d'adresse (géocodage simple)
+        document.getElementById('adresseTextuelle').addEventListener('blur', function() {
+            const address = this.value;
+            if (address && address.length > 5) {
+                // Utiliser Nominatim pour le géocodage
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            const lat = parseFloat(data[0].lat);
+                            const lon = parseFloat(data[0].lon);
+                            map.setView([lat, lon], 15);
+                            if (marker) {
+                                marker.setLatLng([lat, lon]);
+                            } else {
+                                marker = L.marker([lat, lon]).addTo(map);
+                            }
+                            document.getElementById('latitude').value = lat;
+                            document.getElementById('longitude').value = lon;
+                        }
+                    })
+                    .catch(err => console.error('Erreur de géocodage:', err));
+            }
+        });
+    </script>
+</body>
+</html>
