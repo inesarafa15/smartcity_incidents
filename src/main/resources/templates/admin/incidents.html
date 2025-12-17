@@ -510,60 +510,68 @@
             </div>
         </div>
 
-        <div class="search-filter-container">
-            <div class="card-body">
-                    <form method="get" th:action="@{/agent/incidents}">
-                        <input type="hidden" name="filter" th:value="${filter}" />
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label class="form-label">Statut</label>
-                                <select class="form-select" name="statut">
-                                    <option value="">Tous les statuts</option>
-                                    <option value="SIGNALE">Signalé</option>
-                                    <option value="PRIS_EN_CHARGE">Pris en charge</option>
-                                    <option value="EN_RESOLUTION">En résolution</option>
-                                    <option value="RESOLU">Résolu</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Priorité</label>
-                                <select class="form-select" name="priorite">
-                                    <option value="">Toutes les priorités</option>
-                                    <option value="CRITIQUE">Urgente</option>
-                                    <option value="ELEVEE">Haute</option>
-                                    <option value="MOYENNE">Moyenne</option>
-                                    <option value="FAIBLE">Basse</option>
-                                </select>
-                                
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Trier par</label>
-                                <select class="form-select" name="sortBy">
-                                    <option value="dateCreation">Date de création</option>
-                                    <option value="priorite">Priorité</option>
-                                    <option value="statut">Statut</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Ordre</label>
-                                <select class="form-select" name="sortDir">
-                                    <option value="DESC">Décroissant</option>
-                                    <option value="ASC">Croissant</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-custom-filter">
-                                    <i class="fas fa-search"></i> Appliquer les filtres
-                                </button>
-                                <a th:href="@{/admin/incidents}" class="btn btn-secondary">
-                                    <i class="fas fa-redo"></i> Réinitialiser
-                                </a>
-                            </div>
-                        </div>
-                    </form>
+     
+<div class="search-filter-container">
+    <div class="card-body">
+        <form method="get" th:action="@{/admin/incidents}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select" name="statut">
+                        <option value="">Tous les statuts</option>
+                        <option value="SIGNALE" th:selected="${param.statut == 'SIGNALE'}">Signalé</option>
+                        <option value="PRIS_EN_CHARGE" th:selected="${param.statut == 'PRIS_EN_CHARGE'}">Pris en charge</option>
+                        <option value="EN_RESOLUTION" th:selected="${param.statut == 'EN_RESOLUTION'}">En résolution</option>
+                        <option value="RESOLU" th:selected="${param.statut == 'RESOLU'}">Résolu</option>
+                        <option value="CLOTURE" th:selected="${param.statut == 'CLOTURE'}">Clôturé</option>
+                    </select>
                 </div>
-        </div>
-
+                <div class="col-md-3">
+                    <label class="form-label">Priorité</label>
+                    <select class="form-select" name="priorite">
+                        <option value="">Toutes les priorités</option>
+                        <option value="CRITIQUE" th:selected="${param.priorite == 'CRITIQUE'}">Urgente</option>
+                        <option value="ELEVEE" th:selected="${param.priorite == 'ELEVEE'}">Haute</option>
+                        <option value="MOYENNE" th:selected="${param.priorite == 'MOYENNE'}">Moyenne</option>
+                        <option value="FAIBLE" th:selected="${param.priorite == 'FAIBLE'}">Basse</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trier par</label>
+                    <select class="form-select" name="sortBy">
+                        <option value="dateCreation" th:selected="${param.sortBy == 'dateCreation'}">Date de création</option>
+                        <option value="priorite" th:selected="${param.sortBy == 'priorite'}">Priorité</option>
+                        <option value="statut" th:selected="${param.sortBy == 'statut'}">Statut</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Ordre</label>
+                    <select class="form-select" name="sortDir">
+                        <option value="DESC" th:selected="${param.sortDir == 'DESC'}">Décroissant</option>
+                        <option value="ASC" th:selected="${param.sortDir == 'ASC'}">Croissant</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Par page</label>
+                    <select class="form-select" name="size">
+                        <option value="10" th:selected="${param.size == 10}">10</option>
+                        <option value="20" th:selected="${param.size == 20}">20</option>
+                        <option value="50" th:selected="${param.size == 50}">50</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-custom-filter">
+                        <i class="fas fa-search"></i> Appliquer les filtres
+                    </button>
+                    <a th:href="@{/admin/incidents}" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> Réinitialiser
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+    
         <div class="incidents-table-container">
             <div class="table-responsive  text-white">
                 <table class="table table-modern">
@@ -692,41 +700,51 @@
                 <p class="text-muted">Aucun incident n'a été signalé dans votre département.</p>
             </div>
 
-            <nav th:if="${incidents.totalPages > 1}" class="mt-4">
-                <ul class="pagination pagination-modern justify-content-center">
-                    <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
-                        <a class="page-link" th:href="@{/admin/incidents(page=${incidents.number - 1}, size=${incidents.size})}">
-                            <i class="fas fa-chevron-left"></i> Précédent
-                        </a>
-                    </li>
-                    
-                    <li class="page-item" th:if="${incidents.number > 2}">
-                        <a class="page-link" th:href="@{/admin/incidents(page=0, size=${incidents.size})}">1</a>
-                    </li>
-                    <li class="page-item disabled" th:if="${incidents.number > 3}">
-                        <span class="page-link">...</span>
-                    </li>
-                    
-                    <li th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, incidents.number - 1), T(java.lang.Math).min(incidents.totalPages - 1, incidents.number + 1))}"
-                        class="page-item" th:classappend="${i == incidents.number} ? 'active'">
-                        <a class="page-link" th:href="@{/admin/incidents(page=${i}, size=${incidents.size})}" th:text="${i + 1}"></a>
-                    </li>
-                    
-                    <li class="page-item disabled" th:if="${incidents.number < incidents.totalPages - 4}">
-                        <span class="page-link">...</span>
-                    </li>
-                    <li class="page-item" th:if="${incidents.number < incidents.totalPages - 3}">
-                        <a class="page-link" th:href="@{/admin/incidents(page=${incidents.totalPages - 1}, size=${incidents.size})}" 
-                           th:text="${incidents.totalPages}"></a>
-                    </li>
-                    
-                    <li class="page-item" th:classappend="${incidents.last} ? 'disabled'">
-                        <a class="page-link" th:href="@{/admin/incidents(page=${incidents.number + 1}, size=${incidents.size})}">
-                            Suivant <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+           
+<nav th:if="${incidents.totalPages > 1}" class="mt-4">
+    <ul class="pagination pagination-modern justify-content-center">
+        <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
+            <a class="page-link" 
+               th:href="@{/admin/incidents(page=${incidents.number - 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir}, statut=${statut}, priorite=${priorite})}">
+                <i class="fas fa-chevron-left"></i> Précédent
+            </a>
+        </li>
+        
+     
+        <li class="page-item" th:if="${incidents.number > 2}">
+            <a class="page-link" 
+               th:href="@{/admin/incidents(page=0, size=${size}, sortBy=${sortBy}, sortDir=${sortDir}, statut=${statut}, priorite=${priorite})}">1</a>
+        </li>
+        <li class="page-item disabled" th:if="${incidents.number > 3}">
+            <span class="page-link">...</span>
+        </li>
+        
+    
+        <li th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, incidents.number - 1), T(java.lang.Math).min(incidents.totalPages - 1, incidents.number + 1))}"
+            class="page-item" th:classappend="${i == incidents.number} ? 'active'">
+            <a class="page-link" 
+               th:href="@{/admin/incidents(page=${i}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir}, statut=${statut}, priorite=${priorite})}"
+               th:text="${i + 1}"></a>
+        </li>
+        
+     
+        <li class="page-item disabled" th:if="${incidents.number < incidents.totalPages - 4}">
+            <span class="page-link">...</span>
+        </li>
+        <li class="page-item" th:if="${incidents.number < incidents.totalPages - 3}">
+            <a class="page-link" 
+               th:href="@{/admin/incidents(page=${incidents.totalPages - 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir}, statut=${statut}, priorite=${priorite})}"
+               th:text="${incidents.totalPages}"></a>
+        </li>
+        
+        <li class="page-item" th:classappend="${incidents.last} ? 'disabled'">
+            <a class="page-link" 
+               th:href="@{/admin/incidents(page=${incidents.number + 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir}, statut=${statut}, priorite=${priorite})}">
+                Suivant <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
         </div>
     </div>
 

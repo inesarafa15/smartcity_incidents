@@ -59,7 +59,7 @@ public class CitoyenController {
         Utilisateur citoyen = SecurityUtils.getCurrentUser();
         
         // Récupérer les incidents récents avec filtres
-        Page<Incident> incidentsRecents = incidentCitoyenService.mesIncidentsFiltres(citoyen, page, size, sortBy, sortDir, statut, departementId, dateFilter);
+        Page<Incident> incidentsRecents = incidentCitoyenService.mesIncidents(citoyen, page, size, sortBy, sortDir);
         
         // Récupérer les notifications non lues
         var notifications = notificationService.mesNotificationsNonLues(citoyen);
@@ -109,32 +109,26 @@ public class CitoyenController {
             Model model) {
         
         Utilisateur citoyen = SecurityUtils.getCurrentUser();
-        Page<Incident> incidents = incidentCitoyenService.mesIncidents(citoyen, page, size, sortBy, sortDir);
         
-        // Filtrer côté serveur si nécessaire (pour simplifier, on filtre après récupération)
-        if (statut != null && !statut.isEmpty()) {
-            incidents = (Page<Incident>) incidents.map(incident -> {
-                if (incident.getStatut().name().equals(statut)) {
-                    return incident;
-                }
-                return null;
-            }).filter(incident -> incident != null);
-        }
+        Page<Incident> incidents;
         
-        if (priorite != null && !priorite.isEmpty()) {
-            incidents = (Page<Incident>) incidents.map(incident -> {
-                if (incident != null && incident.getPriorite().name().equals(priorite)) {
-                    return incident;
-                }
-                return null;
-            }).filter(incident -> incident != null);
+        // Use filtered method if any filter is applied
+        if ((statut != null && !statut.isEmpty()) || (priorite != null && !priorite.isEmpty())) {
+            incidents = incidentCitoyenService.mesIncidentsFiltres(
+                citoyen, page, size, sortBy, sortDir, statut, priorite);
+        } else {
+            // Use basic method if no filters
+            incidents = incidentCitoyenService.mesIncidents(
+                citoyen, page, size, sortBy, sortDir);
         }
         
         model.addAttribute("incidents", incidents);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", incidents.getTotalPages());
         model.addAttribute("statut", statut);
         model.addAttribute("priorite", priorite);
+        model.addAttribute("size", size);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("totalPages", incidents.getTotalPages());
         
         return "citoyen/incidents";
     }
