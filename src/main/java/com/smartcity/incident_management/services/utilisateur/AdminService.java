@@ -352,6 +352,16 @@ public class AdminService {
         incident.setAgentAssigne(agent);
         incident.setDateDerniereMiseAJour(LocalDateTime.now());
         
+        // Marquer les photos de résolution actuelles comme refusées
+        if (incident.getPhotos() != null) {
+            for (com.smartcity.incident_management.entities.Photo photo : incident.getPhotos()) {
+                if (photo.getTypePhoto() == com.smartcity.incident_management.enums.TypePhoto.RESOLUTION && 
+                    (photo.getEstRefuse() == null || !photo.getEstRefuse())) {
+                    photo.setEstRefuse(true);
+                }
+            }
+        }
+        
         // IMPORTANT: Réinitialiser le feedback pour permettre un nouveau feedback
         incident.setFeedbackSatisfait(null);
         incident.setFeedbackNote(null);
@@ -381,14 +391,28 @@ public class AdminService {
             }
         }
         
-        // Message de refus simplifié pour le citoyen (sans feedback)
+        // Message de refus simplifié pour le citoyen (AVEC feedback pour historique)
         String messageRefusCitoyen = "🔄 INTERVENTION COMPLÉMENTAIRE NÉCESSAIRE\n\n" +
                                     "Date : " + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy à HH:mm")) + "\n\n" +
                                     "Votre incident nécessite une intervention complémentaire pour s'assurer d'une résolution optimale.\n\n" +
                                     "Notre équipe reprend le dossier. Vous serez informé(e) dès que les travaux seront finalisés.\n\n" +
                                     "ℹ️ Vous pourrez donner un nouveau feedback une fois l'incident résolu à nouveau.";
         
-        // Notification pour le citoyen (message neutre, SANS feedback)
+        // Ajouter le feedback précédent dans la notification pour le citoyen (Historique)
+        if (dateFeedbackActuelle != null) {
+            messageRefusCitoyen += "\n\n📝 Votre feedback précédent (archivé) :\n" +
+                                "• Satisfaction : " + (feedbackSatisfaitActuel ? "Satisfait" : "Non satisfait") + "\n";
+            
+            if (feedbackNoteActuelle != null) {
+                messageRefusCitoyen += "• Note : " + feedbackNoteActuelle + "/5\n";
+            }
+            
+            if (feedbackCommentaireActuel != null && !feedbackCommentaireActuel.isEmpty()) {
+                messageRefusCitoyen += "• Commentaire : " + feedbackCommentaireActuel;
+            }
+        }
+        
+        // Notification pour le citoyen
         Notification notifCitoyen = new Notification();
         notifCitoyen.setIncident(saved);
         notifCitoyen.setUtilisateur(saved.getAuteur());

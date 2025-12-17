@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - Citoyen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+</head>
+<body>
+    <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Mon Profil</h2>
+                    <p class="text-muted">Gérez vos informations personnelles</p>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0 rounded-3">
+                        <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                            <h5 class="card-title mb-0"><i class="fas fa-user-edit text-primary me-2"></i> Informations personnelles</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form th:action="@{/citoyen/profil}" method="post">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="prenom" class="form-label">Prénom</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input type="text" class="form-control" id="prenom" name="prenom" th:value="${citoyen.prenom}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="nom" class="form-label">Nom</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input type="text" class="form-control" id="nom" name="nom" th:value="${citoyen.nom}" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" class="form-control" id="email" name="email" th:value="${citoyen.email}" required>
+                                    </div>
+                                    <div class="form-text">Votre email est utilisé pour vous connecter et recevoir des notifications.</div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="telephone" class="form-label">Téléphone</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input type="tel" class="form-control" id="telephone" name="telephone" th:value="${citoyen.telephone}">
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> Pour changer votre mot de passe, veuillez contacter le support.
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a th:href="@{/citoyen/dashboard}" class="btn btn-light">Annuler</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i> Enregistrer les modifications
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            var successMsg = /*[[${success}]]*/ null;
+            var errorMsg = /*[[${error}]]*/ null;
+
+            if (successMsg && successMsg !== 'null' && successMsg !== '') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès',
+                    text: successMsg,
+                    timer: 3000,
+                    showConfirmButton: false,
+                    position: 'top-end',
+                    toast: true
+                });
+            }
+
+            if (errorMsg && errorMsg !== 'null' && errorMsg !== '') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: errorMsg,
+                    position: 'top-end',
+                    toast: true,
+                    timer: 5000,
+                    showConfirmButton: false
+                });
+            }
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

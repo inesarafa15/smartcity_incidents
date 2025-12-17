@@ -55,17 +55,25 @@
         .pagination .page-link {
             border-radius: 8px;
             margin: 0 3px;
-            border: none;
+            border: 1px solid #dee2e6;
             color: #2c3e50;
             padding: 8px 14px;
+            background: white;
         }
         .pagination .page-item.active .page-link {
             background: #2c3e50;
             border-color: #2c3e50;
+            color: white;
         }
         .pagination .page-link:hover {
             background: #34495e;
+            border-color: #34495e;
             color: white;
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            background: #f8f9fa;
+            border-color: #dee2e6;
         }
         .badge-status {
             font-size: 0.85em;
@@ -77,6 +85,20 @@
             font-size: 0.8em;
             padding: 5px 10px;
             border-radius: 6px;
+        }
+        .btn-action {
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
     </style>
 </head>
@@ -196,11 +218,12 @@
                                 <th>Département</th>
                                 <th>Agent</th>
                                 <th>Date</th>
+                                <th class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:if="${incidents == null || incidents.isEmpty()}">
-                                <td colspan="7" class="text-center py-5 text-muted">
+                                <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="fas fa-clipboard-check fa-3x mb-3 d-block"></i>
                                     Aucun incident ne correspond aux critères
                                 </td>
@@ -252,6 +275,22 @@
                                 <td class="text-muted small">
                                     <i class="far fa-calendar-alt me-1"></i>
                                     <span th:text="${#temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm')}"></span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a th:href="@{/super-admin/incidents/{id}(id=${incident.id})}" 
+                                           class="btn-action btn btn-info" 
+                                           title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:if="${incident.latitude != null && incident.longitude != null}"
+                                           th:href="'https://www.google.com/maps?q=' + ${incident.latitude} + ',' + ${incident.longitude}"
+                                           class="btn-action btn btn-outline-secondary"
+                                           target="_blank"
+                                           title="Localiser sur la carte">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>

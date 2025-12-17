@@ -366,8 +366,8 @@
                                 </div>
                             </div>
 
-                            <!-- Photos de résolution -->
-                            <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION']}">
+                            <!-- Photos de résolution (Actuelles) -->
+                            <div th:with="resolutionPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && (estRefuse == null || !estRefuse)]}">
                                 <div th:if="${!resolutionPhotos.isEmpty()}">
                                     <h6 class="border-bottom pb-2 mb-3 text-success">
                                         <i class="fas fa-check-double me-2"></i>Preuves de résolution
@@ -382,6 +382,26 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Photos de résolution (Refusées / Historique) -->
+                            <div th:with="refusedPhotos=${incident.photos.?[typePhoto != null && typePhoto.name() == 'RESOLUTION' && estRefuse == true]}" class="mt-4">
+                                <div th:if="${!refusedPhotos.isEmpty()}">
+                                    <h6 class="border-bottom pb-2 mb-3 text-danger opacity-75">
+                                        <i class="fas fa-history me-2"></i>Historique des tentatives refusées
+                                    </h6>
+                                    <div class="photo-gallery opacity-75">
+                                        <div th:each="photo : ${refusedPhotos}" class="photo-item" 
+                                             data-bs-toggle="modal" data-bs-target="#photoModal"
+                                             th:attr="data-photo-url=@{'/' + ${photo.cheminFichier}}">
+                                            <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Preuve refusée" loading="lazy" style="filter: grayscale(100%);">
+                                            <div class="photo-overlay">
+                                                <i class="fas fa-search-plus fa-2x text-white"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-2"><i class="fas fa-info-circle"></i> Ces photos appartiennent à une tentative de résolution précédente qui a été refusée.</small>
                                 </div>
                             </div>
                         </div>

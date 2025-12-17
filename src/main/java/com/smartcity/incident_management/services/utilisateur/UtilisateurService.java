@@ -123,6 +123,23 @@ public class UtilisateurService {
         utilisateur.setActif(true);
         return utilisateurRepository.save(utilisateur);
     }
+
+    public Utilisateur mettreAJourProfil(Long userId, String nom, String prenom, String email, String telephone) {
+        Utilisateur utilisateur = findById(userId);
+        
+        // Vérifier si l'email est modifié et s'il n'est pas déjà pris
+        if (!utilisateur.getEmail().equals(email) && utilisateurRepository.existsByEmail(email)) {
+            throw new BadRequestException("Cet email est déjà utilisé par un autre utilisateur");
+        }
+        
+        utilisateur.setNom(nom);
+        utilisateur.setPrenom(prenom);
+        utilisateur.setEmail(email);
+        utilisateur.setTelephone(telephone);
+        
+        return utilisateurRepository.save(utilisateur);
+    }
+    
     public void seedSuperAdmin() {
         // Vérifie si un SUPER_ADMIN existe déjà
         if (utilisateurRepository.findByRole(RoleType.SUPER_ADMIN).isEmpty()) {

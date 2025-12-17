@@ -484,5 +484,12 @@ public class SuperAdminController {
         
         return "super-admin/incidents";
     }
+
+    @GetMapping("/incidents/{id}")
+    public String getIncidentDetails(@PathVariable Long id, Model model) {
+        com.smartcity.incident_management.entities.Incident incident = superAdminService.trouverIncidentParId(id);
+        model.addAttribute("incident", incident);
+        return "super-admin/incident-details";
+    }
 }
 
