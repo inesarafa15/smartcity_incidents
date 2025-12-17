@@ -523,22 +523,16 @@
                                 <!-- Prendre en charge -->
                                 <div th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE' and (incident.agentAssigne == null or isAssigned)}" 
                                      class="d-grid mb-2">
-                                    <form th:action="@{/agent/incidents/{id}/prendre-en-charge(id=${incident.id})}" method="post"
-                                          onsubmit="return confirm('Voulez-vous prendre en charge cet incident ?');">
-                                        <button type="submit" class="action-btn btn btn-primary w-100">
-                                            <i class="fas fa-hand-paper"></i> Prendre en charge
-                                        </button>
-                                    </form>
+                                    <button type="button" class="action-btn btn btn-primary w-100" onclick="confirmerPriseEnCharge()">
+                                        <i class="fas fa-hand-paper"></i> Prendre en charge
+                                    </button>
                                 </div>
                                 
                                 <!-- En résolution -->
                                 <div th:if="${incident.statut != null and incident.statut.name() == 'PRIS_EN_CHARGE' and isAssigned}" class="d-grid mb-2">
-                                    <form th:action="@{/agent/incidents/{id}/en-resolution(id=${incident.id})}" method="post"
-                                          onsubmit="return confirm('Voulez-vous mettre cet incident en résolution ?');">
-                                        <button type="submit" class="action-btn btn btn-warning w-100">
-                                            <i class="fas fa-tools"></i> Mettre en résolution
-                                        </button>
-                                    </form>
+                                    <button type="button" class="action-btn btn btn-warning w-100" onclick="confirmerEnResolution()">
+                                        <i class="fas fa-tools"></i> Mettre en résolution
+                                    </button>
                                 </div>
                                 
                                 <!-- Marquer résolu (modal obligatoire) -->
@@ -650,6 +644,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Formulaires cachés pour soumission -->
+    <form id="priseEnChargeForm" th:action="@{/agent/incidents/{id}/prendre-en-charge(id=${incident.id})}" method="post" style="display: none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    </form>
+    
+    <form id="enResolutionForm" th:action="@{/agent/incidents/{id}/en-resolution(id=${incident.id})}" method="post" style="display: none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    </form>
 
     <!-- Modal Photo -->
     <div class="modal fade" id="photoModal" tabindex="-1">
@@ -786,6 +789,45 @@
             });
         }
 
+        // Fonctions de confirmation avec SweetAlert2
+        function confirmerPriseEnCharge() {
+            Swal.fire({
+                title: 'Prendre en charge cet incident ?',
+                text: 'Vous allez être assigné à cet incident et serez responsable de sa résolution.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#007bff',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-hand-paper"></i> Oui, prendre en charge',
+                cancelButtonText: 'Annuler',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('priseEnChargeForm').submit();
+                }
+            });
+        }
+
+        function confirmerEnResolution() {
+            Swal.fire({
+                title: 'Mettre en résolution ?',
+                html: 'Indiquez que vous êtes <strong>sur le terrain</strong> pour résoudre cet incident.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-tools"></i> Oui, commencer l\'intervention',
+                cancelButtonText: 'Annuler',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('enResolutionForm').submit();
+                }
+            });
+        }
+
         // Leaflet Map
         /*<![CDATA[*/
         const lat = /*[[${incident.latitude}]]*/ null;
@@ -850,6 +892,7 @@
         /*]]>*/
     </script>
     <script>
+        // Gestion du drag & drop pour upload d'images
         const dropzone = document.getElementById('dropzone');
         const input = document.getElementById('imagesInput');
         const filesList = document.getElementById('filesList');
@@ -864,7 +907,7 @@
                     const f = files[i];
                     const item = document.createElement('div');
                     item.className = 'small text-muted';
-                    item.textContent = `${f.name} (${Math.round(f.size/1024)} Ko)`;
+                    item.innerHTML = `<i class="fas fa-image text-success me-2"></i>${f.name} (${Math.round(f.size/1024)} Ko)`;
                     filesList.appendChild(item);
                 }
             };
