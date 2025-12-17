@@ -45,8 +45,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="rapport : ${rapports}">
-                            <td th:text="${rapport.id}"></td>
+                        <tr th:each="rapport, stat : ${rapports}">
+                            <td th:text="${stat.count}"></td>
                             <td th:text="${rapport.titre}"></td>
                             <td><span class="badge bg-info" th:text="${rapport.type}"></span></td>
                             <td th:text="${#temporals.format(rapport.periodeDebut, 'dd/MM/yyyy') + ' - ' + #temporals.format(rapport.periodeFin, 'dd/MM/yyyy')}"></td>

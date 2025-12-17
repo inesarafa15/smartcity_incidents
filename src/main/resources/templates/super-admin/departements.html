@@ -147,8 +147,8 @@
                                     Aucun département trouvé
                                 </td>
                             </tr>
-                            <tr th:each="departement : ${departements.content}">
-                                <td class="text-muted" th:text="${'#' + departement.id}"></td>
+                            <tr th:each="departement, stat : ${departements.content}">
+                                <td class="text-muted" th:text="${'#' + stat.count}"></td>
                                 <td class="fw-bold" th:text="${departement.libelle != null ? departement.libelle : departement.nom}"></td>
                                 <td th:text="${departement.description}"></td>
                                 <td>
