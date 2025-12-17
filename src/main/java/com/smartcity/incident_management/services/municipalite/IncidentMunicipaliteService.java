@@ -350,6 +350,7 @@ public class IncidentMunicipaliteService {
         Notification notification = new Notification();
         notification.setUtilisateur(agent);
         notification.setIncident(incident);
+        notification.setType(TypeNotification.PUSH);
         notification.setMessage("Commentaire: " + commentaire);
         notification.setLu(false);
         notification.setDateEnvoi(LocalDateTime.now());

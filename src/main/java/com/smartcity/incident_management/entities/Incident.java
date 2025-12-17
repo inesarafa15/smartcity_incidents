@@ -89,6 +89,10 @@ public class Incident {
     @OneToMany(mappedBy = "incident", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notificationsIncident = new ArrayList<>();
 
+    // Relation avec l'historique des feedbacks
+    @OneToMany(mappedBy = "incident", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HistoriqueFeedback> historiquesFeedback = new ArrayList<>();
+
     // Relation avec les rapports
     @ManyToMany(mappedBy = "incidentsAnalyses")
     private List<Rapport> rapports = new ArrayList<>();
