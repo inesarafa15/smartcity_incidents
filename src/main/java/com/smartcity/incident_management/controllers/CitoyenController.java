@@ -201,6 +201,7 @@ public class CitoyenController {
     public String modifierIncident(@PathVariable Long id,
                                    @Valid @ModelAttribute IncidentDTO dto,
                                    BindingResult result,
+                                   @RequestParam(required = false) List<Long> photosToDelete,
                                    RedirectAttributes redirectAttributes,
                                    Model model) {
         if (result.hasErrors()) {
@@ -214,7 +215,7 @@ public class CitoyenController {
         
         try {
             Utilisateur citoyen = SecurityUtils.getCurrentUser();
-            incidentCitoyenService.modifierIncident(id, citoyen, dto);
+            incidentCitoyenService.modifierIncident(id, citoyen, dto, photosToDelete);
             redirectAttributes.addFlashAttribute("success", "Incident modifié avec succès !");
             return "redirect:/citoyen/incidents";
         } catch (Exception e) {

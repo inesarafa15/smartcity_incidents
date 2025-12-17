@@ -287,8 +287,8 @@
     <script th:each="incident : ${incidents.content}"
             th:if="${incident.latitude != null && incident.longitude != null}"
             th:inline="javascript">
-        var lat = [[${incident.latitude}]];
-        var lon = [[${incident.longitude}]];
+        var lat = incident.latitude;
+        var lon = incident.longitude;
         var map = L.map('mini-map-[[${incident.id}]]', { zoomControl: false, attributionControl: false });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         map.setView([lat, lon], 15);
