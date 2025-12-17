@@ -506,6 +506,50 @@
                                 </p>
                             </div>
 
+                            <!-- Historique des Feedbacks (Avant refus) -->
+                            <div th:if="${incident.historiquesFeedback != null and !incident.historiquesFeedback.isEmpty()}" class="feedback-history-section mb-4">
+                                <h6 class="fw-bold mb-3 text-muted">
+                                    <i class="fas fa-history"></i> Historique des Feedbacks (Avant refus)
+                                </h6>
+                                <div th:each="hist : ${incident.historiquesFeedback}" class="mb-3 p-3 bg-light rounded" style="border-left: 3px solid #6c757d;">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="badge bg-secondary mb-2">Précédent</span>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <strong>Satisfaction:</strong>
+                                                <span>
+                                                    <i th:if="${hist.satisfait}" class="fas fa-smile text-success"></i>
+                                                    <i th:unless="${hist.satisfait}" class="fas fa-frown text-danger"></i>
+                                                    <span th:text="${hist.satisfait ? 'Satisfait' : 'Non satisfait'}">État</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted text-end">
+                                            <div><i class="fas fa-calendar"></i> <span th:text="${#temporals.format(hist.dateFeedback, 'dd/MM/yyyy HH:mm')}">Date</span></div>
+                                            <div class="text-danger small mt-1"><i class="fas fa-ban"></i> Refusé le <span th:text="${#temporals.format(hist.dateRefus, 'dd/MM/yyyy')}">Date</span></div>
+                                        </small>
+                                    </div>
+                                    
+                                    <div th:if="${hist.note != null}" class="mb-2">
+                                        <strong>Note:</strong>
+                                        <span class="feedback-rating">
+                                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                                <i class="fas fa-star" 
+                                                   th:classappend="${i <= hist.note ? 'text-warning' : 'text-muted'}"></i>
+                                            </th:block>
+                                        </span>
+                                        <span class="text-muted small">(<span th:text="${hist.note}">0</span>/5)</span>
+                                    </div>
+                                    
+                                    <div th:if="${hist.commentaire != null and !hist.commentaire.isEmpty()}" 
+                                         class="mt-2 pt-2 border-top">
+                                        <strong class="d-block mb-1 text-muted small">Commentaire:</strong>
+                                        <p class="mb-0 text-muted fst-italic small" th:text="${hist.commentaire}">Commentaire</p>
+                                    </div>
+                                </div>
+                                <hr class="my-4">
+                            </div>
+
                             <!-- Mon Feedback (si déjà soumis) -->
                             <div th:if="${incident.dateFeedback != null}" class="feedback-section">
                                 <h6 class="fw-bold mb-3">

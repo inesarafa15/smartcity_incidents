@@ -346,6 +346,19 @@ public class AdminService {
         Integer feedbackNoteActuelle = incident.getFeedbackNote();
         String feedbackCommentaireActuel = incident.getFeedbackCommentaire();
         LocalDateTime dateFeedbackActuelle = incident.getDateFeedback();
+
+        // Sauvegarder dans l'historique
+        if (dateFeedbackActuelle != null) {
+            com.smartcity.incident_management.entities.HistoriqueFeedback historique = new com.smartcity.incident_management.entities.HistoriqueFeedback();
+            historique.setIncident(incident);
+            historique.setCommentaire(feedbackCommentaireActuel);
+            historique.setNote(feedbackNoteActuelle);
+            historique.setSatisfait(feedbackSatisfaitActuel);
+            historique.setDateFeedback(dateFeedbackActuelle);
+            historique.setDateRefus(LocalDateTime.now());
+            
+            incident.getHistoriquesFeedback().add(historique);
+        }
         
         StatutIncident ancien = incident.getStatut();
         incident.setStatut(StatutIncident.PRIS_EN_CHARGE);
