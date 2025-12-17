@@ -143,17 +143,14 @@
                             <div class="row">
                                 <div class="col-6">
                                     <div class="text-center p-2">
-                                        <h4 class="mb-1 text-primary" th:text="${incidents != null ? incidents.totalElements : 0}">0</h4>
+                                        <h4 class="mb-1 text-primary" th:text="${statTotal ?: 0}">0</h4>
                                         <small class="text-muted">Total assignés</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="text-center p-2">
                                         <h4 class="mb-1 text-warning" 
-                                            th:text="${incidents != null ? incidents.content? 
-                                                .stream()
-                                                .filter(i -> i.statut != null && i.statut.name() == 'EN_RESOLUTION')
-                                                .count() : 0}">0</h4>
+                                            th:text="${(statPrisEnCharge ?: 0) + (statEnResolution ?: 0)}">0</h4>
                                         <small class="text-muted">En cours</small>
                                     </div>
                                 </div>
@@ -220,10 +217,10 @@
                                     <td class="status-column">
                                         <span th:if="${incident.statut != null}"
                                               class="badge badge-status d-block"
-                                              th:classappend="${incident.statut.name() == 'SIGNALE'} ? 'bg-secondary' : 
-                                                              ${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-info' :
-                                                              ${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning text-dark' :
-                                                              ${incident.statut.name() == 'RESOLU'} ? 'bg-success' : 'bg-dark'"
+                                              th:classappend="${incident.statut.name() == 'SIGNALE' ? 'bg-secondary' : 
+                                                              (incident.statut.name() == 'PRIS_EN_CHARGE' ? 'bg-info' :
+                                                              (incident.statut.name() == 'EN_RESOLUTION' ? 'bg-warning text-dark' :
+                                                              (incident.statut.name() == 'RESOLU' ? 'bg-success' : 'bg-dark')))}"
                                               th:text="${incident.statut.name()}">
                                             SIGNALE
                                         </span>
@@ -232,10 +229,10 @@
                                     <td>
                                         <span th:if="${incident.priorite != null}"
                                               class="badge badge-status d-block"
-                                              th:classappend="${incident.priorite.name() == 'BASSE'} ? 'bg-secondary' :
-                                                              ${incident.priorite.name() == 'MOYENNE'} ? 'bg-primary' :
-                                                              ${incident.priorite.name() == 'HAUTE'} ? 'bg-warning text-dark' :
-                                                              ${incident.priorite.name() == 'URGENTE'} ? 'bg-danger' : 'bg-dark'"
+                                              th:classappend="${incident.priorite.name() == 'BASSE' ? 'bg-secondary' :
+                                                              (incident.priorite.name() == 'MOYENNE' ? 'bg-primary' :
+                                                              (incident.priorite.name() == 'HAUTE' ? 'bg-warning text-dark' :
+                                                              (incident.priorite.name() == 'URGENTE' ? 'bg-danger' : 'bg-dark')))}"
                                               th:text="${incident.priorite.name()}">
                                             MOYENNE
                                         </span>

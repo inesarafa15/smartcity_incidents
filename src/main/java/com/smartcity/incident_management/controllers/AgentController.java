@@ -284,7 +284,7 @@ public class AgentController {
 
     @PostMapping(value = "/incidents/{id}/resolu")
     public String marquerResolu(@PathVariable Long id,
-                                @RequestParam("images") List<MultipartFile> images,
+                                @RequestParam(name = "images", required = false) List<MultipartFile> images,
                                 @RequestParam(name = "commentaire", required = false) String commentaire,
                                 RedirectAttributes redirectAttributes) {
         try {
@@ -295,7 +295,12 @@ public class AgentController {
                 return "redirect:/login";
             }
             
-            incidentMunicipaliteService.marquerResoluAvecUpload(id, agent, images, commentaire);
+            if (images != null && !images.isEmpty() && !images.stream().allMatch(MultipartFile::isEmpty)) {
+                incidentMunicipaliteService.marquerResoluAvecUpload(id, agent, images, commentaire);
+            } else {
+                incidentMunicipaliteService.marquerResolu(id, agent);
+            }
+            
             redirectAttributes.addFlashAttribute("success", "Incident marqué comme résolu");
             
         } catch (Exception e) {
