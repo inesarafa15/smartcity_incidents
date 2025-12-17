@@ -68,31 +68,38 @@ public class AdminController {
     }
 
     @PostMapping("/incidents/{id}/valider")
-    public String validerResolution(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String validerResolution(
+            @PathVariable Long id, 
+            @RequestParam(required = false) String commentaire,
+            RedirectAttributes redirectAttributes) {
         try {
             Utilisateur admin = SecurityUtils.getCurrentUser();
-            adminService.validerResolution(id, admin);
-            redirectAttributes.addFlashAttribute("success", "Résolution validée et incident clôturé");
+            adminService.validerResolution(id, admin, commentaire);
+            redirectAttributes.addFlashAttribute("success", 
+                "✅ Résolution validée avec succès. L'incident est maintenant clôturé.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/admin/incidents/" + id;
-    }
-
-    @PostMapping("/incidents/{id}/refuser")
-    public String refuserResolution(@PathVariable Long id,
-                                    @RequestParam(name = "motif", required = false) String motif,
-                                    RedirectAttributes redirectAttributes) {
-        try {
-            Utilisateur admin = SecurityUtils.getCurrentUser();
-            adminService.refuserResolution(id, admin, motif);
-            redirectAttributes.addFlashAttribute("success", "Résolution refusée, incident réassigné à l'agent");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            System.err.println("Erreur validation: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Erreur: " + e.getMessage());
         }
         return "redirect:/admin/incidents/" + id;
     }
     
+    @PostMapping("/incidents/{id}/refuser")
+    public String refuserResolution(
+            @PathVariable Long id, 
+            @RequestParam String motif,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Utilisateur admin = SecurityUtils.getCurrentUser();
+            adminService.refuserResolution(id, admin, motif);
+            redirectAttributes.addFlashAttribute("success", 
+                "🔄 Résolution refusée. L'incident a été réassigné à l'agent avec votre motif.");
+        } catch (Exception e) {
+            System.err.println("Erreur refus: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Erreur: " + e.getMessage());
+        }
+        return "redirect:/admin/incidents/" + id;
+    }    
     @PostMapping("/incidents/{incidentId}/affecter")
     public String affecterIncident(@PathVariable Long incidentId,
                                   @RequestParam Long agentId,
