@@ -70,6 +70,55 @@ public class AdminService {
         
         return incidentRepository.findByDepartementId(admin.getDepartement().getId(), pageable);
     }
+    public Page<Incident> incidentsDuDepartementFiltres(
+            Utilisateur admin, 
+            int page, 
+            int size, 
+            String sortBy, 
+            String sortDir,
+            String statutStr, 
+            String prioriteStr) {
+        
+        if (admin.getDepartement() == null) {
+            throw new UnauthorizedException("Vous n'êtes pas affecté à un département");
+        }
+        
+        Sort sort = sortDir.equalsIgnoreCase("DESC") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        // Conversion statut
+        StatutIncident statut = null;
+        if (statutStr != null && !statutStr.isEmpty()) {
+            try {
+                statut = StatutIncident.valueOf(statutStr);
+            } catch (IllegalArgumentException e) {
+                // Log invalid status
+                System.err.println("Statut invalide: " + statutStr);
+            }
+        }
+        
+        // Conversion priorité
+        PrioriteIncident priorite = null;
+        if (prioriteStr != null && !prioriteStr.isEmpty()) {
+            try {
+                priorite = PrioriteIncident.valueOf(prioriteStr);
+            } catch (IllegalArgumentException e) {
+                // Log invalid priority
+                System.err.println("Priorité invalide: " + prioriteStr);
+            }
+        }
+        
+        Long departementId = admin.getDepartement().getId();
+        
+        // Use repository method with filters
+        return incidentRepository.findByAuteurIdAndFilters(
+                departementId, 
+                statut, 
+                priorite, 
+                pageable);
+    }
+
     
     public List<Incident> incidentsEnAttente(Utilisateur admin) {
         if (admin.getDepartement() == null) {
