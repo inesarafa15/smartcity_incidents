@@ -3,6 +3,7 @@ package com.smartcity.incident_management.services.citoyen;
 import com.smartcity.incident_management.dto.IncidentDTO;
 import com.smartcity.incident_management.entities.*;
 import com.smartcity.incident_management.enums.TypePhoto;
+import com.smartcity.incident_management.enums.PrioriteIncident;
 import com.smartcity.incident_management.enums.StatutIncident;
 import com.smartcity.incident_management.exceptions.BadRequestException;
 import com.smartcity.incident_management.exceptions.ResourceNotFoundException;
@@ -230,41 +231,96 @@ public class IncidentCitoyenService {
         return System.currentTimeMillis() + "_" + compteur + "_" + nomNettoye + extension;
     }
     
-    public Page<Incident> mesIncidents(Utilisateur citoyen, int page, int size, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase("DESC") ? 
-                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        return incidentRepository.findByAuteurId(citoyen.getId(), pageable);
-    }
-
-    public Page<Incident> mesIncidentsFiltres(Utilisateur citoyen, int page, int size, String sortBy, String sortDir, 
-                                             String statutStr, Long departementId, String dateFilter) {
+    public Page<Incident> mesIncidentsFiltres(
+            Utilisateur citoyen, 
+            int page, 
+            int size, 
+            String sortBy, 
+            String sortDir,
+            String statutStr, 
+            String prioriteStr) {
+        
         Sort sort = sortDir.equalsIgnoreCase("DESC") ? 
                 Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
         
+        // Conversion statut
         StatutIncident statut = null;
         if (statutStr != null && !statutStr.isEmpty()) {
             try {
                 statut = StatutIncident.valueOf(statutStr);
             } catch (IllegalArgumentException e) {
-                // Ignore invalid status
+                // Log or handle invalid status
             }
         }
         
-        java.time.LocalDateTime dateDebut = null;
-        java.time.LocalDateTime dateFin = null;
-        
-        if ("today".equals(dateFilter)) {
-            dateDebut = java.time.LocalDate.now().atStartOfDay();
-            dateFin = java.time.LocalDate.now().atTime(java.time.LocalTime.MAX);
-        } else if ("week".equals(dateFilter)) {
-            dateDebut = java.time.LocalDate.now().minusDays(7).atStartOfDay();
-            dateFin = java.time.LocalDate.now().atTime(java.time.LocalTime.MAX);
+        // Conversion priorité
+        PrioriteIncident priorite = null;
+        if (prioriteStr != null && !prioriteStr.isEmpty()) {
+            try {
+                priorite = PrioriteIncident.valueOf(prioriteStr);
+            } catch (IllegalArgumentException e) {
+                // Log or handle invalid priority
+            }
         }
         
-        return incidentRepository.findByAuteurIdAndFilters(citoyen.getId(), statut, departementId, dateDebut, dateFin, pageable);
+        // Appeler la méthode du repository qui correspond
+        return incidentRepository.findByAuteurIdAndFilters(
+                citoyen.getId(), 
+                statut, 
+                priorite, 
+                pageable
+        );
     }
+
+    // Rename the existing method to avoid confusion
+    public Page<Incident> mesIncidents(
+            Utilisateur citoyen, 
+            int page, 
+            int size, 
+            String sortBy, 
+            String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("DESC") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return incidentRepository.findByAuteurId(citoyen.getId(), pageable);
+    }		
+		// Gardez l'autre méthode pour le dashboard
+		public Page<Incident> mesIncidentsFiltresPourDashboard(Utilisateur citoyen, int page, int size, String sortBy, String sortDir, 
+		                         String statutStr, Long departementId, String dateFilter) {
+		Sort sort = sortDir.equalsIgnoreCase("DESC") ? 
+		Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+		Pageable pageable = PageRequest.of(page, size, sort);
+		
+		StatutIncident statut = null;
+		if (statutStr != null && !statutStr.isEmpty()) {
+		try {
+		statut = StatutIncident.valueOf(statutStr);
+		} catch (IllegalArgumentException e) {
+		// Ignore invalid status
+		}
+		}
+		
+		java.time.LocalDateTime dateDebut = null;
+		java.time.LocalDateTime dateFin = null;
+		
+		if ("today".equals(dateFilter)) {
+		dateDebut = java.time.LocalDate.now().atStartOfDay();
+		dateFin = java.time.LocalDate.now().atTime(java.time.LocalTime.MAX);
+		} else if ("week".equals(dateFilter)) {
+		dateDebut = java.time.LocalDate.now().minusDays(7).atStartOfDay();
+		dateFin = java.time.LocalDate.now().atTime(java.time.LocalTime.MAX);
+		}
+		
+		return incidentRepository.findByAuteurIdAndFiltersDashboard(
+		citoyen.getId(), 
+		statut, 
+		departementId, 
+		dateDebut, 
+		dateFin, 
+		pageable
+		);
+		}
     
     public Incident consulterIncident(Long incidentId, Utilisateur citoyen) {
         Incident incident = incidentRepository.findById(incidentId)

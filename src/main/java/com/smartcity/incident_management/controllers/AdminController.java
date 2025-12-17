@@ -41,6 +41,8 @@ public class AdminController {
     
     // ========== GESTION DES INCIDENTS ==========
     
+ // In AdminController.java, update the incidents method:
+
     @GetMapping("/incidents")
     public String incidents(@RequestParam(defaultValue = "0") int page,
                            @RequestParam(defaultValue = "10") int size,
@@ -48,7 +50,10 @@ public class AdminController {
                            @RequestParam(required = false) String priorite,
                            @RequestParam(defaultValue = "dateCreation") String sortBy,
                            @RequestParam(defaultValue = "DESC") String sortDir,
+                           @RequestParam(required = false) String statut,
+                           @RequestParam(required = false) String priorite,
                            Model model) {
+        
         Utilisateur admin = SecurityUtils.getCurrentUser();
         Page incidents = adminService.incidentsDuDepartement(admin, statut, priorite, page, size, sortBy, sortDir);
         model.addAttribute("incidents", incidents);

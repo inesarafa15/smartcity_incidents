@@ -165,17 +165,19 @@
                                 <option value="PRIS_EN_CHARGE" th:selected="${statut == 'PRIS_EN_CHARGE'}">Pris en charge</option>
                                 <option value="EN_RESOLUTION" th:selected="${statut == 'EN_RESOLUTION'}">En résolution</option>
                                 <option value="RESOLU" th:selected="${statut == 'RESOLU'}">Résolu</option>
+                                 <option value="CLOTURE" th:selected="${statut == 'RESOLU'}">Cloturé</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label for="priorite" class="form-label fw-bold">Priorité</label>
-                            <select class="form-select" id="priorite" name="priorite">
-                                <option value="">Toutes les priorités</option>
-                                <option value="URGENTE" th:selected="${priorite == 'URGENTE'}">Urgente</option>
-                                <option value="HAUTE" th:selected="${priorite == 'HAUTE'}">Haute</option>
-                                <option value="MOYENNE" th:selected="${priorite == 'MOYENNE'}">Moyenne</option>
-                                <option value="BASSE" th:selected="${priorite == 'BASSE'}">Basse</option>
-                            </select>
+                            <!-- CORRIGER CES VALEURS -->
+						<select class="form-select" id="priorite" name="priorite">
+						    <option value="">Toutes les priorités</option>
+						    <option value="CRITIQUE" th:selected="${priorite == 'CRITIQUE'}">Critique</option>
+						    <option value="ELEVEE" th:selected="${priorite == 'ELEVEE'}">Elevée</option>
+						    <option value="MOYENNE" th:selected="${priorite == 'MOYENNE'}">Moyenne</option>
+						    <option value="FAIBLE" th:selected="${priorite == 'FAIBLE'}">Faible</option>
+						</select>
                         </div>
                         <div class="col-md-2">
                             <label for="size" class="form-label fw-bold">Par page</label>
