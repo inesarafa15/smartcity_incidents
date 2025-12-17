@@ -529,10 +529,10 @@
                         </tr>
                     </thead>
                     <tbody id="incidentsTable">
-                        <tr th:each="incident : ${incidents.content}" th:data-statut="${incident.statut.name()}" 
+                        <tr th:each="incident, stat : ${incidents.content}" th:data-statut="${incident.statut.name()}" 
                             th:data-priorite="${incident.priorite.name()}" th:data-search="${incident.titre}">
                             <td data-label="ID">
-                                <span class="badge bg-light text-dark">#<span th:text="${incident.id}"></span></span>
+                                <span class="badge bg-light text-dark">#<span th:text="${stat.count}"></span></span>
                             </td>
                             <td data-label="Titre">
                                 <strong th:text="${incident.titre}"></strong>

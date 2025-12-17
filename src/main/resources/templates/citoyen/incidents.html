@@ -224,10 +224,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="incident : ${incidents.content}">
+                            <tr th:each="incident, stat : ${incidents.content}">
                                 <!-- ID -->
                                 <td>
-                                    <strong class="text-primary" th:text="'#' + ${incident.id}">ID</strong>
+                                    <strong class="text-primary" th:text="'#' + ${stat.count}">ID</strong>
                                 </td>
                                 
                                 <!-- Titre -->
