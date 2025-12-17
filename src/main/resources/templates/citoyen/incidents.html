@@ -346,7 +346,7 @@
                                     </a>
                                     
                                     <!-- Modifier (pour tout incident non résolu/clôturé) -->
-                                    <a th:if="${incident.statut != null and incident.statut.name() != 'RESOLU' and incident.statut.name() != 'CLOTURE'}"
+                                    <a th:if="${incident.statut != null and incident.statut.name() == 'SIGNALE'}"
                                        th:href="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" 
                                        class="btn btn-sm btn-outline-primary btn-action"
                                        title="Modifier">

@@ -5,88 +5,354 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier l'incident</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <th:block th:replace="~{fragments/sidebar :: sidebar-styles}"></th:block>
+    <style>
+        .page-header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .form-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2c3e50;
+        }
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        #map {
+            height: 400px;
+            border-radius: 12px;
+            border: 2px solid #ddd;
+        }
+        .file-upload {
+            border: 2px dashed #2c3e50;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload:hover {
+            background: #ecf0f1;
+            border-color: #3498db;
+        }
+        .existing-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .photo-item {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-item .remove-existing-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            border: 2px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        .photo-item .remove-existing-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+        .photo-item.deleted {
+            opacity: 0.4;
+            position: relative;
+        }
+        .photo-item.deleted::after {
+            content: 'Sera supprimée';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .new-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .preview-container {
+            position: relative;
+            display: inline-block;
+        }
+        .file-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .remove-new-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            border: 2px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            z-index: 10;
+        }
+        .remove-new-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+        .photo-counter {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            border: 2px solid #dee2e6;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
     <th:block th:replace="~{fragments/sidebar :: sidebar}"></th:block>
     
     <div class="main-content">
         <div class="container-fluid p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Modifier l'incident</h2>
-                <a th:href="@{/citoyen/incidents}" class="btn btn-secondary">Retour</a>
+            <!-- Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-edit"></i> Modifier l'incident</h2>
+                        <p class="mb-0 opacity-75">Mettez à jour les informations de votre signalement</p>
+                    </div>
+                    <a th:href="@{/citoyen/incidents}" class="btn btn-light">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
             </div>
 
-            <div th:if="${error}" class="alert alert-danger" role="alert">
+            <!-- Messages -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-triangle"></i>
                 <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <form th:action="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" th:object="${incidentDTO}" method="post" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="titre" class="form-label">Titre *</label>
-                    <input type="text" class="form-control" id="titre" th:field="*{titre}" required>
-                    <div th:if="${#fields.hasErrors('titre')}" th:errors="*{titre}" class="text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description *</label>
-                    <textarea class="form-control" id="description" th:field="*{description}" rows="5" required></textarea>
-                    <div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="priorite" class="form-label">Priorité *</label>
-                    <select class="form-select" id="priorite" th:field="*{priorite}" required>
-                        <option value="">Sélectionner une priorité</option>
-                        <option value="FAIBLE">Faible</option>
-                        <option value="MOYENNE">Moyenne</option>
-                        <option value="ELEVEE">Élevée</option>
-                        <option value="CRITIQUE">Critique</option>
-                    </select>
-                    <div th:if="${#fields.hasErrors('priorite')}" th:errors="*{priorite}" class="text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="adresseTextuelle" class="form-label">Adresse *</label>
-                    <input type="text" class="form-control" id="adresseTextuelle" th:field="*{adresseTextuelle}" required>
-                    <small class="form-text text-muted">Saisissez l'adresse ou utilisez la carte ci-dessous pour sélectionner la position</small>
-                    <div th:if="${#fields.hasErrors('adresseTextuelle')}" th:errors="*{adresseTextuelle}" class="text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Position GPS (sélectionnez sur la carte) *</label>
-                    <div id="map" style="height: 400px; width: 100%; border: 1px solid #ddd; border-radius: 4px;"></div>
-                    <small class="form-text text-muted">Cliquez sur la carte pour définir la position de l'incident</small>
-                    <input type="hidden" id="latitude" name="latitude" th:field="*{latitude}">
-                    <input type="hidden" id="longitude" name="longitude" th:field="*{longitude}">
-                </div>
-                <div class="mb-3">
-                    <label for="departementId" class="form-label">Département *</label>
-                    <select class="form-select" id="departementId" th:field="*{departementId}" required>
-                        <option value="">Sélectionner un département</option>
-                        <option th:each="dept : ${departements}" th:value="${dept.id}" th:text="${dept.nom}"></option>
-                    </select>
-                    <div th:if="${#fields.hasErrors('departementId')}" th:errors="*{departementId}" class="text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="quartierId" class="form-label">Quartier *</label>
-                    <select class="form-select" id="quartierId" th:field="*{quartierId}" required>
-                        <option value="">Sélectionner un quartier</option>
-                        <option th:each="quartier : ${quartiers}" th:value="${quartier.id}" th:text="${quartier.nom}"></option>
-                    </select>
-                    <div th:if="${#fields.hasErrors('quartierId')}" th:errors="*{quartierId}" class="text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="photos" class="form-label">Ajouter des photos (optionnel, max 10MB par fichier)</label>
-                    <input type="file" class="form-control" id="photos" name="photos" multiple accept="image/*">
-                </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+            <!-- FORM -->
+            <form th:action="@{/citoyen/incidents/{id}/modifier(id=${incident.id})}" 
+                  th:object="${incidentDTO}" 
+                  method="post" 
+                  enctype="multipart/form-data"
+                  id="incidentForm">
+
+                <div class="form-card">
+                    <!-- Section 1: Informations générales -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-info-circle text-primary"></i> Informations générales
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="titre" class="form-label required">Titre</label>
+                            <input type="text" class="form-control" id="titre" th:field="*{titre}" 
+                                   placeholder="Ex: Nid de poule sur la route principale" required>
+                            <div th:if="${#fields.hasErrors('titre')}" th:errors="*{titre}" class="text-danger small mt-1"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label required">Description</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" rows="5" 
+                                      placeholder="Décrivez l'incident en détail..." required></textarea>
+                            <div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger small mt-1"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="priorite" class="form-label required">Priorité</label>
+                            <select class="form-select" id="priorite" th:field="*{priorite}" required>
+                                <option value="">Sélectionner une priorité</option>
+                                <option value="FAIBLE">🟢 Basse - Problème mineur</option>
+                                <option value="MOYENNE">🔵 Moyenne - Nécessite attention</option>
+                                <option value="ELEVEE">🟡 Haute - Problème sérieux</option>
+                                <option value="CRITIQUE">🔴 Urgente - Danger immédiat</option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('priorite')}" th:errors="*{priorite}" class="text-danger small mt-1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Localisation -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-map-marker-alt text-danger"></i> Localisation
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="adresseTextuelle" class="form-label required">Adresse</label>
+                            <input type="text" class="form-control" id="adresseTextuelle" th:field="*{adresseTextuelle}" 
+                                   placeholder="Ex: Avenue Habib Bourguiba, Tunis" required>
+                            <small class="form-text text-muted">Saisissez l'adresse ou utilisez la carte ci-dessous pour sélectionner la position</small>
+                            <div th:if="${#fields.hasErrors('adresseTextuelle')}" th:errors="*{adresseTextuelle}" class="text-danger small mt-1"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="departementId" class="form-label required">Département</label>
+                                <select class="form-select" id="departementId" th:field="*{departementId}" required>
+                                    <option value="">Sélectionner un département</option>
+                                    <option th:each="dept : ${departements}" th:value="${dept.id}" th:text="${dept.nom}"></option>
+                                </select>
+                                <div th:if="${#fields.hasErrors('departementId')}" th:errors="*{departementId}" class="text-danger small mt-1"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="quartierId" class="form-label required">Quartier</label>
+                                <select class="form-select" id="quartierId" th:field="*{quartierId}" required>
+                                    <option value="">Sélectionner un quartier</option>
+                                    <option th:each="quartier : ${quartiers}" th:value="${quartier.id}" th:text="${quartier.nom}"></option>
+                                </select>
+                                <div th:if="${#fields.hasErrors('quartierId')}" th:errors="*{quartierId}" class="text-danger small mt-1"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Position GPS (cliquez sur la carte)</label>
+                            <div id="map"></div>
+                            <small class="form-text text-muted">Cliquez sur la carte pour définir la position de l'incident</small>
+                            <input type="hidden" id="latitude" name="latitude" th:field="*{latitude}">
+                            <input type="hidden" id="longitude" name="longitude" th:field="*{longitude}">
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Photos -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-camera text-success"></i> Photos
+                            <span class="photo-counter ms-auto">
+                                <span id="total-photos-count">0</span> photo(s) au total
+                            </span>
+                        </h5>
+
+                        <!-- Photos existantes -->
+                        <div th:if="${incident.photos != null && !incident.photos.isEmpty()}">
+                            <h6 class="mb-3">Photos actuelles</h6>
+                            <div class="existing-photos" id="existing-photos">
+                                <div class="photo-item" th:each="photo, iterStat : ${incident.photos}" th:attr="data-photo-id=${photo.id}">
+                                    <img th:src="@{'/' + ${photo.cheminFichier}}" alt="Photo incident">
+                                    <button type="button" class="remove-existing-btn" onclick="toggleDeletePhoto(this, event)" title="Supprimer cette photo">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <input type="hidden" name="photosToDelete" th:value="${photo.id}" disabled class="photo-delete-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zone d'ajout de nouvelles photos -->
+                        <div>
+                            <h6 class="mb-3 mt-4">Ajouter de nouvelles photos</h6>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Limites :</strong> Maximum 5 photos au total (existantes + nouvelles) - Taille max par photo: 3MB
+                            </div>
+
+                            <div class="file-upload" id="drop-zone">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <h5 class="mb-2">Glissez vos photos ici ou cliquez pour parcourir</h5>
+                                <p class="text-muted mb-0">Formats acceptés: JPG, PNG, GIF</p>
+                                <input type="file" id="photos" name="photos" multiple accept="image/*" style="display: none;">
+                            </div>
+
+                            <div class="new-photos" id="new-photos"></div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">
+                            <i class="fas fa-save"></i> Enregistrer les modifications
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:inline="javascript">
+        const MAX_FILES = 5;
+        const MAX_FILE_SIZE_MB = 3;
+        
+        let newFiles = [];
+        let existingPhotosCount = /*[[${incident.photos != null ? incident.photos.size() : 0}]]*/ 0;
+        let deletedPhotosCount = 0;
+
+        // Toast configuration
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+
+        function showToast(icon, message) {
+            Toast.fire({ icon: icon, title: message });
+        }
+
         // Initialiser la carte Leaflet
         let initialLat = /*[[${incidentDTO.latitude}]]*/ 48.8566;
         let initialLng = /*[[${incidentDTO.longitude}]]*/ 2.3522;
@@ -102,7 +368,6 @@
         if (hasLocation) {
             marker = L.marker([initialLat, initialLng]).addTo(map);
         } else if (navigator.geolocation) {
-            // Géolocalisation de l'utilisateur si pas de position définie
             navigator.geolocation.getCurrentPosition(function(position) {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
@@ -112,7 +377,6 @@
             });
         }
         
-        // Gestion du clic sur la carte
         map.on('click', function(e) {
             const lat = e.latlng.lat;
             const lon = e.latlng.lng;
@@ -127,11 +391,9 @@
             document.getElementById('longitude').value = lon;
         });
         
-        // Recherche d'adresse (géocodage simple)
         document.getElementById('adresseTextuelle').addEventListener('blur', function() {
             const address = this.value;
             if (address && address.length > 5) {
-                // Utiliser Nominatim pour le géocodage
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`)
                     .then(response => response.json())
                     .then(data => {
@@ -151,6 +413,169 @@
                     .catch(err => console.error('Erreur de géocodage:', err));
             }
         });
+
+        // Gestion des photos
+        function toggleDeletePhoto(button, event) {
+            event.preventDefault();
+            const photoItem = button.closest('.photo-item');
+            const deleteInput = photoItem.querySelector('.photo-delete-input');
+            
+            if (photoItem.classList.contains('deleted')) {
+                // Annuler la suppression
+                photoItem.classList.remove('deleted');
+                deleteInput.disabled = true;
+                button.innerHTML = '<i class="fas fa-times"></i>';
+                button.title = 'Supprimer cette photo';
+                deletedPhotosCount--;
+                showToast('info', 'Photo restaurée');
+            } else {
+                // Marquer pour suppression
+                photoItem.classList.add('deleted');
+                deleteInput.disabled = false;
+                button.innerHTML = '<i class="fas fa-undo"></i>';
+                button.title = 'Annuler la suppression';
+                deletedPhotosCount++;
+                showToast('warning', 'Photo marquée pour suppression');
+            }
+            
+            updatePhotoCounter();
+        }
+
+        function initFileUpload() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('photos');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#3498db';
+                dropZone.style.background = '#ecf0f1';
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#2c3e50';
+                dropZone.style.background = '#f8f9fa';
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#2c3e50';
+                dropZone.style.background = '#f8f9fa';
+                handleFiles(e.dataTransfer.files);
+            });
+        }
+
+        function handleFiles(files) {
+            const currentTotal = existingPhotosCount - deletedPhotosCount + newFiles.length;
+            const availableSlots = MAX_FILES - currentTotal;
+
+            if (files.length > availableSlots) {
+                showToast('warning', `Vous pouvez ajouter seulement ${availableSlots} photo(s) supplémentaire(s)`);
+                return;
+            }
+
+            let validFiles = [];
+            let hasErrors = false;
+
+            for (let file of Array.from(files)) {
+                const sizeMB = file.size / (1024 * 1024);
+                
+                if (!file.type.startsWith('image/')) {
+                    showToast('error', `${file.name} n'est pas une image`);
+                    hasErrors = true;
+                    continue;
+                }
+                
+                if (sizeMB > MAX_FILE_SIZE_MB) {
+                    showToast('error', `${file.name} dépasse ${MAX_FILE_SIZE_MB}MB`);
+                    hasErrors = true;
+                    continue;
+                }
+                
+                validFiles.push(file);
+            }
+
+            if (validFiles.length > 0) {
+                newFiles = newFiles.concat(validFiles);
+                updateFileInput();
+                displayNewPhotos();
+                updatePhotoCounter();
+                
+                if (!hasErrors) {
+                    showToast('success', `${validFiles.length} photo(s) ajoutée(s)`);
+                }
+            }
+        }
+
+        function updateFileInput() {
+            const dt = new DataTransfer();
+            newFiles.forEach(file => dt.items.add(file));
+            document.getElementById('photos').files = dt.files;
+        }
+
+        function displayNewPhotos() {
+            const container = document.getElementById('new-photos');
+            container.innerHTML = '';
+
+            newFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-container';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" class="file-preview" title="${file.name}">
+                        <button type="button" class="remove-new-btn" onclick="removeNewPhoto(${index})" title="Supprimer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeNewPhoto(index) {
+            const fileName = newFiles[index].name;
+            newFiles.splice(index, 1);
+            updateFileInput();
+            displayNewPhotos();
+            updatePhotoCounter();
+            showToast('info', `"${fileName}" supprimée`);
+        }
+
+        function updatePhotoCounter() {
+            const total = existingPhotosCount - deletedPhotosCount + newFiles.length;
+            document.getElementById('total-photos-count').textContent = total;
+        }
+
+        // Validation du formulaire
+        document.getElementById('incidentForm').addEventListener('submit', function(e) {
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
+            
+            if (!lat || !lng) {
+                e.preventDefault();
+                showToast('warning', "Veuillez sélectionner un emplacement sur la carte");
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initFileUpload();
+            updatePhotoCounter();
+        });
+
+        // Fonctions globales
+        window.toggleDeletePhoto = toggleDeletePhoto;
+        window.removeNewPhoto = removeNewPhoto;
     </script>
 </body>
 </html>

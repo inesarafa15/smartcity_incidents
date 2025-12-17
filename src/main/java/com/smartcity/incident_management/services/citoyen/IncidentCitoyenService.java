@@ -320,7 +320,7 @@ public class IncidentCitoyenService {
         return incidentRepository.save(incident);
     }
 
-    public Incident modifierIncident(Long id, Utilisateur citoyen, IncidentDTO dto) throws IOException {
+    public Incident modifierIncident(Long id, Utilisateur citoyen, IncidentDTO dto, List<Long> photosToDelete) throws IOException {
         Incident incident = incidentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Incident non trouvé"));
 
@@ -353,6 +353,11 @@ public class IncidentCitoyenService {
 
         incident.setDateDerniereMiseAJour(java.time.LocalDateTime.now());
 
+        // Gérer la suppression des photos
+        if (photosToDelete != null && !photosToDelete.isEmpty()) {
+            supprimerPhotos(incident, photosToDelete);
+        }
+
         Incident savedIncident = incidentRepository.save(incident);
 
         // Gérer l'ajout de nouvelles photos
@@ -361,6 +366,23 @@ public class IncidentCitoyenService {
         }
 
         return savedIncident;
+    }
+
+    private void supprimerPhotos(Incident incident, List<Long> photoIds) {
+        incident.getPhotos().removeIf(photo -> {
+            if (photoIds.contains(photo.getId())) {
+                // Supprimer le fichier physique
+                try {
+                    Path filePath = Paths.get(photo.getCheminFichier());
+                    Files.deleteIfExists(filePath);
+                } catch (IOException e) {
+                    // Log error but continue
+                    System.err.println("Erreur lors de la suppression du fichier : " + e.getMessage());
+                }
+                return true; // Supprime de la liste et déclenche orphanRemoval
+            }
+            return false;
+        });
     }
 }
 
