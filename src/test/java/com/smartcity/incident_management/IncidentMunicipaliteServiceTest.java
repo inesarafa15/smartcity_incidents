@@ -1,4 +1,4 @@
-package com.city.incident_platform;
+package com.smartcity.incident_management;
 
 import com.smartcity.incident_management.entities.Departement;
 import com.smartcity.incident_management.entities.Incident;
@@ -56,7 +56,6 @@ public class IncidentMunicipaliteServiceTest {
         departement = new Departement();
         departement.setId(1L);
         departement.setNom(CategorieDepartement.SECURITE);
-         
 
         // Agent
         agent = new Utilisateur();

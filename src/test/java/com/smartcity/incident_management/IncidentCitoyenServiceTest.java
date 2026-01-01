@@ -1,4 +1,4 @@
-package com.city.incident_platform;
+package com.smartcity.incident_management;
 
 import com.smartcity.incident_management.services.citoyen.IncidentCitoyenService;
 import com.smartcity.incident_management.dto.IncidentDTO;
