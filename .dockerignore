@@ -1,0 +1,41 @@
+# Fichiers Maven
+target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# Fichiers Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+LICENSE
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.eclipse/
+.settings/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Uploads locaux
+uploads/
+
+# Autres
+.env
+*.env
