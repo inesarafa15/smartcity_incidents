@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartcity_incidents_app_prod
+    restart: always
+
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+      # Azure MySQL Flexible Server
+      SPRING_DATASOURCE_URL: >-
+        jdbc:mysql://smartcity-mysql-server.mysql.database.azure.com:3306/smartcity_incidents
+        ?sslMode=REQUIRED
+        &enabledTLSProtocols=TLSv1.2
+        &serverTimezone=UTC
+
+
+      SPRING_DATASOURCE_USERNAME: smartcity_admin@smartcity-mysql-server
+      SPRING_DATASOURCE_PASSWORD: Mysql@2026Test!
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+
+      # HikariCP
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 30000
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 10
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 2
+      SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT: 600000
+      SPRING_DATASOURCE_HIKARI_MAX_LIFETIME: 1800000
+
+      # JPA / Hibernate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: false
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
+
+      # App config
+      SPRING_THYMELEAF_CACHE: false
+      SPRING_SERVLET_MULTIPART_ENABLED: true
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 50MB
+      APP_UPLOAD_DIR: /app/uploads
+      APP_BASE_URL: http://localhost:8080
+
+      # Mail (provide via .env)
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: true
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: true
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: true
+
+      # Google OAuth (provide via .env)
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE: openid,profile,email
+
+    ports:
+      - "8081:8080"
+
+    volumes:
+      - app_uploads:/app/uploads
+
+volumes:
+  app_uploads:
+    driver: local

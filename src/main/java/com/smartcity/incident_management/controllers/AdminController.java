@@ -50,8 +50,7 @@ public class AdminController {
                            @RequestParam(required = false) String priorite,
                            @RequestParam(defaultValue = "dateCreation") String sortBy,
                            @RequestParam(defaultValue = "DESC") String sortDir,
-                           @RequestParam(required = false) String statut,
-                           @RequestParam(required = false) String priorite,
+                            
                            Model model) {
         
         Utilisateur admin = SecurityUtils.getCurrentUser();
