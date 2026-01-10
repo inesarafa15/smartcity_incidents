@@ -20,11 +20,24 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
-          cache: 'maven'
+          java-version: "17"
+          cache: "maven"
 
       - name: Maven Build
         run: mvn -B -ntp clean package
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+
+      - name: Upload Application JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: incident-management-jar
+          path: target/*.jar
 
       - name: Build Docker Image (no push)
         uses: docker/build-push-action@v5
