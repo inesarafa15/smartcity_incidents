@@ -3,11 +3,13 @@ package com.smartcity.incident_management;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.context.ApplicationContext;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class CiDemoIntegrationTest {
 
     @Autowired
@@ -19,8 +21,7 @@ class CiDemoIntegrationTest {
         assertNotNull(context, "Le contexte Spring devrait être chargé");
 
         // ECHEC VOLONTAIRE pour la démo CI
-        // Correction : Pour corriger ce test, commentez ou supprimez la ligne
-        // ci-dessous
+        // TODO: Pour corriger ce test, commentez ou supprimez la ligne ci-dessous
         // fail("ECHEC VOLONTAIRE : Ce test d'intégration doit faire échouer le pipeline
         // CI pour la démonstration.");
     }
