@@ -10,8 +10,9 @@ env:
   AZURE_WEBAPP_NAME: smartcity-incidents-app-2026
   ACR_RESOURCE_GROUP: smartcityincidents_grp
   ACR_NAME: smartcityincidentsacr
-  AZURE_MYSQL_URL: jdbc:mysql://smartcity-mysql-server.mysql.database.azure.com:3306/smartcity_db?useSSL=true&requireSSL=true&enabledTLSProtocols=TLSv1.2&serverTimezone=UTC
-  AZURE_MYSQL_USERNAME: smartcity_admin@smartcity-mysql-server
+  AZURE_MYSQL_URL: jdbc:mysql://smartcity-mysql-server.mysql.database.azure.com:3306/smartcity_incidents?sslMode=REQUIRED&enabledTLSProtocols=TLSv1.2&serverTimezone=UTC
+  AZURE_MYSQL_USERNAME: smartcity_admin
+
   AZURE_MYSQL_PASSWORD: Mysql@2026Test!
 
 jobs:
@@ -48,9 +49,9 @@ jobs:
           inlineScript: |
             az webapp config appsettings set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.ACR_RESOURCE_GROUP }} --settings \
               SPRING_PROFILES_ACTIVE=prod \
-              SPRING_DATASOURCE_URL=${{ secrets.AZURE_MYSQL_URL }} \
-              SPRING_DATASOURCE_USERNAME=${{ secrets.AZURE_MYSQL_USERNAME }} \
-              SPRING_DATASOURCE_PASSWORD=${{ secrets.AZURE_MYSQL_PASSWORD }}
+              SPRING_DATASOURCE_URL="${{ env.AZURE_MYSQL_URL }}" \
+              SPRING_DATASOURCE_USERNAME="${{ env.AZURE_MYSQL_USERNAME }}" \
+              SPRING_DATASOURCE_PASSWORD="${{ env.AZURE_MYSQL_PASSWORD }}"
 
       - name: Deploy to Azure Web App (prod)
         uses: azure/webapps-deploy@v2
