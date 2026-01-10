@@ -19,6 +19,8 @@ class CiDemoIntegrationTest {
         assertNotNull(context, "Le contexte Spring devrait être chargé");
 
         // ECHEC VOLONTAIRE pour la démo CI
+        // Correction : Pour corriger ce test, commentez ou supprimez la ligne
+        // ci-dessous
         // fail("ECHEC VOLONTAIRE : Ce test d'intégration doit faire échouer le pipeline
         // CI pour la démonstration.");
     }
