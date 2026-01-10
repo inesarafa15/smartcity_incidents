@@ -26,6 +26,13 @@ jobs:
       - name: Maven Build
         run: mvn -B -ntp clean package
 
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+
       - name: Build Docker Image (no push)
         uses: docker/build-push-action@v5
         with:
