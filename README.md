@@ -1,195 +1,146 @@
-# Plateforme de Gestion d'Incidents - Ville Intelligente
+# Technical Guide: Infrastructure & CI/CD Workflow
 
-Application web Spring Boot permettant aux citoyens de signaler des incidents urbains, aux agents municipaux de gérer ces incidents dans leur département, et aux administrateurs de superviser le système et générer des rapports.
-
-## Architecture
-
-Le projet suit une architecture en couches et feature-based :
-
-```
-com.smartcity.incident_management
-├── config                  # Configuration Spring (Security, Web, Mail, WebSocket)
-├── controllers             # Contrôleurs Spring MVC pour Thymeleaf
-├── dto                     # Data Transfer Objects pour formulaires et réponses
-├── entities                # Entités JPA conformes au diagramme UML
-├── enums                   # Tous les enums (RoleType, StatutIncident, etc.)
-├── exceptions              # Exceptions personnalisées
-├── repository              # Spring Data JPA Repositories
-├── security                # UserDetails, UserDetailsService, SecurityUtils
-├── services.citoyen        # Services pour la logique métier citoyen
-├── services.municipalite   # Services pour la logique métier agents municipaux
-├── services.utilisateur    # Services communs, gestion utilisateurs, départements et rapports
-├── validations             # Validations personnalisées
-└── templates               # Templates Thymeleaf (auth, incidents, admin, dashboard)
-```
-
-## Technologies utilisées
-
-- **Backend**: Spring Boot 4.0.0
-- **Base de données**: MySQL
-- **Sécurité**: Spring Security avec BCrypt
-- **Vues**: Thymeleaf
-- **Build**: Maven
-
-## Entités principales
-
-1. **Utilisateur**: Citoyens, agents municipaux, administrateurs
-2. **Departement**: Départements municipaux (Infrastructure, Propreté, Sécurité, etc.)
-3. **Quartier**: Quartiers de la ville
-4. **Incident**: Incidents signalés avec workflow (Signalé → Pris en charge → En résolution → Résolu → Clôturé)
-5. **Photo**: Photos associées aux incidents
-6. **Notification**: Notifications pour les utilisateurs
-7. **Rapport**: Rapports générés par les administrateurs
-
-## Fonctionnalités
-
-### Pour les citoyens
-
-- Inscription et authentification
-- Signalement d'incidents avec photos et géolocalisation
-- Consultation de l'historique de leurs incidents
-- Réception de notifications sur l'état de leurs incidents
-
-### Pour les agents municipaux
-
-- Visualisation des incidents de leur département
-- Prise en charge d'incidents
-- Gestion du workflow des incidents (Pris en charge → En résolution → Résolu)
-- Consultation des incidents assignés
-
-### Pour les administrateurs
-
-- Gestion des utilisateurs (création d'agents, activation/désactivation)
-- Gestion des départements et quartiers
-- Génération de rapports analytiques
-- Supervision du système
-
-## Configuration
-
-### Base de données
-
-Modifier `src/main/resources/application.properties` :
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/smartcity_incidents?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=VOTRE_MOT_DE_PASSE
-```
-
-### Upload de fichiers
-
-Les photos sont stockées dans le dossier `uploads/` à la racine du projet. Ce dossier sera créé automatiquement lors du premier upload.
-
-## Démarrage
-
-1. Créer la base de données MySQL :
-
-```sql
-CREATE DATABASE smartcity_incidents;
-```
-
-2. Configurer les paramètres de connexion dans `application.properties`
-
-3. Lancer l'application :
-
-4. Accéder à l'application : http://localhost:8080
-
-## Rôles et permissions
-
-- **CITOYEN**: Accès limité à ses propres incidents
-- **AGENT_MUNICIPAL**: Gestion des incidents de son département uniquement
-- **ADMINISTRATEUR**: Accès total au système
-- **SUPER_ADMIN**: Accès total (réservé pour l'administration système)
-
-## Workflow des incidents
-
-1. **SIGNALE**: Incident créé par un citoyen
-2. **PRIS_EN_CHARGE**: Un agent municipal a pris en charge l'incident
-3. **EN_RESOLUTION**: Intervention en cours
-4. **RESOLU**: Incident résolu, en attente de confirmation
-5. **CLOTURE**: Incident clôturé après confirmation du citoyen
-
-## Sécurité
-
-- Authentification basée sur Spring Security
-- Mots de passe hachés avec BCrypt
-- Protection CSRF activée
-- Validation des uploads (taille, type de fichier)
-- Autorisations basées sur les rôles (@PreAuthorize)
-
-## Workflow avancé des incidents (Chronologique)
-
-### Timeline verticale (vue principale)
-
-1.  **Incident signalé**
-    Création par le citoyen (date, localisation, photos)
-
-2.  **Assignation à un agent municipal**
-
-3.  **Tentative de résolution #1 refusée**
-
-- Commentaire réel de l’agent
-- Photos associées
-- Archivage automatique
-
-4.  **Tentative de résolution #2 refusée**
-
-- Données précédentes conservées
-- Ajout d’une nouvelle entrée chronologique
-
-5.  **Résolution proposée**
-    Fusion intelligente :
-
-- Notification automatique système
-  _« Votre incident a été marqué comme résolu. Merci de confirmer la résolution. »_
-- **Commentaire réel d’intervention de l’agent**
-
-6.  **Feedback citoyen**
-
-- Note
-- Commentaire persistant
-
-7.  **Clôture définitive**
+This guide provides a comprehensive technical overview of the infrastructure, CI/CD pipelines, and local development setup for the **Incident Management** platform. It focuses on the architectural structure, deployment workflows, and technical configurations without delving into business logic.
 
 ---
 
-### Réaffectation et archivage
+## 🏗️ 1. Project Structure
 
-Lorsque la résolution **n’est pas validée par l’administrateur** :
-
-- L’incident est **réaffecté au même agent**
-- Les tentatives précédentes sont **archivées**
-- Une **nouvelle entrée est ajoutée** dans la timeline
-- Aucune donnée historique n’est supprimée ou modifiée
-
-## Fonctionnalités par rôle
-
-### Citoyen
-
-- Inscription & authentification
-- Signalement d’incidents (photos + géolocalisation)
-- Consultation de l’historique complet
-- Réception de notifications
-- Envoi de feedback après résolution
-
-### Agent municipal
-
-- Visualisation des incidents du département
-- Prise en charge et résolution
-- Ajout de commentaires d’intervention réels
-- Upload de photos par tentative
-- Suivi chronologique automatique
-
-### Administrateur
-
-- Gestion des utilisateurs et rôles
-- Validation / refus des résolutions
-- Réaffectation contrôlée
-- Supervision globale du workflow
-- Génération de rapports analytiques
-
-Développé dans le cadre du cours de Développement Web Avancé 3INLOG.
+The project follows a standard Spring Boot architecture with separate configurations for different environments (dev, test, prod).
 
 ```
-
+smartcity_incidents/
+├── .github/workflows/
+│   ├── ci.yml            # Continuous Integration pipeline (Build & Test)
+│   └── cd.yml            # Continuous Deployment pipeline (Azure Deploy)
+├── src/
+│   ├── main/
+│   │   ├── java/         # Application source code
+│   │   └── resources/
+│   │       ├── application.properties      # Base configuration
+│   │       ├── application-dev.properties  # Local dev config (H2/MySQL local)
+│   │       └── application-prod.properties # Production config (Azure MySQL)
+│   └── test/
+│       ├── java/         # Unit and Integration tests
+│       └── resources/
+│           └── application-test.properties # Test config (H2 In-Memory)
+├── Dockerfile            # Multi-stage Docker build definition
+├── docker-compose.dev.yml  # Local development orchestration
+├── docker-compose.prod.yml # Production simulation orchestration
+└── pom.xml               # Maven dependencies and plugins (JaCoCo, etc.)
 ```
+
+---
+
+## 🐳 2. Local Environment (Docker Compose)
+
+We use Docker Compose to manage local environments. The difference between `dev` and `prod` configurations lies mainly in the database connection and active profiles.
+
+### 🛠️ Development Environment (`docker-compose.dev.yml`)
+*   **Purpose:** Rapid development and testing.
+*   **Database:** Uses a local MySQL container.
+*   **Profile:** `dev`.
+*   **Features:** Hot-reload (if configured), debug ports open.
+
+**Command to run:**
+```bash
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+### 🚀 Production Simulation (`docker-compose.prod.yml`)
+*   **Purpose:** Verify the final container behavior before deploying to Azure.
+*   **Database:** Can point to a real production DB or a secured local MySQL.
+*   **Profile:** `prod`.
+*   **Features:** Optimized JVM settings, no debug ports.
+
+**Command to run:**
+```bash
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+---
+
+## 🔄 3. Continuous Integration (CI) Workflow
+
+**File:** `.github/workflows/ci.yml`
+**Trigger:** Push/Pull Request on `dev` or `main`.
+
+The CI pipeline ensures code integrity through the following stages:
+
+1.  **Checkout & Setup:** Retrieves code and installs JDK 17.
+2.  **Maven Build & Verify:**
+    *   Compiles the application.
+    *   Runs **Unit Tests** and **Integration Tests**.
+    *   **Fail-Fast:** If any test fails, the pipeline stops immediately.
+3.  **Code Coverage (JaCoCo):**
+    *   Generates a coverage report.
+    *   Uploads the report as a GitHub Artifact (`jacoco-report`) regardless of test success/failure.
+4.  **Artifact Archiving:**
+    *   If tests pass, the compiled `.jar` file is uploaded as an artifact (`incident-management-jar`).
+5.  **Docker Build Check:**
+    *   Builds the Docker image (without pushing) to verify `Dockerfile` validity.
+
+---
+
+## ☁️ 4. Continuous Deployment (CD) Workflow - Azure
+
+**File:** `.github/workflows/cd.yml`
+**Trigger:** Push on `main` branch (only after PR merge and successful CI).
+
+The CD pipeline automates deployment to the Azure Cloud ecosystem.
+
+### 🏗️ Azure Infrastructure Components
+*   **Azure Container Registry (ACR):** Stores private Docker images (`smartcityincidentsacr`).
+*   **Azure App Service (Web App):** Hosting platform for the Spring Boot container (`smartcity-incidents-app-2026`).
+*   **Azure Database for MySQL (Flexible Server):** Managed MySQL database (`smartcity-mysql-server`).
+
+### 🚀 Deployment Steps
+
+1.  **Authentication:**
+    *   Logs into Azure using `AZURE_CREDENTIALS`.
+    *   Logs into ACR using `ACR_USERNAME` / `ACR_PASSWORD`.
+2.  **Build & Push:**
+    *   Builds the production Docker image.
+    *   Tags it with the Git SHA for versioning.
+    *   Pushes the image to the Azure Container Registry.
+3.  **Configuration Injection:**
+    *   Updates the Web App settings dynamically via Azure CLI.
+    *   Injects sensitive environment variables:
+        *   `SPRING_PROFILES_ACTIVE=prod`
+        *   `SPRING_DATASOURCE_URL` (Azure MySQL connection string)
+        *   `SPRING_DATASOURCE_USERNAME`
+        *   `SPRING_DATASOURCE_PASSWORD`
+4.  **Deploy:**
+    *   Triggers the Web App to pull the new image from ACR and restart.
+
+---
+
+## 🧪 5. Demo Tests Files
+
+To demonstrate the CI "Fail then Success" scenario, the following test files are included in the repository:
+
+### 📄 `src/test/java/com/smartcity/incident_management/LogicFailTest.java`
+*   **Type:** Unit Test.
+*   **Scenario:** Performs a simple mathematical assertion.
+*   **Fail State:** `assertEquals(100, 50 + 49)` -> Fails.
+*   **Success State:** `assertEquals(100, 50 + 50)` -> Passes.
+
+### 📄 `src/test/java/com/smartcity/incident_management/CiDemoIntegrationTest.java`
+*   **Type:** Integration Test (Spring Boot).
+*   **Scenario:** Loads the ApplicationContext.
+*   **Configuration:** Uses `@ActiveProfiles("test")` to use H2 Database (avoiding Azure MySQL connection errors during CI).
+*   **Fail State:** Contains `fail("Intentional Failure")`.
+*   **Success State:** The `fail()` line is commented out or removed.
+
+---
+
+## 🔐 Secrets Management
+
+For the pipelines to work, the following secrets must be configured in GitHub Repository Settings:
+
+| Secret Name | Description |
+| :--- | :--- |
+| `AZURE_CREDENTIALS` | JSON Service Principal for Azure Login |
+| `ACR_LOGIN_SERVER` | Registry URL (e.g., `smartcityincidentsacr.azurecr.io`) |
+| `ACR_USERNAME` | ACR Admin Username |
+| `ACR_PASSWORD` | ACR Admin Password |
