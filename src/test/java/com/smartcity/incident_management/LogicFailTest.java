@@ -9,7 +9,7 @@ class LogicFailTest {
     void intentionalFailure_ForCIDemo() {
         // Given
         int expected = 100;
-        int actual = 50 +50 // Fait 100
+        int actual = 50 +50;// Fait 100
 
         // When & Then
         // FIX: Changer 49 en 50 pour que le test passe
